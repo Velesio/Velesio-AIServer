@@ -45,13 +45,21 @@ RUN unzip undreamai-${VERSION}-llamacpp.zip -d /app/server/ && \
     unzip undreamai-${VERSION}-server.zip -d /app/server/ && \
     rm undreamai-${VERSION}-llamacpp.zip undreamai-${VERSION}-server.zip
 
-# Create models directory
-RUN mkdir -p /models/stable-diffusion
+# Create models directories
+RUN mkdir -p /models/stable-diffusion /models/llm
 
 # ------------------
 # Clone Stable Diffusion WebUI and configure it
 # ------------------
 RUN git clone https://github.com/AUTOMATIC1111/stable-diffusion-webui.git /app/stable-diffusion-webui
+
+# Create required model directories
+RUN mkdir -p /app/stable-diffusion-webui/models/VAE \
+    /app/stable-diffusion-webui/models/Lora \
+    /app/stable-diffusion-webui/models/Stable-diffusion \
+    /app/stable-diffusion-webui/models/ControlNet \
+    /app/stable-diffusion-webui/models/ESRGAN \
+    /app/stable-diffusion-webui/models/hypernetworks
 
 WORKDIR /app/stable-diffusion-webui
 RUN cat > config.yaml <<'EOL'
@@ -62,15 +70,48 @@ commandline_args:
   - --allow-code
   - --no-download-sd-model
   - --api
+  - --xformers
+  - --cors-allow-origins
+  - "*"
 EOL
 
 # Create a custom launcher script
 RUN echo '#!/bin/bash' > /app/stable-diffusion-webui/sd_launcher.sh && \
     echo 'cd /app/stable-diffusion-webui' >> /app/stable-diffusion-webui/sd_launcher.sh && \
     echo 'export PYTHONPATH=/app/stable-diffusion-webui' >> /app/stable-diffusion-webui/sd_launcher.sh && \
-    echo 'python3 launch.py --skip-torch-cuda-test --api "$@"' >> /app/stable-diffusion-webui/sd_launcher.sh && \
+    echo '# Create symbolic links to models in the mounted volume' >> /app/stable-diffusion-webui/sd_launcher.sh && \
+    echo 'if [ -d "/models/stable-diffusion" ]; then' >> /app/stable-diffusion-webui/sd_launcher.sh && \
+    echo '  for file in /models/stable-diffusion/*.safetensors /models/stable-diffusion/*.ckpt; do' >> /app/stable-diffusion-webui/sd_launcher.sh && \
+    echo '    if [ -f "$file" ]; then' >> /app/stable-diffusion-webui/sd_launcher.sh && \
+    echo '      ln -sf "$file" /app/stable-diffusion-webui/models/Stable-diffusion/' >> /app/stable-diffusion-webui/sd_launcher.sh && \
+    echo '      echo "Linked model: $file"' >> /app/stable-diffusion-webui/sd_launcher.sh && \
+    echo '    fi' >> /app/stable-diffusion-webui/sd_launcher.sh && \
+    echo '  done' >> /app/stable-diffusion-webui/sd_launcher.sh && \
+    echo 'fi' >> /app/stable-diffusion-webui/sd_launcher.sh && \
+    echo 'python3 launch.py --skip-torch-cuda-test --api --xformers "$@"' >> /app/stable-diffusion-webui/sd_launcher.sh && \
     chmod +x /app/stable-diffusion-webui/sd_launcher.sh && \
     chmod +x /app/stable-diffusion-webui/webui.sh
+
+# Create a helper script for downloading models
+RUN echo '#!/bin/bash' > /app/download_models.sh && \
+    echo '# Download models script for VelesAI Server' >> /app/download_models.sh && \
+    echo 'mkdir -p /models/stable-diffusion' >> /app/download_models.sh && \
+    echo 'mkdir -p /models/llm' >> /app/download_models.sh && \
+    echo '' >> /app/download_models.sh && \
+    echo '# Download a small Stable Diffusion model for testing' >> /app/download_models.sh && \
+    echo 'if [ ! -f "/models/stable-diffusion/dreamshaper-8.safetensors" ]; then' >> /app/download_models.sh && \
+    echo '  echo "Downloading DreamShaper v8 (lightweight SD model)..."' >> /app/download_models.sh && \
+    echo '  wget --show-progress https://huggingface.co/Lykon/dreamshaper-8/resolve/main/dreamshaper_8.safetensors -O /models/stable-diffusion/dreamshaper-8.safetensors' >> /app/download_models.sh && \
+    echo 'fi' >> /app/download_models.sh && \
+    echo '' >> /app/download_models.sh && \
+    echo '# Download a small LLM for testing' >> /app/download_models.sh && \
+    echo 'if [ ! -f "/models/llm/phi-2.gguf" ]; then' >> /app/download_models.sh && \
+    echo '  echo "Downloading Phi-2 (small LLM model)..."' >> /app/download_models.sh && \
+    echo '  wget --show-progress https://huggingface.co/TheBloke/phi-2-GGUF/resolve/main/phi-2.Q5_K_M.gguf -O /models/llm/phi-2.gguf' >> /app/download_models.sh && \
+    echo 'fi' >> /app/download_models.sh && \
+    echo '' >> /app/download_models.sh && \
+    echo 'echo "Model downloads complete!"' >> /app/download_models.sh && \
+    chmod +x /app/download_models.sh
 
 # ==================
 # Application Stage
@@ -93,7 +134,7 @@ RUN mkdir -p /models
 # Create RunPod entrypoint script
 # ------------------
 WORKDIR /app
-RUN printf '#!/bin/bash\nset -e\n\n# Ensure directories exist\nmkdir -p /run/sshd\nmkdir -p /models/stable-diffusion\n\n# Start backend API\ncd /app/backend\necho "Starting backend API on port 8000..."\nuvicorn main:app --host 0.0.0.0 --port 8000 &\n\n# Start frontend\ncd /app/frontend\necho "Starting frontend on port 3000..."\nnpm run preview -- --host 0.0.0.0 --port 3000 &\n\necho "Server started on port 3000 with API proxy to backend port 8000"\necho "Stable Diffusion WebUI will be available on port 7860 when started through the UI"\n\n# Launch SSH server\necho "Starting SSH server..."\nif [ "$#" -eq 0 ]; then\n    exec /usr/sbin/sshd -D\nelse\n    exec "$@"\nfi\n' > /app/entrypoint.sh && chmod +x /app/entrypoint.sh
+RUN printf '#!/bin/bash\n\n# Ensure directories exist\nmkdir -p /run/sshd\nmkdir -p /models/stable-diffusion\nmkdir -p /models/llm\n\n# Check for Stable Diffusion models\necho "Checking for Stable Diffusion models in /models/stable-diffusion..."\nif [ -d "/models/stable-diffusion" ]; then\n  # First check if there are any models at all without using wildcards\n  file_count=$(find /models/stable-diffusion -type f \\( -name "*.safetensors" -o -name "*.ckpt" \\) 2>/dev/null | wc -l)\n  if [ "$file_count" -gt "0" ]; then\n    echo "Found $file_count Stable Diffusion model files in /models/stable-diffusion"\n    find /models/stable-diffusion -type f \\( -name "*.safetensors" -o -name "*.ckpt" \\) -exec ls -la {} \\;\n  else\n    echo "No Stable Diffusion models found in /models/stable-diffusion. Please add .safetensors or .ckpt files to this directory."\n  fi\nfi\n\n# Check for LLM models\necho "Checking for LLM models in /models/llm..."\nif [ -d "/models/llm" ]; then\n  file_count=$(find /models/llm -type f -name "*.gguf" 2>/dev/null | wc -l)\n  if [ "$file_count" -gt "0" ]; then\n    echo "Found $file_count LLM model files in /models/llm"\n    find /models/llm -type f -name "*.gguf" -exec ls -la {} \\;\n  else\n    echo "No LLM models found in /models/llm. Please add .gguf files to this directory."\n  fi\nfi\n\n# Start the services\ntrap "exit" INT TERM\ntrap "kill 0" EXIT\n\n# Start backend API\ncd /app/backend\necho "Starting backend API on port 8000..."\nuvicorn main:app --host 0.0.0.0 --port 8000 &\nbackend_pid=$!\n\n# Wait a moment for the backend to start\nsleep 2\n\n# Check if backend started successfully\nif ! kill -0 $backend_pid 2>/dev/null; then\n  echo "Failed to start backend. Exiting."\n  exit 1\nfi\n\n# Start frontend\ncd /app/frontend\necho "Starting frontend on port 3000..."\nnpm run preview -- --host 0.0.0.0 --port 3000 &\nfrontend_pid=$!\n\n# Wait a moment for the frontend to start\nsleep 2\n\n# Check if frontend started successfully\nif ! kill -0 $frontend_pid 2>/dev/null; then\n  echo "Failed to start frontend. Exiting."\n  exit 1\nfi\n\necho "Server started on port 3000 with API proxy to backend port 8000"\necho "Stable Diffusion WebUI will be available on port 7860 when started through the UI"\n\n# Start SSH server if no command is passed\nif [ "$#" -eq 0 ]; then\n  echo "Starting SSH server..."\n  /usr/sbin/sshd -D &\n  sshd_pid=$!\n\n  # Wait for all processes to finish\n  wait $sshd_pid\nelse\n  # Execute the given command\n  exec "$@"\nfi\n' > /app/entrypoint.sh && chmod +x /app/entrypoint.sh
 
 # ------------------
 # Build frontend production assets

@@ -363,7 +363,7 @@ const ConfigForm = ({ activeTab, setActiveTab }: ConfigFormProps) => {
             ...getContainerStyle()
         }}>
             <h1 className={`text-3xl font-bold text-center mb-4 ${theme === 'cyberpunk' ? 'glow-text' : ''}`}>
-                UndreamAI Server Control Panel
+                Veles AI Server Control Panel
             </h1>
 
             {/* Tabs for switching views with theme toggle */}

@@ -64,7 +64,7 @@ async def start_server(request: Request):
     if not os.path.exists(binary_path):
         raise HTTPException(status_code=500, detail="undreamai_server binary not found")
 
-    model_path = f"/models/{params.get('model', 'model')}"
+    model_path = f"/models/llm/{params.get('model', 'model')}"
 
     command = [
         binary_path,
@@ -119,12 +119,26 @@ async def stop_server():
 async def download_model(data: dict):
     model_url = data.get("url")
     filename = data.get("filename", "model")  # Use custom filename if provided
+    model_type = data.get("type", "llm")  # Either "llm" or "sd"
 
     if not model_url:
         raise HTTPException(status_code=400, detail="Model URL is required.")
 
+    # Determine the correct directory and extension based on model type
+    if model_type.lower() == "sd":
+        # For Stable Diffusion models
+        model_dir = "/models/stable-diffusion"
+        extension = ".safetensors"
+    else:
+        # For LLM models
+        model_dir = "/models/llm"
+        extension = ".gguf"
+
+    # Make sure the directory exists
+    os.makedirs(model_dir, exist_ok=True)
+
     # Save model with dynamic name
-    model_path = f"/models/{filename}.gguf"
+    model_path = f"{model_dir}/{filename}{extension}"
     response = requests.get(model_url)
 
     if response.status_code != 200:
@@ -133,7 +147,7 @@ async def download_model(data: dict):
     with open(model_path, 'wb') as file:
         file.write(response.content)
     
-    return {"status": f"Model downloaded successfully as {filename}.gguf"}
+    return {"status": f"Model downloaded successfully as {filename}{extension}"}
 
 # -----------------------
 # Server Stats Endpoint
@@ -194,9 +208,17 @@ async def get_logs():
 # -----------------------
 @app.get("/list-models/")
 async def list_models():
-    models_dir = "/models"
+    models_dir = "/models/llm"
     if not os.path.isdir(models_dir):
-        raise HTTPException(status_code=404, detail="Models directory not found")
+        raise HTTPException(status_code=404, detail="LLM models directory not found")
+    models = os.listdir(models_dir)  # List all files without filtering
+    return {"models": models}
+
+@app.get("/list-sd-models/")
+async def list_sd_models():
+    models_dir = "/models/stable-diffusion"
+    if not os.path.isdir(models_dir):
+        raise HTTPException(status_code=404, detail="Stable Diffusion models directory not found")
     models = os.listdir(models_dir)  # List all files without filtering
     return {"models": models}
 
@@ -224,6 +246,25 @@ async def start_stable_diffusion():
     launcher_path = "/app/stable-diffusion-webui/sd_launcher.sh"
     
     if not os.path.exists(launcher_path):
+        # Try to create the launcher if it doesn't exist
+        try:
+            with open(launcher_path, "w") as f:
+                f.write('#!/bin/bash\n')
+                f.write('cd /app/stable-diffusion-webui\n')
+                f.write('export PYTHONPATH=/app/stable-diffusion-webui\n')
+                f.write('# Create symbolic links to models in the mounted volume\n')
+                f.write('if [ -d "/models/stable-diffusion" ]; then\n')
+                f.write('  for file in $(find /models/stable-diffusion -type f \\( -name "*.safetensors" -o -name "*.ckpt" \\)); do\n')
+                f.write('    ln -sf "$file" /app/stable-diffusion-webui/models/Stable-diffusion/\n')
+                f.write('    echo "Linked model: $file"\n')
+                f.write('  done\n')
+                f.write('fi\n')
+                f.write('python3 launch.py --skip-torch-cuda-test --api --xformers --cors-allow-origins "*" "$@"\n')
+            os.chmod(launcher_path, 0o755)
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Failed to create Stable Diffusion launcher: {str(e)}")
+    
+    if not os.path.exists(launcher_path):
         raise HTTPException(status_code=500, detail="Stable Diffusion launcher not found")
     
     # Command to start Stable Diffusion with common parameters
@@ -234,7 +275,9 @@ async def start_stable_diffusion():
         "--port", "7860",
         "--allow-code",
         "--no-download-sd-model",
-        "--api"
+        "--api",
+        "--xformers",
+        "--cors-allow-origins", "*"  # Allow CORS for Unity access
     ]
     
     print(f"➡️ Starting Stable Diffusion: {' '.join(command)}")
