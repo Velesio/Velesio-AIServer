@@ -1,0 +1,161 @@
+/* Base Styles */
+body {
+    font-family: Arial, sans-serif;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+/* Cyberpunk Theme (Dark) */
+body.cyberpunk {
+    background-color: #1e1e2f;
+    color: #ffffff;
+    --primary-bg: #2c2c3d;
+    --secondary-bg: #374151;
+    --accent-color: #8a2be2;
+    --accent-hover: #9b4dff;
+    --text-color: #ffffff;
+    --button-primary: #5a5ae6;
+    --button-primary-hover: #6a6af0;
+    --button-secondary: #4a4a5a;
+    --button-danger: #e53e3e;
+    --button-danger-hover: #f56565;
+    --neon-glow: 0 0 5px #8a2be2, 0 0 10px rgba(138, 43, 226, 0.5);
+    --card-bg: #2c2c3d;
+    --input-bg: #374151;
+    --stats-bg: #374151;
+}
+
+/* Corporate Theme (Light) */
+body.corporate {
+    background-color: #f5f5f5;
+    color: #333333;
+    --primary-bg: #ffffff;
+    --secondary-bg: #e5e7eb;
+    --accent-color: #000000;
+    --accent-hover: #333333;
+    --text-color: #333333;
+    --button-primary: #000000;
+    --button-primary-hover: #333333;
+    --button-secondary: #e5e7eb;
+    --button-danger: #000000;
+    --button-danger-hover: #333333;
+    --neon-glow: none;
+    --card-bg: #ffffff;
+    --input-bg: #f3f4f6;
+    --stats-bg: #f3f4f6;
+}
+
+.app-container {
+    max-width: 600px;
+    margin: 0 auto;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+h1, h2 {
+    text-align: center;
+}
+
+input, button {
+    width: 100%;
+    padding: 8px;
+    margin-top: 8px;
+    border-radius: 6px;
+}
+
+button {
+    cursor: pointer;
+}
+
+/* Theme toggle styles */
+.theme-toggle {
+    background: none;
+    border: none;
+    cursor: pointer;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s;
+    position: relative;
+}
+
+.theme-toggle:hover {
+    transform: scale(1.1);
+}
+
+.cyberpunk .theme-toggle {
+    background-color: #2c2c3d;
+    box-shadow: var(--neon-glow);
+}
+
+.corporate .theme-toggle {
+    background-color: #e5e7eb;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Corporate theme (Light) specific buttons */
+.corporate button {
+    position: relative;
+    overflow: hidden;
+    color: var(--text-color); /* Default text color */
+}
+
+/* Ensure action buttons have white text */
+.corporate button[class*="px-4"] {
+    color: white !important;
+}
+
+.corporate button:hover {
+    opacity: 0.85;
+    transform: translateY(-1px);
+}
+
+/* Cyberpunk specific elements */
+.cyberpunk .card {
+    border: 1px solid #8a2be2;
+    box-shadow: var(--neon-glow);
+}
+
+.cyberpunk .glow-text {
+    text-shadow: 0 0 5px #8a2be2;
+}
+
+.cyberpunk .neon-border {
+    border: 1px solid #8a2be2;
+    box-shadow: var(--neon-glow);
+}
+
+/* Animation classes */
+@keyframes ping {
+    0% {
+        transform: scale(1);
+        opacity: 0.8;
+    }
+    75%, 100% {
+        transform: scale(1.5);
+        opacity: 0;
+    }
+}
+
+.animate-ping {
+    animation: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+/* Meter gauge animations */
+@keyframes pulse-glow {
+    0%, 100% {
+        filter: brightness(1);
+        box-shadow: 0 0 5px currentColor;
+    }
+    50% {
+        filter: brightness(1.2);
+        box-shadow: 0 0 10px currentColor;
+    }
+}
+
+.cyberpunk .meter-pulse {
+    animation: pulse-glow 2s ease-in-out infinite;
+}

@@ -1,0 +1,107 @@
+# ==================
+# Base Image
+# ==================
+FROM nvidia/cuda:12.4.1-runtime-ubuntu22.04 AS base
+
+WORKDIR /app
+
+# Install system dependencies and Node.js
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libstdc++6 libgomp1 openssh-server sudo curl unzip wget vim nvtop \
+    python3 python3-pip python3-venv python3-dev git ffmpeg libsm6 libxext6 libgl1 && \
+    curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && \
+    apt-get install -y nodejs && \
+    rm -rf /var/lib/apt/lists/*
+
+# Upgrade pip and install Python build tools
+RUN pip3 install --upgrade pip setuptools wheel
+# Install Stable Diffusion dependencies
+RUN pip3 install torch torchvision torchaudio numpy pillow
+
+# ------------------
+# Install backend dependencies
+# ------------------
+COPY shared/backend/requirements.txt /app/backend/requirements.txt
+WORKDIR /app/backend
+RUN pip3 install -r requirements.txt
+
+# ------------------
+# Install frontend dependencies
+# ------------------
+WORKDIR /app/frontend
+COPY shared/frontend/package.json shared/frontend/package-lock.json ./
+RUN npm install
+
+# ------------------
+# Prepare server binaries and directories
+# ------------------
+WORKDIR /app
+RUN mkdir -p /app/server
+
+ARG VERSION=v1.1.10
+COPY shared/binaries/* /app/
+
+RUN unzip undreamai-${VERSION}-llamacpp.zip -d /app/server/ && \
+    unzip undreamai-${VERSION}-server.zip -d /app/server/ && \
+    rm undreamai-${VERSION}-llamacpp.zip undreamai-${VERSION}-server.zip
+
+# Create models directory
+RUN mkdir -p /models/stable-diffusion
+
+# ------------------
+# Clone Stable Diffusion WebUI and configure it
+# ------------------
+RUN git clone https://github.com/AUTOMATIC1111/stable-diffusion-webui.git /app/stable-diffusion-webui
+
+WORKDIR /app/stable-diffusion-webui
+RUN cat > config.yaml <<'EOL'
+commandline_args:
+  - --listen
+  - --port
+  - "7860"
+  - --allow-code
+  - --no-download-sd-model
+  - --api
+EOL
+
+# Create a custom launcher script
+RUN echo '#!/bin/bash' > /app/stable-diffusion-webui/sd_launcher.sh && \
+    echo 'cd /app/stable-diffusion-webui' >> /app/stable-diffusion-webui/sd_launcher.sh && \
+    echo 'export PYTHONPATH=/app/stable-diffusion-webui' >> /app/stable-diffusion-webui/sd_launcher.sh && \
+    echo 'python3 launch.py --skip-torch-cuda-test --api "$@"' >> /app/stable-diffusion-webui/sd_launcher.sh && \
+    chmod +x /app/stable-diffusion-webui/sd_launcher.sh && \
+    chmod +x /app/stable-diffusion-webui/webui.sh
+
+# ==================
+# Application Stage
+# ==================
+FROM base AS final
+
+WORKDIR /app
+
+# Copy the latest application source code
+COPY shared/backend /app/backend
+COPY shared/frontend /app/frontend
+
+# Copy Stable Diffusion WebUI from the base stage
+COPY --from=base /app/stable-diffusion-webui /app/stable-diffusion-webui
+
+# Ensure models directory exists
+RUN mkdir -p /models
+
+# ------------------
+# Create RunPod entrypoint script
+# ------------------
+WORKDIR /app
+RUN printf '#!/bin/bash\nset -e\n\n# Ensure directories exist\nmkdir -p /run/sshd\nmkdir -p /models/stable-diffusion\n\n# Start backend API\ncd /app/backend\necho "Starting backend API on port 8000..."\nuvicorn main:app --host 0.0.0.0 --port 8000 &\n\n# Start frontend\ncd /app/frontend\necho "Starting frontend on port 3000..."\nnpm run preview -- --host 0.0.0.0 --port 3000 &\n\necho "Server started on port 3000 with API proxy to backend port 8000"\necho "Stable Diffusion WebUI will be available on port 7860 when started through the UI"\n\n# Launch SSH server\necho "Starting SSH server..."\nif [ "$#" -eq 0 ]; then\n    exec /usr/sbin/sshd -D\nelse\n    exec "$@"\nfi\n' > /app/entrypoint.sh && chmod +x /app/entrypoint.sh
+
+# ------------------
+# Build frontend production assets
+# ------------------
+WORKDIR /app/frontend
+RUN npm run build
+
+# Expose the necessary ports
+EXPOSE 3000 8000 22 7860
+
+ENTRYPOINT ["/app/entrypoint.sh"]
