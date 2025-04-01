@@ -7,7 +7,7 @@ import { ThemeProvider } from './context/ThemeContext';
 import { useTheme } from './context/useTheme';
 
 function App() {
-    const [activeTab, setActiveTab] = useState<'config' | 'logs' | 'allowlist' | 'stablediffusion'>('config');
+    const [activeTab, setActiveTab] = useState<'config' | 'allowlist' | 'stablediffusion'>('config');
     
     return (
         <ThemeProvider>
@@ -21,8 +21,8 @@ function AppContent({
     activeTab, 
     setActiveTab 
 }: { 
-    activeTab: 'config' | 'logs' | 'allowlist' | 'stablediffusion'; 
-    setActiveTab: (tab: 'config' | 'logs' | 'allowlist' | 'stablediffusion') => void;
+    activeTab: 'config' | 'allowlist' | 'stablediffusion'; 
+    setActiveTab: (tab: 'config' | 'allowlist' | 'stablediffusion') => void;
 }) {
     const { theme } = useTheme();
     

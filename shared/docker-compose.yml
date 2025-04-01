@@ -1,12 +1,12 @@
 version: '3.9'
 
 services:
-  velesai_server:
+  velesio_aiserver:
     build:
       context: ..
       dockerfile: shared/Dockerfile.runpod
-    image: teocholakov/velesai_server
-    container_name: velesai_server
+    image: teocholakov/velesio_aiserver
+    container_name: velesio_aiserver
     network_mode: host
     ports:
       - "3000:3000"

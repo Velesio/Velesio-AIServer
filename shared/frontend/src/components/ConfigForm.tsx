@@ -8,8 +8,8 @@ const Spinner = () => (
 );
 
 interface ConfigFormProps {
-    activeTab: 'config' | 'logs' | 'allowlist' | 'stablediffusion';
-    setActiveTab: (tab: 'config' | 'logs' | 'allowlist' | 'stablediffusion') => void;
+    activeTab: 'config' | 'allowlist' | 'stablediffusion';
+    setActiveTab: (tab: 'config' | 'allowlist' | 'stablediffusion') => void;
 }
 
 const ConfigForm = ({ activeTab, setActiveTab }: ConfigFormProps) => {
@@ -32,6 +32,8 @@ const ConfigForm = ({ activeTab, setActiveTab }: ConfigFormProps) => {
     const [operationStatus, setOperationStatus] = useState<{message: string, success: boolean} | null>(null);
     const [sdOperationStatus, setSdOperationStatus] = useState<{message: string, success: boolean} | null>(null);
     const [sdWebUIAvailable, setSdWebUIAvailable] = useState(false);
+    const [showLogs, setShowLogs] = useState(false);
+    const [showSdLogs, setShowSdLogs] = useState(false);
 
     // Theme-based styles
     const getContainerStyle = () => {
@@ -137,7 +139,7 @@ const ConfigForm = ({ activeTab, setActiveTab }: ConfigFormProps) => {
         }
     }, [activeTab, sdStatus]);
 
-    // Auto-refresh logs when switching to the Logs tab
+    // Auto-refresh LLM logs when showing logs in config tab
     useEffect(() => {
         const fetchLogs = async () => {
             try {
@@ -150,12 +152,12 @@ const ConfigForm = ({ activeTab, setActiveTab }: ConfigFormProps) => {
             }
         };
 
-        if (activeTab === 'logs') {
+        if (activeTab === 'config' && showLogs) {
             const logInterval = setInterval(fetchLogs, 2000);
             fetchLogs();
             return () => clearInterval(logInterval);
         }
-    }, [activeTab]);
+    }, [activeTab, showLogs]);
     
     // Fetch SD logs when needed
     useEffect(() => {
@@ -169,12 +171,12 @@ const ConfigForm = ({ activeTab, setActiveTab }: ConfigFormProps) => {
             }
         };
 
-        if (activeTab === 'stablediffusion') {
+        if (activeTab === 'stablediffusion' && (showSdLogs || sdStatus === 'Running')) {
             const logInterval = setInterval(fetchSdLogs, 5000);
             fetchSdLogs();
             return () => clearInterval(logInterval);
         }
-    }, [activeTab]);
+    }, [activeTab, showSdLogs, sdStatus]);
 
     // Fetch available models on mount
     useEffect(() => {
@@ -223,7 +225,7 @@ const ConfigForm = ({ activeTab, setActiveTab }: ConfigFormProps) => {
                     success: false
                 });
             }
-        } catch (error) {
+        } catch {
             setOperationStatus({
                 message: 'Network error occurred. Please try again.',
                 success: false
@@ -257,7 +259,7 @@ const ConfigForm = ({ activeTab, setActiveTab }: ConfigFormProps) => {
                     success: false
                 });
             }
-        } catch (error) {
+        } catch {
             setOperationStatus({
                 message: 'Network error occurred. Please try again.',
                 success: false
@@ -290,7 +292,7 @@ const ConfigForm = ({ activeTab, setActiveTab }: ConfigFormProps) => {
                     success: false
                 });
             }
-        } catch (error) {
+        } catch {
             setSdOperationStatus({
                 message: 'Network error occurred. Please try again.',
                 success: false
@@ -324,7 +326,7 @@ const ConfigForm = ({ activeTab, setActiveTab }: ConfigFormProps) => {
                     success: false
                 });
             }
-        } catch (error) {
+        } catch {
             setSdOperationStatus({
                 message: 'Network error occurred. Please try again.',
                 success: false
@@ -392,14 +394,6 @@ const ConfigForm = ({ activeTab, setActiveTab }: ConfigFormProps) => {
                     style={getTabButtonStyle(activeTab === 'allowlist')}
                 >
                     Allowlist
-                </button>
-                
-                <button
-                    className={`px-6 py-2 rounded-md text-center`}
-                    onClick={() => setActiveTab('logs')}
-                    style={getTabButtonStyle(activeTab === 'logs')}
-                >
-                    Logs
                 </button>
                 
                 {/* Refresh Button */}
@@ -637,26 +631,45 @@ const ConfigForm = ({ activeTab, setActiveTab }: ConfigFormProps) => {
                                     </div>
                                 )}
                             </div>
+                            
+                            {/* Toggle logs button */}
+                            {serverStatus === 'Running' && (
+                                <div className="mt-6">
+                                    <button
+                                        className="px-4 py-2 rounded-md"
+                                        onClick={() => setShowLogs(!showLogs)}
+                                        style={{ 
+                                            backgroundColor: theme === 'cyberpunk' ? '#2d2d4d' : '#f3f4f6',
+                                            color: 'var(--text-color)', 
+                                            border: theme === 'corporate' ? '1px solid #000' : 'none',
+                                            boxShadow: theme === 'cyberpunk' ? 'var(--neon-glow)' : 'none',
+                                            width: '180px'
+                                        }}
+                                    >
+                                        {showLogs ? 'Hide Logs' : 'Show Logs'}
+                                    </button>
+                                    
+                                    {showLogs && (
+                                        <div
+                                            className="border p-4 mt-4 rounded whitespace-pre overflow-y-scroll max-h-[500px]"
+                                            style={{ 
+                                                maxHeight: '500px', 
+                                                overflowY: 'scroll',
+                                                backgroundColor: theme === 'cyberpunk' ? '#1a1a2e' : '#f8f9fa',
+                                                color: theme === 'cyberpunk' ? 'white' : '#333',
+                                                border: theme === 'cyberpunk' ? '1px solid var(--accent-color)' : '1px solid #e5e7eb',
+                                                boxShadow: theme === 'cyberpunk' ? 'var(--neon-glow)' : 'none',
+                                                fontSize: '0.8rem'
+                                            }}
+                                        >
+                                            {logs || 'No logs available.'}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
                         </div>
                     </div>
                 </>
-            )}
-
-            {/* Logs Tab */}
-            {activeTab === 'logs' && (
-                <div
-                    className="border p-4 mt-4 rounded whitespace-pre overflow-y-scroll max-h-[500px]"
-                    style={{ 
-                        maxHeight: '500px', 
-                        overflowY: 'scroll',
-                        backgroundColor: theme === 'cyberpunk' ? '#1a1a2e' : '#f8f9fa',
-                        color: theme === 'cyberpunk' ? 'white' : '#333',
-                        border: theme === 'cyberpunk' ? '1px solid var(--accent-color)' : '1px solid #e5e7eb',
-                        boxShadow: theme === 'cyberpunk' ? 'var(--neon-glow)' : 'none',
-                    }}
-                >
-                    {logs || 'No logs available.'}
-                </div>
             )}
 
             {/* StableDiffusion Tab */}
@@ -833,24 +846,42 @@ const ConfigForm = ({ activeTab, setActiveTab }: ConfigFormProps) => {
                         </div>
                     )}
                     
-                    {/* SD logs */}
+                    {/* SD logs toggle button */}
                     {sdStatus === 'Running' && (
-                        <div className="mt-6 w-full">
-                            <h3 className="text-xl font-bold text-center mb-3">Stable Diffusion Logs</h3>
-                            <div
-                                className="border p-4 rounded whitespace-pre overflow-y-scroll"
+                        <div className="mt-6 w-full text-center">
+                            <button
+                                className="px-4 py-2 rounded-md mb-4"
+                                onClick={() => setShowSdLogs(!showSdLogs)}
                                 style={{ 
-                                    maxHeight: '200px', 
-                                    overflowY: 'scroll',
-                                    backgroundColor: theme === 'cyberpunk' ? '#1a1a2e' : '#f8f9fa',
-                                    color: theme === 'cyberpunk' ? 'white' : '#333',
-                                    border: theme === 'cyberpunk' ? '1px solid var(--accent-color)' : '1px solid #e5e7eb',
+                                    backgroundColor: theme === 'cyberpunk' ? '#2d2d4d' : '#f3f4f6',
+                                    color: 'var(--text-color)', 
+                                    border: theme === 'corporate' ? '1px solid #000' : 'none',
                                     boxShadow: theme === 'cyberpunk' ? 'var(--neon-glow)' : 'none',
-                                    fontSize: '0.8rem'
+                                    width: '180px'
                                 }}
                             >
-                                {sdLogs || 'No logs available yet.'}
-                            </div>
+                                {showSdLogs ? 'Hide Logs' : 'Show Logs'}
+                            </button>
+                            
+                            {showSdLogs && (
+                                <div className="w-full">
+                                    <h3 className="text-xl font-bold text-center mb-3">Stable Diffusion Logs</h3>
+                                    <div
+                                        className="border p-4 rounded whitespace-pre overflow-y-scroll"
+                                        style={{ 
+                                            maxHeight: '300px', 
+                                            overflowY: 'scroll',
+                                            backgroundColor: theme === 'cyberpunk' ? '#1a1a2e' : '#f8f9fa',
+                                            color: theme === 'cyberpunk' ? 'white' : '#333',
+                                            border: theme === 'cyberpunk' ? '1px solid var(--accent-color)' : '1px solid #e5e7eb',
+                                            boxShadow: theme === 'cyberpunk' ? 'var(--neon-glow)' : 'none',
+                                            fontSize: '0.8rem'
+                                        }}
+                                    >
+                                        {sdLogs || 'No logs available yet.'}
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     )}
                 </div>
