@@ -361,7 +361,7 @@ const ConfigForm = ({ activeTab, setActiveTab }: ConfigFormProps) => {
         <div className="p-6 space-y-6 rounded-lg shadow-lg" style={{ 
             width: '100%', 
             maxWidth: '800px', 
-            margin: '2rem auto',
+            margin: '1.5rem auto',
             ...getContainerStyle()
         }}>
             <h1 className={`text-3xl font-bold text-center mb-4 ${theme === 'cyberpunk' ? 'glow-text' : ''}`}>
@@ -442,7 +442,7 @@ const ConfigForm = ({ activeTab, setActiveTab }: ConfigFormProps) => {
                     <h2 className="text-2xl font-bold text-center">Server Configuration</h2>
 
                     {/* Model row with fixed width */}
-                    <div style={{ width: '500px', margin: '1.5rem auto', marginBottom: '2rem' }}>
+                    <div style={{ width: '550px', margin: '1.5rem auto', marginBottom: '2.5rem' }}>
                         <div style={{ display: "flex", justifyContent: "space-between" }}>
                             <div style={{ marginRight: '15px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                                 <label className="block mb-1">Model:</label>
@@ -473,8 +473,8 @@ const ConfigForm = ({ activeTab, setActiveTab }: ConfigFormProps) => {
                     </div>
 
                     {/* Remaining fields with fixed width and centered */}
-                    <div style={{ width: '500px', margin: '0 auto', marginBottom: '2rem', textAlign: 'center' }}>
-                        <div className="grid grid-cols-2 gap-6 mb-6">
+                    <div style={{ width: '100%', margin: '0 auto', marginBottom: '2.5rem', textAlign: 'center' }}>
+                        <div className="grid grid-cols-2 gap-8 mb-8">
                             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                                 <label className="block mb-1">Host:</label>
                                 <input
@@ -516,7 +516,7 @@ const ConfigForm = ({ activeTab, setActiveTab }: ConfigFormProps) => {
                             </div>
                         </div>
 
-                        <div className="mt-4" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                        <div className="mt-6" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                             <label className="block mb-1">Custom Parameters (Optional):</label>
                             <input
                                 type="text"
@@ -526,7 +526,7 @@ const ConfigForm = ({ activeTab, setActiveTab }: ConfigFormProps) => {
                             />
                         </div>
 
-                        <div className="flex justify-center items-center mt-12 mb-8 flex-col gap-8" style={{width: '100%', margin: '0 auto', textAlign: 'center'}}>
+                        <div className="flex justify-center items-center mt-14 mb-10 flex-col gap-10" style={{width: '100%', margin: '0 auto', textAlign: 'center'}}>
                             {/* Visual Server Status Indicator */}
                             <div className="flex flex-col items-center bg-gray-800 p-3 rounded-lg" style={{
                                 width: '140px',
@@ -631,9 +631,11 @@ const ConfigForm = ({ activeTab, setActiveTab }: ConfigFormProps) => {
                                     </div>
                                 )}
                             </div>
-                            
-                            {/* Toggle logs button - always visible */}
-                            <div className="mt-6">
+                        </div>
+                        
+                        {/* Toggle logs button - always visible */}
+                        <div className="mt-6 w-full">
+                            <div className="text-center">
                                 <button
                                     className="px-4 py-2 rounded-md"
                                     onClick={() => setShowLogs(!showLogs)}
@@ -647,12 +649,15 @@ const ConfigForm = ({ activeTab, setActiveTab }: ConfigFormProps) => {
                                 >
                                     {showLogs ? 'Hide Logs' : 'Show Logs'}
                                 </button>
-                                
-                                {showLogs && (
+                            </div>
+                            
+                            {showLogs && (
+                                <div className="w-full mt-4">
                                     <div
-                                        className="border p-4 mt-4 rounded whitespace-pre overflow-y-scroll max-h-[500px]"
+                                        className="border p-4 rounded whitespace-pre overflow-y-scroll"
                                         style={{ 
-                                            maxHeight: '500px', 
+                                            width: '100%',
+                                            height: '400px', 
                                             overflowY: 'scroll',
                                             backgroundColor: theme === 'cyberpunk' ? '#1a1a2e' : '#f8f9fa',
                                             color: theme === 'cyberpunk' ? 'white' : '#333',
@@ -663,8 +668,8 @@ const ConfigForm = ({ activeTab, setActiveTab }: ConfigFormProps) => {
                                     >
                                         {logs || 'No logs available.'}
                                     </div>
-                                )}
-                            </div>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </>
@@ -866,7 +871,8 @@ const ConfigForm = ({ activeTab, setActiveTab }: ConfigFormProps) => {
                                 <div
                                     className="border p-4 rounded whitespace-pre overflow-y-scroll"
                                     style={{ 
-                                        maxHeight: '300px', 
+                                        width: '100%',
+                                        height: '400px', 
                                         overflowY: 'scroll',
                                         backgroundColor: theme === 'cyberpunk' ? '#1a1a2e' : '#f8f9fa',
                                         color: theme === 'cyberpunk' ? 'white' : '#333',

@@ -8,7 +8,7 @@ WORKDIR /app
 # Install system dependencies and Node.js
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libstdc++6 libgomp1 openssh-server sudo curl unzip wget vim nvtop \
-    python3 python3-pip python3-venv python3-dev git ffmpeg libsm6 libxext6 libgl1 && \
+    python3 python3-pip python3-venv python3-dev git ffmpeg libsm6 libxext6 libgl1 ufw && \
     curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && \
     apt-get install -y nodejs && \
     rm -rf /var/lib/apt/lists/*

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import ConfigForm from './components/ConfigForm';
 import ModelDownload from './components/ModelDownload';
 import ServerStats from './components/ServerStarts';
-import AllowlistForm from './components/AllowlistForm';
+import IPAccessControlPanel from './components/AllowlistForm';
 import { ThemeProvider } from './context/ThemeContext';
 import { useTheme } from './context/useTheme';
 
@@ -38,7 +38,7 @@ function AppContent({
             <div className="w-[900px]"> {/* Fixed width container instead of max-width */}
                 <ConfigForm activeTab={activeTab} setActiveTab={setActiveTab} />
                 {activeTab === 'config' && <div className="mt-8"><ModelDownload /></div>}
-                {activeTab === 'allowlist' && <div className="mt-8"><AllowlistForm /></div>}
+                {activeTab === 'allowlist' && <div className="mt-8"><IPAccessControlPanel /></div>}
                 <div className="mt-12 mb-8"><ServerStats /></div>
             </div>
         </div>

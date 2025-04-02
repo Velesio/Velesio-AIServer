@@ -1,181 +1,486 @@
-import { useState, useEffect } from 'react';
-import { useTheme } from '../context/useTheme';
+import React, { useState, useEffect } from 'react';
 
-const AllowlistForm = () => {
+const useTheme = () => ({ theme: 'cyberpunk' });
+
+const Spinner = () => (
+    <div className="inline-block animate-spin rounded-full border-4 border-solid border-current border-r-transparent h-5 w-5 ml-2"
+         style={{ borderColor: 'currentColor transparent currentColor transparent' }}></div>
+);
+
+const IPAccessControlPanel = () => {
     const { theme } = useTheme();
-    const [allowlist, setAllowlist] = useState('0.0.0.0');
-    const [newAllowlist, setNewAllowlist] = useState('');
-    const [isUpdating, setIsUpdating] = useState(false);
-    const [updateMessage, setUpdateMessage] = useState('');
+    const [ipList, setIpList] = useState<string[]>([]);
+    const [blockedIPs, setBlockedIPs] = useState<string[]>([]);
+    const [ipToAdd, setIpToAdd] = useState('');
+    const [isAddingAllow, setIsAddingAllow] = useState(false);
+    const [isAddingBlock, setIsAddingBlock] = useState(false);
+    const [actionType, setActionType] = useState<'allow' | 'block'>('allow');
+    const [statusMessage, setStatusMessage] = useState('');
+    const [errorMessage, setErrorMessage] = useState('');
 
-    // Theme-based styles
-    const getContainerStyle = () => {
+    const getContainerStyle = (): React.CSSProperties => {
         return theme === 'cyberpunk'
             ? {
-                backgroundColor: 'var(--primary-bg)',
-                boxShadow: 'var(--neon-glow)',
-                border: '1px solid var(--accent-color)'
+                backgroundColor: 'var(--primary-bg, #0a0a23)',
+                color: 'var(--text-color, #ffffff)',
+                boxShadow: 'var(--neon-glow, 0 0 15px rgba(0, 255, 255, 0.5))',
+                border: '1px solid var(--accent-color, #0ff)',
               }
             : {
-                backgroundColor: 'var(--primary-bg)',
+                backgroundColor: 'var(--primary-bg, #ffffff)',
+                color: 'var(--text-color, #1f2937)',
                 boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1)',
-                border: '1px solid #e5e7eb'
+                border: '1px solid #e5e7eb',
               };
     };
 
-    const getInputStyle = () => {
+    const getInputStyle = (): React.CSSProperties => {
         return {
-            width: "100%",
-            padding: "0.5rem",
-            borderRadius: "0.25rem",
-            backgroundColor: "var(--input-bg)",
-            color: "var(--text-color)",
-            border: theme === 'cyberpunk' ? '1px solid #666' : '1px solid #d1d5db'
+            padding: "0.75rem",
+            borderRadius: "0.375rem",
+            backgroundColor: "var(--input-bg, #f3f4f6)",
+            color: "var(--text-color, #1f2937)",
+            border: theme === 'cyberpunk' ? '1px solid var(--accent-color, #0ff)' : '1px solid #d1d5db',
+            outline: 'none',
         };
     };
 
-    const getButtonStyle = (isPrimary: boolean = true) => {
-        return { 
-            backgroundColor: isPrimary ? 'var(--button-primary)' : 'var(--button-secondary)',
+    const getButtonStyle = (isPrimary: boolean = true, isDanger: boolean = false): React.CSSProperties => {
+        let baseStyle: React.CSSProperties = {
             color: '#ffffff',
-            boxShadow: theme === 'cyberpunk' ? 'var(--neon-glow)' : 'none',
-            border: theme === 'corporate' ? '1px solid #000' : 'none',
             transition: 'all 0.2s ease-in-out',
+            border: 'none',
+            cursor: 'pointer',
+        };
+
+        if (theme === 'cyberpunk') {
+            baseStyle.border = `1px solid ${isDanger ? 'var(--button-danger, #f00)' : 'var(--accent-color, #0ff)'}`;
+            baseStyle.boxShadow = isDanger
+                ? '0 0 5px var(--button-danger, #f00), 0 0 10px rgba(229, 62, 62, 0.5)'
+                : 'var(--neon-glow, 0 0 10px rgba(0, 255, 255, 0.4))';
+        } else if (theme === 'corporate') {
+            baseStyle.border = '1px solid #000';
+        }
+
+        if (isDanger) {
+            return {
+                ...baseStyle,
+                backgroundColor: 'var(--button-danger, #e53e3e)',
+            };
+        }
+
+        return {
+            ...baseStyle,
+            backgroundColor: isPrimary ? 'var(--button-primary, #4f46e5)' : 'var(--button-secondary, #6b7280)',
         };
     };
 
-    // Helper function to get the API base URL
-    const getApiBaseUrl = () => {
-        // In production, use relative URLs that will work in any environment
-        return '/api';
-    };
+    const getApiBaseUrl = () => '/api';
 
-    // Fetch current allowlist on component mount
-    useEffect(() => {
-        const fetchAllowlist = async () => {
-            try {
-                const response = await fetch(`${getApiBaseUrl()}/allowlist/`);
-                if (response.ok) {
-                    const data = await response.json();
-                    setAllowlist(data.allowlist);
-                    setNewAllowlist(data.allowlist);
-                }
-            } catch (error) {
-                console.error('Failed to fetch allowlist', error);
+    const fetchIPLists = async () => {
+        setStatusMessage('');
+        setErrorMessage('');
+        try {
+            const response = await fetch(`${getApiBaseUrl()}/allowlist/`);
+
+            if (!response.ok) {
+                let errorDetail = `Server responded with status: ${response.status}`;
+                try {
+                    const errorData = await response.json();
+                    errorDetail = errorData.detail || errorDetail;
+                } catch (e) { /* Ignore */ }
+                throw new Error(`Failed to fetch IP lists: ${errorDetail}`);
             }
-        };
-        
-        fetchAllowlist();
-    }, []);
 
-    const handleUpdateAllowlist = async () => {
-        // Validation: Check if it's a comma-separated list of valid IPs
-        const ipPattern = /^((\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})(,\s*\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})*)$/;
-        if (!ipPattern.test(newAllowlist)) {
-            setUpdateMessage('Invalid format. Please use comma-separated IP addresses (e.g., 192.168.1.1,10.0.0.1)');
+            const data = await response.json();
+
+            setIpList(
+                data.allowlist && data.allowlist !== "0.0.0.0"
+                ? data.allowlist.split(",").map((ip: string) => ip.trim()).filter(Boolean)
+                : []
+            );
+
+            setBlockedIPs(
+                data.blocklist && data.blocklist !== ""
+                ? data.blocklist.split(",").map((ip: string) => ip.trim()).filter(Boolean)
+                : []
+            );
+
+        } catch (error) {
+            console.error('Failed to fetch IP lists:', error);
+            setErrorMessage(error instanceof Error ? error.message : 'An unexpected error occurred while fetching IP settings.');
+        }
+    };
+
+    const addIP = async () => {
+        setStatusMessage('');
+        setErrorMessage('');
+
+        if (!ipToAdd) {
+            setErrorMessage('IP address cannot be empty.');
             return;
         }
 
-        setIsUpdating(true);
-        setUpdateMessage('');
+        const ipPattern = /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+        if (!ipPattern.test(ipToAdd)) {
+            setErrorMessage('Invalid IP format. Please use IPv4 format (e.g., 192.168.1.1).');
+            return;
+        }
+
+        if (actionType === 'allow' && ipList.includes(ipToAdd)) {
+            setErrorMessage(`IP ${ipToAdd} is already in the allowed list.`);
+            return;
+        }
+        if (actionType === 'block' && blockedIPs.includes(ipToAdd)) {
+            setErrorMessage(`IP ${ipToAdd} is already in the blocked list.`);
+            return;
+        }
+
+        const isAdding = actionType === 'allow';
+        if (isAdding) setIsAddingAllow(true);
+        else setIsAddingBlock(true);
 
         try {
-            const response = await fetch(`${getApiBaseUrl()}/update-allowlist/`, {
+            const endpoint = isAdding ? '/update-allowlist/' : '/update-blocklist/';
+            const payloadKey = isAdding ? 'allowlist' : 'blocklist';
+            const currentList = isAdding ? ipList : blockedIPs;
+            const successMessage = `IP ${ipToAdd} added to ${actionType} list!`;
+
+            const newList = [...currentList, ipToAdd].filter(Boolean).join(',');
+            const listToSubmit = (isAdding && newList.length === 0) ? "0.0.0.0" : newList;
+
+            const response = await fetch(`${getApiBaseUrl()}${endpoint}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ allowlist: newAllowlist })
+                body: JSON.stringify({ [payloadKey]: listToSubmit })
             });
 
             if (response.ok) {
-                setAllowlist(newAllowlist);
-                setUpdateMessage('Allowlist updated successfully!');
+                setStatusMessage(successMessage);
+                setIpToAdd('');
+                await fetchIPLists();
             } else {
-                const errorData = await response.json();
-                setUpdateMessage(`Failed to update allowlist: ${errorData.detail}`);
+                let errorDetail = `Server responded with status: ${response.status}`;
+                try {
+                    const errorData = await response.json();
+                    errorDetail = errorData.detail || errorDetail;
+                } catch (e) { /* Ignore */ }
+                throw new Error(`Failed to update ${actionType} list: ${errorDetail}`);
             }
+
         } catch (error) {
-            setUpdateMessage('Failed to update allowlist. Please try again.');
-            console.error('Error updating allowlist:', error);
+            console.error(`Error updating ${actionType} list:`, error);
+            setErrorMessage(error instanceof Error ? error.message : `An unexpected error occurred while updating the ${actionType} list.`);
         } finally {
-            setIsUpdating(false);
+            if (isAdding) setIsAddingAllow(false);
+            else setIsAddingBlock(false);
         }
     };
 
+    const removeIP = async (ipToRemove: string, listType: 'allow' | 'block') => {
+         setStatusMessage('');
+         setErrorMessage('');
+
+         const isAllowList = listType === 'allow';
+         const currentList = isAllowList ? ipList : blockedIPs;
+         const endpoint = isAllowList ? '/update-allowlist/' : '/update-blocklist/';
+         const payloadKey = isAllowList ? 'allowlist' : 'blocklist';
+
+         const newList = currentList.filter(ip => ip !== ipToRemove).join(',');
+
+         try {
+             const listToSubmit = (isAllowList && newList.length === 0) ? "0.0.0.0" : newList;
+
+             const response = await fetch(`${getApiBaseUrl()}${endpoint}`, {
+                 method: 'POST',
+                 headers: { 'Content-Type': 'application/json' },
+                 body: JSON.stringify({ [payloadKey]: listToSubmit })
+             });
+
+             if (response.ok) {
+                 setStatusMessage(`IP ${ipToRemove} removed from ${listType} list!`);
+                 await fetchIPLists();
+             } else {
+                 let errorDetail = `Server responded with status: ${response.status}`;
+                 try {
+                     const errorData = await response.json();
+                     errorDetail = errorData.detail || errorDetail;
+                 } catch (e) { /* Ignore */ }
+                 throw new Error(`Failed to update ${listType} list: ${errorDetail}`);
+             }
+         } catch (error) {
+             console.error(`Error updating ${listType} list:`, error);
+             setErrorMessage(error instanceof Error ? error.message : `An unexpected error occurred while updating the ${listType} list.`);
+         }
+     };
+
+    useEffect(() => {
+        fetchIPLists();
+    }, []);
+
     return (
-        <div className="p-6 space-y-6 rounded-lg" style={{ 
-            width: '100%', 
+        <div className="p-6 space-y-8 rounded-lg" style={{
+            width: '100%',
             maxWidth: '800px',
-            margin: '0 auto',
+            margin: '2rem auto',
             ...getContainerStyle()
         }}>
-            <h2 className="text-2xl font-bold text-center">IP Allowlist Configuration</h2>
-            
-            <div className="max-w-[600px] mx-auto text-center">
-                <div className="mb-10" style={{display: 'flex', flexDirection: 'column', alignItems: 'center'}}>
-                    <p className="mb-4">Current Allowlist:</p>
-                    <div className="p-4 bg-gray-100 dark:bg-gray-800 rounded-md break-words mx-auto" style={{
-                        backgroundColor: theme === 'cyberpunk' ? '#1a1a2e' : '#f8f9fa',
-                        border: theme === 'cyberpunk' ? '1px solid var(--accent-color)' : '1px solid #e5e7eb',
-                        textAlign: 'center',
-                        width: '300px'
+            <h2 className="text-3xl font-bold text-center mb-8" style={{ color: 'var(--text-color)' }}>IP Access Settings</h2>
+
+            {(statusMessage || errorMessage) && (
+                <div className={`p-4 mb-4 rounded-md text-sm font-medium ${statusMessage ? 'bg-green-100 text-green-800 border border-green-300' : 'bg-red-100 text-red-800 border border-red-300'}`}
+                     style={{
+                         backgroundColor: statusMessage
+                             ? (theme === 'cyberpunk' ? 'rgba(16, 185, 129, 0.3)' : undefined)
+                             : (theme === 'cyberpunk' ? 'rgba(239, 68, 68, 0.3)' : undefined),
+                         color: statusMessage
+                             ? (theme === 'cyberpunk' ? '#10b981' : undefined)
+                             : (theme === 'cyberpunk' ? '#ef4444' : undefined),
+                         border: theme === 'cyberpunk'
+                             ? `1px solid ${statusMessage ? 'rgba(16, 185, 129, 0.7)' : 'rgba(239, 68, 68, 0.7)'}`
+                             : undefined,
+                     }}
+                     role="alert"
+                >
+                    {statusMessage || errorMessage}
+                </div>
+            )}
+
+            <div className="mb-8">
+                 <h3 className="text-xl font-semibold mb-4" style={{ color: 'var(--text-color)' }}>Current Status</h3>
+                 <div className="p-5 border rounded-md flex items-center gap-4 max-w-full" style={{
+                    backgroundColor: theme === 'cyberpunk' ? 'rgba(26, 26, 46, 0.8)' : '#f8f9fa',
+                    border: theme === 'cyberpunk' ? '1px solid var(--accent-color, #0ff)' : '1px solid #e5e7eb',
+                    color: 'var(--text-color)',
+                 }}>
+                    <div className="w-10 h-10 rounded-full flex-shrink-0 relative flex items-center justify-center" style={{
+                        backgroundColor: ipList.length === 0 ? '#4ade80' : '#ef4444',
+                        boxShadow: theme === 'cyberpunk'
+                            ? `0 0 12px ${ipList.length === 0 ? 'rgba(74, 222, 128, 0.7)' : 'rgba(239, 68, 68, 0.7)'}`
+                            : 'none',
                     }}>
-                        {allowlist || '0.0.0.0'}
+                        {/* SVG Icon Removed */}
+                        {ipList.length === 0 && theme === 'cyberpunk' && (
+                            <div className="absolute inset-0 rounded-full animate-ping" style={{
+                                backgroundColor: 'rgba(74, 222, 128, 0.5)',
+                                animationDuration: '1.5s'
+                            }}></div>
+                        )}
                     </div>
-                </div>
-                
-                <div className="mb-10" style={{display: 'flex', flexDirection: 'column', alignItems: 'center'}}>
-                    <label className="block mb-2">New Allowlist (comma-separated IPs):</label>
-                    <input
-                        type="text"
-                        value={newAllowlist}
-                        onChange={(e) => setNewAllowlist(e.target.value)}
-                        placeholder="e.g., 0.0.0.0,192.168.1.1,10.0.0.1"
-                        style={{...getInputStyle(), textAlign: 'center', width: '300px'}}
-                        className="mb-2"
-                    />
-                </div>
-                
-                {updateMessage && (
-                    <div className={`p-3 mb-4 rounded-md ${updateMessage.includes('success') ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}
-                         style={{
-                             backgroundColor: updateMessage.includes('success') ? 
-                                 (theme === 'cyberpunk' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(16, 185, 129, 0.1)') : 
-                                 (theme === 'cyberpunk' ? 'rgba(239, 68, 68, 0.2)' : 'rgba(239, 68, 68, 0.1)'),
-                             color: updateMessage.includes('success') ? 
-                                 (theme === 'cyberpunk' ? '#10b981' : '#047857') : 
-                                 (theme === 'cyberpunk' ? '#ef4444' : '#b91c1c'),
-                             border: theme === 'cyberpunk' ? 
-                                 `1px solid ${updateMessage.includes('success') ? '#10b981' : '#ef4444'}` : 
-                                 'none',
-                         }}
-                    >
-                        {updateMessage}
+                    <div>
+                        <p className="font-semibold text-lg">Access Mode:</p>
+                        <p className="text-xl font-bold" style={{
+                            color: ipList.length === 0 ? '#4ade80' : '#ef4444',
+                            textShadow: theme === 'cyberpunk'
+                                ? `0 0 5px ${ipList.length === 0 ? 'rgba(74, 222, 128, 0.6)' : 'rgba(239, 68, 68, 0.6)'}`
+                                : 'none'
+                        }}>
+                            {ipList.length === 0 ? 'OPEN ACCESS' : 'RESTRICTED ACCESS'}
+                        </p>
+                        <p className="text-xs mt-1" style={{ color: 'var(--text-secondary, #6b7280)' }}>
+                            {ipList.length === 0 ? 'All IPs allowed.' : `Access restricted to ${ipList.length} IP(s).`}
+                            {blockedIPs.length > 0 && ` ${blockedIPs.length} IP(s) explicitly blocked.`}
+                        </p>
                     </div>
-                )}
-                
-                <div style={{display: 'flex', justifyContent: 'center', width: '100%', margin: '2rem auto'}}>
-                    <button
-                        className="px-6 py-2 rounded-md mx-auto"
-                        onClick={handleUpdateAllowlist}
-                        disabled={isUpdating || allowlist === newAllowlist}
-                        style={{...getButtonStyle(), width: '180px'}}
-                    >
-                        {isUpdating ? 'Updating...' : 'Update Allowlist'}
-                    </button>
+                 </div>
+            </div>
+
+            <div className="mb-8">
+                <h3 className="text-xl font-semibold mb-4" style={{ color: 'var(--text-color)' }}>Manage IP Access</h3>
+                <form onSubmit={(e) => { e.preventDefault(); addIP(); }} className="space-y-4">
+                     <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                        <div className="flex-grow">
+                            <label htmlFor="ipToAdd" className="sr-only">IP Address</label>
+                            <input
+                                id="ipToAdd"
+                                type="text"
+                                value={ipToAdd}
+                                onChange={(e) => setIpToAdd(e.target.value)}
+                                placeholder="Enter IP Address (e.g., 192.168.1.1)"
+                                style={getInputStyle()}
+                                className="w-full"
+                                aria-label="IP Address to add or block"
+                                aria-describedby="ip-error-message"
+                                aria-invalid={!!errorMessage && (errorMessage.includes('IP format') || errorMessage.includes('empty'))}
+                            />
+                        </div>
+                        <div className="flex-shrink-0">
+                            <label htmlFor="actionType" className="sr-only">Action Type</label>
+                            <select
+                                id="actionType"
+                                value={actionType}
+                                onChange={(e) => setActionType(e.target.value as 'allow' | 'block')}
+                                style={{ ...getInputStyle(), minWidth: '110px' }}
+                                className="h-full w-full sm:w-auto"
+                                aria-label="Select action: Allow or Block IP"
+                            >
+                                <option value="allow">Allow</option>
+                                <option value="block">Block</option>
+                            </select>
+                        </div>
+                        <div className="flex-shrink-0">
+                            <button
+                                type="submit"
+                                className="px-6 py-2 rounded-md w-full sm:w-auto font-semibold"
+                                disabled={isAddingAllow || isAddingBlock || !ipToAdd}
+                                style={{
+                                    ...getButtonStyle(true, actionType === 'block'),
+                                    display: 'inline-flex',
+                                    justifyContent: 'center',
+                                    alignItems: 'center',
+                                    minWidth: '130px',
+                                    height: '100%',
+                                    opacity: (isAddingAllow || isAddingBlock || !ipToAdd) ? 0.6 : 1,
+                                    cursor: (isAddingAllow || isAddingBlock || !ipToAdd) ? 'not-allowed' : 'pointer',
+                                }}
+                            >
+                                {(actionType === 'allow' ? isAddingAllow : isAddingBlock) ? (
+                                    <>
+                                        {actionType === 'allow' ? 'Adding' : 'Blocking'}
+                                        <Spinner />
+                                    </>
+                                ) : (
+                                    actionType === 'allow' ? 'Allow IP' : 'Block IP'
+                                )}
+                            </button>
+                        </div>
+                    </div>
+                     <div id="ip-error-message" className="h-4">
+                         {errorMessage && (errorMessage.includes('IP format') || errorMessage.includes('empty') || errorMessage.includes('already in the')) && (
+                             <p className="text-red-600 text-xs" style={{ color: theme === 'cyberpunk' ? '#ff4d4d' : '#dc2626' }}>
+                                 {errorMessage}
+                             </p>
+                         )}
+                     </div>
+                </form>
+            </div>
+
+            <div className="grid gap-8 grid-cols-1 md:grid-cols-2">
+                <div className="space-y-4">
+                    <h3 className="text-xl font-semibold" style={{ color: 'var(--text-color)' }}>Allowed IPs</h3>
+                    {ipList.length > 0 ? (
+                        <div className="overflow-hidden rounded-lg shadow" style={{ border: theme === 'cyberpunk' ? '1px solid var(--accent-color, #0ff)' : '1px solid #e5e7eb' }}>
+                            <div className="overflow-x-auto">
+                                <table className="min-w-full divide-y" style={{
+                                    borderCollapse: 'collapse',
+                                    width: '100%',
+                                    color: 'var(--text-color)',
+                                    borderColor: theme === 'cyberpunk' ? 'rgba(0, 255, 255, 0.3)' : '#e5e7eb',
+                                }}>
+                                    <thead style={{ backgroundColor: theme === 'cyberpunk' ? 'rgba(45, 45, 77, 0.8)' : '#f9fafb' }}>
+                                        <tr>
+                                            <th scope="col" className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider" style={{ color: 'var(--text-secondary, #6b7280)' }}>#</th>
+                                            <th scope="col" className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider" style={{ color: 'var(--text-secondary, #6b7280)' }}>IP Address</th>
+                                            <th scope="col" className="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider" style={{ color: 'var(--text-secondary, #6b7280)' }}>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y" style={{
+                                        backgroundColor: theme === 'cyberpunk' ? 'rgba(26, 26, 46, 0.8)' : '#ffffff',
+                                        borderColor: theme === 'cyberpunk' ? 'rgba(0, 255, 255, 0.3)' : '#e5e7eb',
+                                    }}>
+                                        {ipList.map((ip, index) => (
+                                            <tr key={`allow-${ip}-${index}`} className={index % 2 !== 0 ? (theme === 'cyberpunk' ? 'bg-opacity-10 bg-blue-900' : 'bg-gray-50') : ''}>
+                                                <td className="px-4 py-3 whitespace-nowrap text-sm font-medium">{index + 1}</td>
+                                                <td className="px-4 py-3 whitespace-nowrap text-sm font-mono">{ip}</td>
+                                                <td className="px-4 py-3 whitespace-nowrap text-sm text-center">
+                                                    <button
+                                                        onClick={() => removeIP(ip, 'allow')}
+                                                        className="font-medium hover:underline focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 rounded"
+                                                        style={{ color: theme === 'cyberpunk' ? '#ff4d4d' : '#dc2626' }}
+                                                        aria-label={`Remove allowed IP ${ip}`}
+                                                    >
+                                                        Remove
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="text-center p-5 rounded-md text-sm" style={{
+                            backgroundColor: theme === 'cyberpunk' ? 'rgba(26, 26, 46, 0.7)' : '#f8f9fa',
+                            border: theme === 'cyberpunk' ? '1px dashed rgba(0, 255, 255, 0.4)' : '1px dashed #d1d5db',
+                            color: 'var(--text-secondary, #6b7280)'
+                        }}>
+                            <p className="font-medium">Open Access Mode Active</p>
+                            <p className="mt-1">Add IPs to the allow list above to restrict access.</p>
+                        </div>
+                    )}
                 </div>
-                
-                <div className="mt-12 mb-8 p-6 bg-gray-100 dark:bg-gray-800 rounded-md text-center" style={{
-                    backgroundColor: theme === 'cyberpunk' ? 'rgba(26, 26, 46, 0.7)' : '#f8f9fa',
-                    border: theme === 'cyberpunk' ? '1px solid var(--accent-color)' : '1px solid #e5e7eb',
-                }}>
-                    <p className="text-sm mb-4 text-center" style={{maxWidth: '400px', margin: '0 auto 1rem auto'}}>
-                        <li>Use <code>0.0.0.0</code> to allow connections from any IP</li>
-                        <li>For restricted access, enter specific IPs separated by commas</li>
-                        <li>Changes take effect after server restart</li>                    </p>
+
+                <div className="space-y-4">
+                    <h3 className="text-xl font-semibold" style={{ color: 'var(--text-color)' }}>Blocked IPs</h3>
+                    {blockedIPs.length > 0 ? (
+                        <div className="overflow-hidden rounded-lg shadow" style={{ border: theme === 'cyberpunk' ? '1px solid var(--accent-color, #0ff)' : '1px solid #e5e7eb' }}>
+                             <div className="overflow-x-auto">
+                                <table className="min-w-full divide-y" style={{
+                                    borderCollapse: 'collapse',
+                                    width: '100%',
+                                    color: 'var(--text-color)',
+                                    borderColor: theme === 'cyberpunk' ? 'rgba(0, 255, 255, 0.3)' : '#e5e7eb',
+                                }}>
+                                    <thead style={{ backgroundColor: theme === 'cyberpunk' ? 'rgba(45, 45, 77, 0.8)' : '#f9fafb' }}>
+                                        <tr>
+                                             <th scope="col" className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider" style={{ color: 'var(--text-secondary, #6b7280)' }}>#</th>
+                                             <th scope="col" className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider" style={{ color: 'var(--text-secondary, #6b7280)' }}>IP Address</th>
+                                             <th scope="col" className="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider" style={{ color: 'var(--text-secondary, #6b7280)' }}>Actions</th>
+                                        </tr>
+                                    </thead>
+                                     <tbody className="divide-y" style={{
+                                         backgroundColor: theme === 'cyberpunk' ? 'rgba(26, 26, 46, 0.8)' : '#ffffff',
+                                         borderColor: theme === 'cyberpunk' ? 'rgba(0, 255, 255, 0.3)' : '#e5e7eb',
+                                     }}>
+                                        {blockedIPs.map((ip, index) => (
+                                            <tr key={`block-${ip}-${index}`} className={index % 2 !== 0 ? (theme === 'cyberpunk' ? 'bg-opacity-10 bg-blue-900' : 'bg-gray-50') : ''}>
+                                                <td className="px-4 py-3 whitespace-nowrap text-sm font-medium">{index + 1}</td>
+                                                <td className="px-4 py-3 whitespace-nowrap text-sm font-mono">{ip}</td>
+                                                <td className="px-4 py-3 whitespace-nowrap text-sm text-center">
+                                                    <button
+                                                        onClick={() => removeIP(ip, 'block')}
+                                                        className="font-medium hover:underline focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 rounded"
+                                                        style={{ color: theme === 'cyberpunk' ? '#ff4d4d' : '#dc2626' }}
+                                                        aria-label={`Remove blocked IP ${ip}`}
+                                                    >
+                                                        Remove
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="text-center p-5 rounded-md text-sm" style={{
+                            backgroundColor: theme === 'cyberpunk' ? 'rgba(26, 26, 46, 0.7)' : '#f8f9fa',
+                            border: theme === 'cyberpunk' ? '1px dashed rgba(0, 255, 255, 0.4)' : '1px dashed #d1d5db',
+                            color: 'var(--text-secondary, #6b7280)'
+                        }}>
+                            <p className="font-medium">No IPs are currently blocked.</p>
+                            <p className="mt-1">Add IPs to the block list using the form above.</p>
+                        </div>
+                    )}
                 </div>
             </div>
+
+            <div className="mt-8 p-5 rounded-md text-sm" style={{
+                backgroundColor: theme === 'cyberpunk' ? 'rgba(0, 50, 77, 0.6)' : '#f0f9ff',
+                border: theme === 'cyberpunk' ? '1px solid rgba(0, 150, 255, 0.5)' : '1px solid #bae6fd',
+                color: theme === 'cyberpunk' ? 'var(--text-secondary, #a0cae0)' : '#0369a1'
+            }}>
+                <h3 className="text-lg font-semibold mb-3" style={{ color: theme === 'cyberpunk' ? 'var(--text-color, #fff)' : '#0c4a6e' }}>How IP Access Control Works</h3>
+                <ul className="list-disc pl-5 space-y-2">
+                    <li><strong>Open Access (Default):</strong> If the 'Allowed IPs' list is empty, all IP addresses can connect.</li>
+                    <li><strong>Restricted Access:</strong> Adding one or more IPs to the 'Allowed IPs' list restricts access *only* to those IPs. All other IPs are denied.</li>
+                    <li><strong>Blocking Specific IPs:</strong> Adding IPs to the 'Blocked IPs' list explicitly denies access to those specific IPs, regardless of whether the 'Allowed IPs' list is empty or populated. The block list takes priority.</li>
+                    <li><strong>Server Restart:</strong> Depending on your server configuration, changes made here might require a server restart to take effect.</li>
+                </ul>
+            </div>
+
         </div>
     );
 };
 
-export default AllowlistForm;
+export default IPAccessControlPanel;

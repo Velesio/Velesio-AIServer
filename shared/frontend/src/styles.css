@@ -45,10 +45,10 @@ body.corporate {
 }
 
 .app-container {
-    max-width: 600px;
-    margin: 2rem auto;
+    max-width: 800px;
+    margin: 1.5rem auto;
     border-radius: 12px;
-    padding: 24px;
+    padding: 20px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 

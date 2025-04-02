@@ -41,6 +41,8 @@ sd_log_file = "/app/sd_logs.txt"  # Logs for Stable Diffusion
 
 # Initialize allowlist from environment variable or default to "0.0.0.0"
 allowlist = os.environ.get("ALLOWLIST", "0.0.0.0")
+# Initialize blocklist
+blocklist = os.environ.get("BLOCKLIST", "")
 
 # -----------------------
 # Server Endpoints
@@ -359,11 +361,162 @@ async def check_sd_webui():
         return {"available": False}
 
 # -----------------------
-# Allowlist Endpoints
+# UFW Firewall Endpoints
 # -----------------------
+@app.get("/ufw/status/")
+async def get_ufw_status():
+    try:
+        # Check if UFW is installed
+        which_result = subprocess.run(["which", "ufw"], capture_output=True, text=True)
+        if which_result.returncode != 0:
+            return {"error": "UFW is not installed on this system", "status": "not_installed"}
+        
+        # Just use sudo directly
+        status_result = subprocess.run(["sudo", "ufw", "status"], capture_output=True, text=True)
+        status_output = status_result.stdout
+        
+        # Parse the status output
+        is_active = "Status: active" in status_output
+        
+        # Parse rules if active
+        rules = []
+        if is_active:
+            lines = status_output.strip().split('\n')
+            for line in lines[4:]:  # Skip header lines
+                if line.strip():
+                    parts = [p for p in line.split() if p]
+                    if len(parts) >= 3:
+                        rule = {
+                            "action": parts[0],
+                            "to": parts[1],
+                            "port": parts[2] if "(" not in parts[2] else parts[2].split("(")[0],
+                            "from": parts[3] if len(parts) > 3 else "Anywhere"
+                        }
+                        rules.append(rule)
+        
+        return {
+            "status": "active" if is_active else "inactive",
+            "rules": rules,
+            "raw_output": status_output
+        }
+        
+    except Exception as e:
+        return {"error": str(e), "status": "error"}
+
+@app.post("/ufw/enable/")
+async def enable_ufw():
+    try:
+        # Check if UFW is installed
+        which_result = subprocess.run(["which", "ufw"], capture_output=True, text=True)
+        if which_result.returncode != 0:
+            raise HTTPException(status_code=400, detail="UFW is not installed on this system")
+        
+        # Just use sudo directly
+        result = subprocess.run(["sudo", "ufw", "--force", "enable"], capture_output=True, text=True)
+        
+        if result.returncode != 0:
+            raise HTTPException(status_code=500, detail=f"Failed to enable UFW: {result.stderr}")
+        
+        return {"status": "UFW enabled successfully", "output": result.stdout}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error: {str(e)}")
+
+@app.post("/ufw/disable/")
+async def disable_ufw():
+    try:
+        # Check if UFW is installed
+        which_result = subprocess.run(["which", "ufw"], capture_output=True, text=True)
+        if which_result.returncode != 0:
+            raise HTTPException(status_code=400, detail="UFW is not installed on this system")
+        
+        # Just use sudo directly
+        result = subprocess.run(["sudo", "ufw", "--force", "disable"], capture_output=True, text=True)
+        
+        if result.returncode != 0:
+            raise HTTPException(status_code=500, detail=f"Failed to disable UFW: {result.stderr}")
+        
+        return {"status": "UFW disabled successfully", "output": result.stdout}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error: {str(e)}")
+
+@app.post("/ufw/add-rule/")
+async def add_ufw_rule(data: dict):
+    try:
+        # Check if UFW is installed
+        which_result = subprocess.run(["which", "ufw"], capture_output=True, text=True)
+        if which_result.returncode != 0:
+            raise HTTPException(status_code=400, detail="UFW is not installed on this system")
+        
+        # Get rule parameters
+        action = data.get("action", "allow")
+        from_ip = data.get("from_ip")
+        to_port = data.get("to_port")
+        
+        if not from_ip or not to_port:
+            raise HTTPException(status_code=400, detail="IP address and port are required")
+        
+        # Validate IP address format
+        try:
+            octets = from_ip.split(".")
+            if len(octets) != 4:
+                raise ValueError()
+            for octet in octets:
+                value = int(octet)
+                if value < 0 or value > 255:
+                    raise ValueError()
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Invalid IP address format")
+        
+        # Build the UFW command with sudo
+        cmd = ["sudo", "ufw", action, "from", from_ip, "to", "any", "port", to_port]
+        result = subprocess.run(cmd, capture_output=True, text=True)
+        
+        if result.returncode != 0:
+            raise HTTPException(status_code=500, detail=f"Failed to add UFW rule: {result.stderr}")
+        
+        return {"status": "Rule added successfully", "output": result.stdout}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error: {str(e)}")
+
+@app.post("/ufw/delete-rule/")
+async def delete_ufw_rule(data: dict):
+    try:
+        # Check if UFW is installed
+        which_result = subprocess.run(["which", "ufw"], capture_output=True, text=True)
+        if which_result.returncode != 0:
+            raise HTTPException(status_code=400, detail="UFW is not installed on this system")
+        
+        rule_number = data.get("rule_number")
+        
+        if not rule_number:
+            raise HTTPException(status_code=400, detail="Rule number is required")
+        
+        # Use sudo directly
+        result = subprocess.run(["sudo", "ufw", "delete", str(rule_number)], capture_output=True, text=True)
+        
+        if result.returncode != 0:
+            raise HTTPException(status_code=500, detail=f"Failed to delete rule: {result.stderr}")
+        
+        return {"status": "Rule deleted successfully", "output": result.stdout}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error: {str(e)}") 
+
+# IP Access Control endpoints
 @app.get("/allowlist/")
 async def get_allowlist():
-    return {"allowlist": allowlist}
+    return {"allowlist": allowlist, "blocklist": blocklist}
 
 @app.post("/update-allowlist/")
 async def update_allowlist(data: dict):
@@ -378,6 +531,8 @@ async def update_allowlist(data: dict):
         ips = new_allowlist.split(",")
         for ip in ips:
             ip = ip.strip()
+            if ip == "0.0.0.0":  # Special case for "all IPs"
+                continue
             octets = ip.split(".")
             if len(octets) != 4:
                 raise ValueError("Invalid IP format")
@@ -395,3 +550,40 @@ async def update_allowlist(data: dict):
     # Here we just update the in-memory variable
     
     return {"status": "Allowlist updated successfully", "allowlist": allowlist}
+
+@app.post("/update-blocklist/")
+async def update_blocklist(data: dict):
+    global blocklist
+    
+    new_blocklist = data.get("blocklist")
+    if new_blocklist is None:
+        raise HTTPException(status_code=400, detail="New blocklist must be provided")
+    
+    # 0.0.0.0 is a special address that shouldn't be in the blocklist
+    if "0.0.0.0" in new_blocklist:
+        raise HTTPException(status_code=400, detail="Cannot block 0.0.0.0 as it's a special address")
+    
+    # Validate IP format (basic validation)
+    if new_blocklist:  # Skip validation if empty string
+        try:
+            ips = new_blocklist.split(",")
+            for ip in ips:
+                ip = ip.strip()
+                octets = ip.split(".")
+                if len(octets) != 4:
+                    raise ValueError("Invalid IP format")
+                for octet in octets:
+                    value = int(octet)
+                    if value < 0 or value > 255:
+                        raise ValueError("Invalid IP value")
+        except ValueError as e:
+            raise HTTPException(status_code=400, detail=f"Invalid IP format: {str(e)}")
+    
+    # Update the blocklist
+    blocklist = new_blocklist
+    
+    # In a real-world scenario, you'd apply these rules to the actual firewall
+    # Here we just log that the update happened
+    print(f"Updated blocklist: {blocklist}")
+    
+    return {"status": "Blocklist updated successfully", "blocklist": blocklist}

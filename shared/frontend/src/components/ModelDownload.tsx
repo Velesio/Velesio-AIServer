@@ -107,13 +107,13 @@ function ModelDownload() {
             ...getContainerStyle()
         }}>
             <h2 className={`text-2xl font-bold text-center mb-4 ${theme === 'cyberpunk' ? 'glow-text' : ''}`}>
-                Download GGUF Model
+                Download Models (gguf)
             </h2>
 
             <div style={{ width: '500px', margin: '0 auto' }}>
                 {/* Dropdown for Predefined Models */}
                 <div className="mb-8 text-center" style={{display: 'flex', flexDirection: 'column', alignItems: 'center'}}>
-                    <label className="block mb-3">Select a Pre-configured Model:</label>
+                    <label className="block mb-3">Pre-configured Models:</label>
                     <select
                         style={{...getInputStyle(), textAlign: 'center', width: '300px'}}
                         onChange={(e) => {
@@ -144,7 +144,7 @@ function ModelDownload() {
 
                 {/* Manual URL Input (Optional) */}
                 <div className="mb-8 text-center" style={{display: 'flex', flexDirection: 'column', alignItems: 'center'}}>
-                    <label className="block mb-3">Or Enter Custom URL:</label>
+                    <label className="block mb-3">Custom URL:</label>
                     <input
                         value={url}
                         onChange={(e) => setUrl(e.target.value)}
