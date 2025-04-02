@@ -171,12 +171,12 @@ const ConfigForm = ({ activeTab, setActiveTab }: ConfigFormProps) => {
             }
         };
 
-        if (activeTab === 'stablediffusion' && (showSdLogs || sdStatus === 'Running')) {
+        if (activeTab === 'stablediffusion' && showSdLogs) {
             const logInterval = setInterval(fetchSdLogs, 5000);
             fetchSdLogs();
             return () => clearInterval(logInterval);
         }
-    }, [activeTab, showSdLogs, sdStatus]);
+    }, [activeTab, showSdLogs]);
 
     // Fetch available models on mount
     useEffect(() => {
@@ -358,10 +358,10 @@ const ConfigForm = ({ activeTab, setActiveTab }: ConfigFormProps) => {
     );
 
     return (
-        <div className="p-4 space-y-4 rounded-lg shadow-lg" style={{ 
+        <div className="p-6 space-y-6 rounded-lg shadow-lg" style={{ 
             width: '100%', 
             maxWidth: '800px', 
-            margin: '0 auto',
+            margin: '2rem auto',
             ...getContainerStyle()
         }}>
             <h1 className={`text-3xl font-bold text-center mb-4 ${theme === 'cyberpunk' ? 'glow-text' : ''}`}>
@@ -369,7 +369,7 @@ const ConfigForm = ({ activeTab, setActiveTab }: ConfigFormProps) => {
             </h1>
 
             {/* Tabs for switching views with theme toggle */}
-            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '1.5rem', width: '90%', marginBottom: '2rem', marginTop: '1.5rem', margin: '1.5rem auto' }}>
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '2rem', width: '90%', marginBottom: '2.5rem', marginTop: '2rem', margin: '2rem auto', padding: '0.5rem' }}>
                 <button
                     className={`px-6 py-2 rounded-md text-center`}
                     onClick={() => setActiveTab('config')}
@@ -442,7 +442,7 @@ const ConfigForm = ({ activeTab, setActiveTab }: ConfigFormProps) => {
                     <h2 className="text-2xl font-bold text-center">Server Configuration</h2>
 
                     {/* Model row with fixed width */}
-                    <div style={{ width: '500px', margin: '0 auto', marginBottom: '1rem' }}>
+                    <div style={{ width: '500px', margin: '1.5rem auto', marginBottom: '2rem' }}>
                         <div style={{ display: "flex", justifyContent: "space-between" }}>
                             <div style={{ marginRight: '15px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                                 <label className="block mb-1">Model:</label>
@@ -473,8 +473,8 @@ const ConfigForm = ({ activeTab, setActiveTab }: ConfigFormProps) => {
                     </div>
 
                     {/* Remaining fields with fixed width and centered */}
-                    <div style={{ width: '500px', margin: '0 auto', textAlign: 'center' }}>
-                        <div className="grid grid-cols-2 gap-4">
+                    <div style={{ width: '500px', margin: '0 auto', marginBottom: '2rem', textAlign: 'center' }}>
+                        <div className="grid grid-cols-2 gap-6 mb-6">
                             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                                 <label className="block mb-1">Host:</label>
                                 <input
@@ -573,7 +573,7 @@ const ConfigForm = ({ activeTab, setActiveTab }: ConfigFormProps) => {
                             </div>
 
                             <div className="flex flex-col items-center gap-4 w-full">
-                                <div style={{display: 'flex', justifyContent: 'center', width: '100%', margin: '0 auto'}}>
+                                <div style={{display: 'flex', justifyContent: 'center', gap: '2rem', width: '100%', margin: '1rem auto'}}>
                                     <button
                                         className="px-4 py-2 rounded-md"
                                         onClick={handleStartServer}
@@ -632,41 +632,39 @@ const ConfigForm = ({ activeTab, setActiveTab }: ConfigFormProps) => {
                                 )}
                             </div>
                             
-                            {/* Toggle logs button */}
-                            {serverStatus === 'Running' && (
-                                <div className="mt-6">
-                                    <button
-                                        className="px-4 py-2 rounded-md"
-                                        onClick={() => setShowLogs(!showLogs)}
+                            {/* Toggle logs button - always visible */}
+                            <div className="mt-6">
+                                <button
+                                    className="px-4 py-2 rounded-md"
+                                    onClick={() => setShowLogs(!showLogs)}
+                                    style={{ 
+                                        backgroundColor: theme === 'cyberpunk' ? '#2d2d4d' : '#f3f4f6',
+                                        color: 'var(--text-color)', 
+                                        border: theme === 'corporate' ? '1px solid #000' : 'none',
+                                        boxShadow: theme === 'cyberpunk' ? 'var(--neon-glow)' : 'none',
+                                        width: '180px'
+                                    }}
+                                >
+                                    {showLogs ? 'Hide Logs' : 'Show Logs'}
+                                </button>
+                                
+                                {showLogs && (
+                                    <div
+                                        className="border p-4 mt-4 rounded whitespace-pre overflow-y-scroll max-h-[500px]"
                                         style={{ 
-                                            backgroundColor: theme === 'cyberpunk' ? '#2d2d4d' : '#f3f4f6',
-                                            color: 'var(--text-color)', 
-                                            border: theme === 'corporate' ? '1px solid #000' : 'none',
+                                            maxHeight: '500px', 
+                                            overflowY: 'scroll',
+                                            backgroundColor: theme === 'cyberpunk' ? '#1a1a2e' : '#f8f9fa',
+                                            color: theme === 'cyberpunk' ? 'white' : '#333',
+                                            border: theme === 'cyberpunk' ? '1px solid var(--accent-color)' : '1px solid #e5e7eb',
                                             boxShadow: theme === 'cyberpunk' ? 'var(--neon-glow)' : 'none',
-                                            width: '180px'
+                                            fontSize: '0.8rem'
                                         }}
                                     >
-                                        {showLogs ? 'Hide Logs' : 'Show Logs'}
-                                    </button>
-                                    
-                                    {showLogs && (
-                                        <div
-                                            className="border p-4 mt-4 rounded whitespace-pre overflow-y-scroll max-h-[500px]"
-                                            style={{ 
-                                                maxHeight: '500px', 
-                                                overflowY: 'scroll',
-                                                backgroundColor: theme === 'cyberpunk' ? '#1a1a2e' : '#f8f9fa',
-                                                color: theme === 'cyberpunk' ? 'white' : '#333',
-                                                border: theme === 'cyberpunk' ? '1px solid var(--accent-color)' : '1px solid #e5e7eb',
-                                                boxShadow: theme === 'cyberpunk' ? 'var(--neon-glow)' : 'none',
-                                                fontSize: '0.8rem'
-                                            }}
-                                        >
-                                            {logs || 'No logs available.'}
-                                        </div>
-                                    )}
-                                </div>
-                            )}
+                                        {logs || 'No logs available.'}
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </>
@@ -674,7 +672,7 @@ const ConfigForm = ({ activeTab, setActiveTab }: ConfigFormProps) => {
 
             {/* StableDiffusion Tab */}
             {activeTab === 'stablediffusion' && (
-                <div className="mt-4 flex flex-col items-center">
+                <div className="mt-6 mb-4 flex flex-col items-center">
                     <h2 className="text-2xl font-bold text-center mb-6">Stable Diffusion Web UI</h2>
                     
                     {/* Visual Server Status Indicator */}
@@ -723,7 +721,7 @@ const ConfigForm = ({ activeTab, setActiveTab }: ConfigFormProps) => {
                     </div>
                     
                     {/* Control buttons */}
-                    <div className="flex justify-center mb-6 gap-4">
+                    <div className="flex justify-center mb-8 gap-6">
                         <button
                             className="px-4 py-2 rounded-md"
                             onClick={handleStartStableDiffusion}
@@ -846,44 +844,42 @@ const ConfigForm = ({ activeTab, setActiveTab }: ConfigFormProps) => {
                         </div>
                     )}
                     
-                    {/* SD logs toggle button */}
-                    {sdStatus === 'Running' && (
-                        <div className="mt-6 w-full text-center">
-                            <button
-                                className="px-4 py-2 rounded-md mb-4"
-                                onClick={() => setShowSdLogs(!showSdLogs)}
-                                style={{ 
-                                    backgroundColor: theme === 'cyberpunk' ? '#2d2d4d' : '#f3f4f6',
-                                    color: 'var(--text-color)', 
-                                    border: theme === 'corporate' ? '1px solid #000' : 'none',
-                                    boxShadow: theme === 'cyberpunk' ? 'var(--neon-glow)' : 'none',
-                                    width: '180px'
-                                }}
-                            >
-                                {showSdLogs ? 'Hide Logs' : 'Show Logs'}
-                            </button>
-                            
-                            {showSdLogs && (
-                                <div className="w-full">
-                                    <h3 className="text-xl font-bold text-center mb-3">Stable Diffusion Logs</h3>
-                                    <div
-                                        className="border p-4 rounded whitespace-pre overflow-y-scroll"
-                                        style={{ 
-                                            maxHeight: '300px', 
-                                            overflowY: 'scroll',
-                                            backgroundColor: theme === 'cyberpunk' ? '#1a1a2e' : '#f8f9fa',
-                                            color: theme === 'cyberpunk' ? 'white' : '#333',
-                                            border: theme === 'cyberpunk' ? '1px solid var(--accent-color)' : '1px solid #e5e7eb',
-                                            boxShadow: theme === 'cyberpunk' ? 'var(--neon-glow)' : 'none',
-                                            fontSize: '0.8rem'
-                                        }}
-                                    >
-                                        {sdLogs || 'No logs available yet.'}
-                                    </div>
+                    {/* SD logs toggle button - always visible */}
+                    <div className="mt-8 w-full text-center">
+                        <button
+                            className="px-4 py-2 rounded-md mb-4"
+                            onClick={() => setShowSdLogs(!showSdLogs)}
+                            style={{ 
+                                backgroundColor: theme === 'cyberpunk' ? '#2d2d4d' : '#f3f4f6',
+                                color: 'var(--text-color)', 
+                                border: theme === 'corporate' ? '1px solid #000' : 'none',
+                                boxShadow: theme === 'cyberpunk' ? 'var(--neon-glow)' : 'none',
+                                width: '180px'
+                            }}
+                        >
+                            {showSdLogs ? 'Hide Logs' : 'Show Logs'}
+                        </button>
+                        
+                        {showSdLogs && (
+                            <div className="w-full">
+                                <h3 className="text-xl font-bold text-center mb-3">Stable Diffusion Logs</h3>
+                                <div
+                                    className="border p-4 rounded whitespace-pre overflow-y-scroll"
+                                    style={{ 
+                                        maxHeight: '300px', 
+                                        overflowY: 'scroll',
+                                        backgroundColor: theme === 'cyberpunk' ? '#1a1a2e' : '#f8f9fa',
+                                        color: theme === 'cyberpunk' ? 'white' : '#333',
+                                        border: theme === 'cyberpunk' ? '1px solid var(--accent-color)' : '1px solid #e5e7eb',
+                                        boxShadow: theme === 'cyberpunk' ? 'var(--neon-glow)' : 'none',
+                                        fontSize: '0.8rem'
+                                    }}
+                                >
+                                    {sdLogs || 'No logs available yet.'}
                                 </div>
-                            )}
-                        </div>
-                    )}
+                            </div>
+                        )}
+                    </div>
                 </div>
             )}
         </div>

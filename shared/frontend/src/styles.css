@@ -46,9 +46,9 @@ body.corporate {
 
 .app-container {
     max-width: 600px;
-    margin: 0 auto;
+    margin: 2rem auto;
     border-radius: 12px;
-    padding: 20px;
+    padding: 24px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
@@ -58,9 +58,10 @@ h1, h2 {
 
 input, button {
     width: 100%;
-    padding: 8px;
-    margin-top: 8px;
-    border-radius: 6px;
+    padding: 10px;
+    margin-top: 10px;
+    margin-bottom: 5px;
+    border-radius: 8px;
 }
 
 button {
