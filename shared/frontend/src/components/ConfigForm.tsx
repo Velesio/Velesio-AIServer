@@ -365,7 +365,7 @@ const ConfigForm = ({ activeTab, setActiveTab }: ConfigFormProps) => {
             ...getContainerStyle()
         }}>
             <h1 className={`text-3xl font-bold text-center mb-4 ${theme === 'cyberpunk' ? 'glow-text' : ''}`}>
-                Veles AI Server Control Panel
+                Velesio AI Server Control Panel
             </h1>
 
             {/* Tabs for switching views with theme toggle */}
@@ -375,7 +375,7 @@ const ConfigForm = ({ activeTab, setActiveTab }: ConfigFormProps) => {
                     onClick={() => setActiveTab('config')}
                     style={getTabButtonStyle(activeTab === 'config')}
                 >
-                    LLM Configuration
+                    LLM
                 </button>
                 
                 {/* StableDiffusion tab button */}
@@ -384,7 +384,7 @@ const ConfigForm = ({ activeTab, setActiveTab }: ConfigFormProps) => {
                     onClick={() => setActiveTab('stablediffusion')}
                     style={getTabButtonStyle(activeTab === 'stablediffusion')}
                 >
-                    StableDiffusion
+                    Images
                 </button>
                 
                 {/* Allowlist tab button */}
@@ -393,7 +393,7 @@ const ConfigForm = ({ activeTab, setActiveTab }: ConfigFormProps) => {
                     onClick={() => setActiveTab('allowlist')}
                     style={getTabButtonStyle(activeTab === 'allowlist')}
                 >
-                    Allowlist
+                    Settings
                 </button>
                 
                 {/* Refresh Button */}
