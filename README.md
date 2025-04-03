@@ -4,23 +4,37 @@
 
 Whether you're building immersive NPCs, intelligent agents, or AI-driven tools, Veles gives you a seamless plug-and-play interface to tap into both local and cloud-hosted AI systems — all from within Unity.
 
+With this repo you can locally host your own llamacpp and Stable Diffusion server which can seemlessly connect to Unity, using the [Velesio Unity AIntegration](https://github.com/Velesio/Velesio-UnityAIntegration)
+
+[Runpod template](https://www.runpod.io/console/explore/07cky3lznr) to host self-host this in the cloud.
+
+[Docker](https://hub.docker.com/repository/docker/teocholakov/velesio-aiserver)
+
+To build this locally and self-host simply docker compose up --build
+
+[Discord](https://discord.gg/pMB6w3mJyF) for support and ideas
+
 ---
 
 ## ✨ Key Features (Coming Soon)
 
-- ⚡ **Drop-in AI functionality** for Unity — no heavy setup required  
-- 🧠 Connect to **locally hosted** LLMs and diffusion models (for offline or power users)  
-- ☁️ Or use our **cloud API**, hosted on RunPod and optimized for performance  
-- 💬 Enable **AI conversations, behaviors, or image generation** directly in your game world  
+- ⚡ **Plug and play AI hosting** for Unity — no heavy setup required  
+- 🧠 Built for **self-hosting and the cloud**
 - 🛠️ Built to be **open, extensible, and developer-friendly**  
 
 ---
+## 🚧 Project Status
 
-## 📡 API Access (Coming Soon)
+Veles is in early development. Stay tuned for:
 
-Users will be able to connect to our hosted Veles AI backend, paying only per API call. Ideal for developers who want powerful AI features without the need to manage local models.
+- ✅ Unity Package Manager support  
+- ✅ Unity Editor integration  
+- ✅ Documentation & API access  
+- ✅ Community Discord
+- ✅ Flux support
+- ✅ Proprietary models support
 
-> You’ll always be able to use your **own local setup** or fully self-host if preferred.
+Follow the repo, drop a ⭐, and join the journey!
 
 ---
 
@@ -34,19 +48,8 @@ Veles would not be possible without the amazing work from the open-source commun
 - 🎨 [**Stable-Diffusion-Unity-Integration**](https://github.com/dobrado76/Stable-Diffusion-Unity-Integration) by *Dobrado76* (Apache 2.0)  
   A powerful image-generation pipeline with Stable Diffusion.
 
+- 🎨 [**AUTOMATIC1111/stable-diffusion-webui**](https://github.com/AUTOMATIC1111/stable-diffusion-webui)
+
 Their projects serve as a foundation and inspiration for this unified framework.
 
 ---
-
-## 🚧 Project Status
-
-Veles is in early development. Stay tuned for:
-
-- ✅ Unity Package Manager support  
-- ✅ Unity Editor integration  
-- ✅ Documentation & API access  
-- ✅ Community Discord
-- ✅ Flux support
-- ✅ Proprietary models support
-
-Follow the repo, drop a ⭐, and join the journey!
