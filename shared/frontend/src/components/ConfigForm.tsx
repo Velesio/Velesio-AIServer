@@ -611,10 +611,13 @@ const ConfigForm = ({ activeTab, setActiveTab }: ConfigFormProps) => {
                             </span>
                         </div>
                         
-                        {/* Control buttons - centered */}
-                        <div className="flex justify-center mb-8 gap-6 w-full">
+                        {/* SD Buttons - centered and properly sized */}
+                        <div className="flex flex-col items-center gap-4 mb-6" style={{
+                            width: '140px', // Match the width of the status indicator above
+                            margin: '0 auto',  // This centers the container
+                        }}>
                             <button
-                                className="px-4 py-2 rounded-md"
+                                className="px-4 py-2 rounded-md w-full"
                                 onClick={handleStartStableDiffusion}
                                 disabled={isStartingSD || sdStatus === 'Running'}
                                 style={{ 
@@ -623,7 +626,7 @@ const ConfigForm = ({ activeTab, setActiveTab }: ConfigFormProps) => {
                                     boxShadow: theme === 'cyberpunk' ? 'var(--neon-glow)' : 'none',
                                     border: theme === 'corporate' ? '1px solid #000' : 'none',
                                     transition: 'all 0.2s ease-in-out',
-                                    width: '180px',
+                                    width: '140px', // Match the width of the container
                                     opacity: isStartingSD || sdStatus === 'Running' ? 0.7 : 1,
                                     display: 'flex',
                                     justifyContent: 'center',
@@ -634,7 +637,7 @@ const ConfigForm = ({ activeTab, setActiveTab }: ConfigFormProps) => {
                             </button>
 
                             <button
-                                className="px-4 py-2 rounded-md"
+                                className="px-4 py-2 rounded-md w-full"
                                 onClick={handleStopStableDiffusion}
                                 disabled={isStoppingSD || sdStatus !== 'Running'}
                                 style={{ 
@@ -643,7 +646,7 @@ const ConfigForm = ({ activeTab, setActiveTab }: ConfigFormProps) => {
                                     boxShadow: theme === 'cyberpunk' ? '0 0 5px #e53e3e, 0 0 10px rgba(229, 62, 62, 0.5)' : 'none',
                                     border: theme === 'corporate' ? '1px solid #000' : 'none',
                                     transition: 'all 0.2s ease-in-out',
-                                    width: '180px',
+                                    width: '140px', // Match the width of the container
                                     opacity: isStoppingSD || sdStatus !== 'Running' ? 0.7 : 1,
                                     display: 'flex',
                                     justifyContent: 'center',
