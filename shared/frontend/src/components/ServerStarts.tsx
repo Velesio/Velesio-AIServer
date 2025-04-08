@@ -144,15 +144,12 @@ function ServerStats() {
             margin: '0 auto',
             ...getContainerStyle()
         }}>
-            <h2 className={`text-2xl font-bold text-center mb-4 ${theme === 'cyberpunk' ? 'glow-text' : ''}`}>
-                System Stats
-            </h2>
             
             <div style={{ width: '500px', margin: '0 auto', display: 'flex', justifyContent: 'center' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
-                    <MeterGauge value={stats.cpu} label="CPU Usage" />
-                    <MeterGauge value={stats.ram} label="RAM Usage" />
-                    <MeterGauge value={stats.gpu} label="GPU Usage" />
+                    <MeterGauge value={stats.cpu} label="CPU" />
+                    <MeterGauge value={stats.ram} label="RAM" />
+                    <MeterGauge value={stats.gpu} label="GPU" />
                 </div>
             </div>
         </div>

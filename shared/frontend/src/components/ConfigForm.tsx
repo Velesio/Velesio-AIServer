@@ -365,10 +365,6 @@ const ConfigForm = ({ activeTab, setActiveTab }: ConfigFormProps) => {
             margin: '1.5rem auto',
             ...getContainerStyle()
         }}>
-            <h1 className={`text-3xl font-bold text-center mb-4 ${theme === 'cyberpunk' ? 'glow-text' : ''}`}>
-                Velesio AI Server Control Panel
-            </h1>
-            
             {/* Add ServerStats right after header */}
             <div className="mb-6">
                 <ServerStats />
