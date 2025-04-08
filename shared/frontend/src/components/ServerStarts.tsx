@@ -138,16 +138,28 @@ function ServerStats() {
     };
 
     return (
-        <div className="p-4 space-y-4 rounded-lg shadow-lg mt-6" style={{ 
+        <div className="p-4 space-y-4 rounded-lg shadow-lg mt-6 relative" style={{ 
             width: '100%', 
             maxWidth: 'calc(100% - 100px)', // Adjust width to account for sidebar
             margin: '0 auto',
-            marginRight: '90px', // Add margin to avoid overlap with navbar
+            marginLeft: '90px', // Change to left margin for left navbar
             ...getContainerStyle()
         }}>
-            
-            <div style={{ width: '100%', maxWidth: '500px', margin: '0 auto', display: 'flex', justifyContent: 'center' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
+            <div style={{ 
+                width: '100%',
+                maxWidth: '500px',
+                margin: '0 auto', 
+                display: 'flex', 
+                justifyContent: 'center'
+            }}>
+                <div className="meter-container" style={{ 
+                    display: 'flex', 
+                    justifyContent: 'center', // Center the gauges
+                    alignItems: 'center',
+                    width: '100%',
+                    flexWrap: 'wrap', // Allow wrapping on smaller screens
+                    gap: '20px' // Increased gap for better spacing
+                }}>
                     <MeterGauge value={stats.cpu} label="CPU" />
                     <MeterGauge value={stats.ram} label="RAM" />
                     <MeterGauge value={stats.gpu} label="GPU" />

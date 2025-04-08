@@ -33,7 +33,6 @@ const ConfigForm = ({ activeTab, setActiveTab }: ConfigFormProps) => {
     const [isStoppingSD, setIsStoppingSD] = useState(false);
     const [operationStatus, setOperationStatus] = useState<{message: string, success: boolean} | null>(null);
     const [sdOperationStatus, setSdOperationStatus] = useState<{message: string, success: boolean} | null>(null);
-    const [sdWebUIAvailable, setSdWebUIAvailable] = useState(false);
     const [showLogs, setShowLogs] = useState(false);
     const [showSdLogs, setShowSdLogs] = useState(false);
 
@@ -89,15 +88,14 @@ const ConfigForm = ({ activeTab, setActiveTab }: ConfigFormProps) => {
         return () => clearInterval(interval);
     }, []);
 
-    // Check if SD WebUI is available
+    // Auto-refresh StableDiffusion status when in stablediffusion tab
     useEffect(() => {
         const checkSdWebUI = async () => {
             try {
-                const response = await fetch(`${getApiBaseUrl()}/check-sd-webui/`);
-                const data = await response.json();
-                setSdWebUIAvailable(data.available);
+                const response = await fetch('http://localhost:7860/api/endpoint');
+                // Just parse the JSON to check if it's valid, no need to store or set state
+                await response.json();
             } catch {
-                setSdWebUIAvailable(false);
             }
         };
 
@@ -283,7 +281,6 @@ const ConfigForm = ({ activeTab, setActiveTab }: ConfigFormProps) => {
 
             if (response.ok) {
                 setSdStatus('Stopped');
-                setSdWebUIAvailable(false);
                 setSdOperationStatus({
                     message: 'Stable Diffusion stopped successfully!',
                     success: true
@@ -317,7 +314,7 @@ const ConfigForm = ({ activeTab, setActiveTab }: ConfigFormProps) => {
                 width: '100%', 
                 maxWidth: 'calc(100% - 100px)',  // Adjust width to account for sidebar
                 margin: '1.5rem auto',
-                marginRight: '90px', // Add margin to avoid overlap with navbar
+                marginLeft: '90px', // Change to left margin for left navbar
                 ...getContainerStyle()
             }}>
                 {/* Add ServerStats right after header */}
@@ -569,10 +566,10 @@ const ConfigForm = ({ activeTab, setActiveTab }: ConfigFormProps) => {
                     <div className="mt-6 mb-4 flex flex-col items-center">
                         <h2 className="text-2xl font-bold text-center mb-6">Stable Diffusion Web UI</h2>
                         
-                        {/* Visual Server Status Indicator */}
+                        {/* Visual Server Status Indicator - centered */}
                         <div className="flex flex-col items-center bg-gray-800 p-3 rounded-lg mb-6" style={{
                             width: '140px',
-                            margin: '0 auto',
+                            margin: '0 auto', // Center this element
                             backgroundColor: theme === 'cyberpunk' ? 'var(--stats-bg)' : 'var(--stats-bg)',
                             boxShadow: theme === 'cyberpunk' ? 'var(--neon-glow)' : '0 2px 4px rgba(0, 0, 0, 0.05)',
                             border: theme === 'cyberpunk' ? '1px solid var(--accent-color)' : '1px solid #e5e7eb',
@@ -614,8 +611,8 @@ const ConfigForm = ({ activeTab, setActiveTab }: ConfigFormProps) => {
                             </span>
                         </div>
                         
-                        {/* Control buttons */}
-                        <div className="flex justify-center mb-8 gap-6">
+                        {/* Control buttons - centered */}
+                        <div className="flex justify-center mb-8 gap-6 w-full">
                             <button
                                 className="px-4 py-2 rounded-md"
                                 onClick={handleStartStableDiffusion}
@@ -657,9 +654,10 @@ const ConfigForm = ({ activeTab, setActiveTab }: ConfigFormProps) => {
                             </button>
                         </div>
                         
-                        {/* Operation status message */}
+                        {/* Operation status message - centered */}
                         {sdOperationStatus && (
-                            <div className="mb-6 p-3 rounded-md max-w-[400px] text-center" style={{
+                            <div className="mb-6 p-3 rounded-md text-center mx-auto" style={{
+                                maxWidth: '400px',
                                 backgroundColor: sdOperationStatus.success ? 
                                     (theme === 'cyberpunk' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(16, 185, 129, 0.1)') : 
                                     (theme === 'cyberpunk' ? 'rgba(239, 68, 68, 0.2)' : 'rgba(239, 68, 68, 0.1)'),
@@ -676,17 +674,19 @@ const ConfigForm = ({ activeTab, setActiveTab }: ConfigFormProps) => {
 
                         {sdStatus === 'Running' && (
                             <>
-                                <div className="mb-6 p-4 bg-gray-800 rounded-lg text-white text-center" style={{
+                                <div className="mb-6 p-4 bg-gray-800 rounded-lg text-white text-center mx-auto" style={{
                                     backgroundColor: theme === 'cyberpunk' ? 'var(--stats-bg)' : 'var(--stats-bg)',
                                     boxShadow: theme === 'cyberpunk' ? 'var(--neon-glow)' : '0 2px 4px rgba(0, 0, 0, 0.05)',
                                     border: theme === 'cyberpunk' ? '1px solid var(--accent-color)' : '1px solid #e5e7eb',
+                                    width: '100%',
+                                    maxWidth: '600px',
                                 }}>
-                                    <p className="mb-2">The Stable Diffusion Web UI is running at:</p>
+                                    <p className="mb-2 text-center">The Stable Diffusion Web UI is running at:</p>
                                     <a 
                                         href="http://localhost:7860" 
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="text-blue-400 hover:text-blue-300 underline"
+                                        className="text-blue-400 hover:text-blue-300 underline block text-center"
                                         style={{
                                             color: theme === 'cyberpunk' ? '#50e3c2' : '#3b82f6',
                                             textShadow: theme === 'cyberpunk' ? '0 0 5px #50e3c2' : 'none',
@@ -695,79 +695,56 @@ const ConfigForm = ({ activeTab, setActiveTab }: ConfigFormProps) => {
                                         Open Stable Diffusion Web UI in New Tab
                                     </a>
                                 </div>
-
-                                {sdWebUIAvailable ? (
-                                    <div className="w-full h-[600px] border rounded-lg overflow-hidden" style={{
-                                        border: theme === 'cyberpunk' ? '1px solid var(--accent-color)' : '1px solid #e5e7eb',
-                                        boxShadow: theme === 'cyberpunk' ? 'var(--neon-glow)' : '0 4px 6px rgba(0, 0, 0, 0.1)',
-                                    }}>
-                                        <iframe 
-                                            src="http://localhost:7860" 
-                                            title="Stable Diffusion Web UI"
-                                            style={{
-                                                width: '100%',
-                                                height: '100%',
-                                                border: 'none',
-                                            }}
-                                        ></iframe>
-                                    </div>
-                                ) : (
-                                    <div className="w-full p-10 text-center border rounded-lg" style={{
-                                        border: theme === 'cyberpunk' ? '1px solid var(--accent-color)' : '1px solid #e5e7eb',
-                                        boxShadow: theme === 'cyberpunk' ? 'var(--neon-glow)' : '0 4px 6px rgba(0, 0, 0, 0.1)',
-                                    }}>
-                                        <p className="text-xl mb-4">Stable Diffusion Web UI is starting...</p>
-                                        <p>This may take a minute or two. Please be patient.</p>
-                                        <div className="animate-pulse mt-6 flex justify-center">
-                                            <div className="w-4 h-4 bg-blue-500 rounded-full mx-1"></div>
-                                            <div className="w-4 h-4 bg-blue-500 rounded-full mx-1 animation-delay-200"></div>
-                                            <div className="w-4 h-4 bg-blue-500 rounded-full mx-1 animation-delay-400"></div>
-                                        </div>
-                                    </div>
-                                )}
                             </>
                         )}
-                        
+
                         {sdStatus !== 'Running' && (
-                            <div className="mt-6 p-6 border rounded-lg text-center" style={{
+                            <div className="p-6 rounded-xl text-center mx-auto" style={{
+                                backgroundColor: theme === 'cyberpunk' ? 'rgba(26, 26, 46, 0.4)' : 'var(--input-bg)',
                                 border: theme === 'cyberpunk' ? '1px solid var(--accent-color)' : '1px solid #e5e7eb',
                                 boxShadow: theme === 'cyberpunk' ? 'var(--neon-glow)' : '0 4px 6px rgba(0, 0, 0, 0.1)',
+                                width: '100%',
+                                maxWidth: '600px',
                             }}>
-                                <p className="text-xl mb-4">Stable Diffusion Web UI is not running</p>
-                                <p>Press the Start button above to launch the Stable Diffusion Web UI.</p>
+                                <p className="text-xl mb-4 text-center">Stable Diffusion Web UI is not running</p>
+                                <p className="text-center">Press the Start button above to launch the Stable Diffusion Web UI.</p>
                             </div>
                         )}
                         
-                        {/* SD logs toggle button - always visible */}
+                        {/* SD logs toggle button - centered */}
                         <div className="mt-8 w-full text-center">
                             <button
-                                className="px-4 py-2 rounded-md mb-4"
+                                className="px-4 py-2 rounded-md mx-auto"
                                 onClick={() => setShowSdLogs(!showSdLogs)}
                                 style={{ 
                                     backgroundColor: theme === 'cyberpunk' ? '#2d2d4d' : '#f3f4f6',
                                     color: 'var(--text-color)', 
                                     border: theme === 'corporate' ? '1px solid #000' : 'none',
                                     boxShadow: theme === 'cyberpunk' ? 'var(--neon-glow)' : 'none',
-                                    width: '180px'
+                                    width: '180px',
+                                    display: 'block',
+                                    margin: '0 auto'
                                 }}
                             >
                                 {showSdLogs ? 'Hide Logs' : 'Show Logs'}
                             </button>
                             
                             {showSdLogs && (
-                                <div className="w-full">
+                                <div className="w-full mt-4 flex flex-col items-center">
                                     <h3 className="text-xl font-bold text-center mb-3">Stable Diffusion Logs</h3>
                                     <div
-                                        className="border p-4 rounded whitespace-pre overflow-y-scroll"
+                                        className="border p-4 rounded whitespace-pre overflow-y-scroll mx-auto"
                                         style={{ 
                                             width: '100%',
+                                            maxWidth: '800px',
                                             height: '400px', 
                                             overflowY: 'scroll',
                                             backgroundColor: theme === 'cyberpunk' ? '#1a1a2e' : '#f8f9fa',
                                             color: theme === 'cyberpunk' ? 'white' : '#333',
                                             border: theme === 'cyberpunk' ? '1px solid var(--accent-color)' : '1px solid #e5e7eb',
                                             boxShadow: theme === 'cyberpunk' ? 'var(--neon-glow)' : 'none',
-                                            fontSize: '0.8rem'
+                                            fontSize: '0.8rem',
+                                            textAlign: 'left' // Keep logs left-aligned for readability
                                         }}
                                     >
                                         {sdLogs || 'No logs available yet.'}

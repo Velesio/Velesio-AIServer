@@ -288,6 +288,19 @@ button:active {
     transition: padding-right 0.3s ease;
 }
 
+/* Left sidebar navbar styles */
+.main-container {
+    padding-left: 80px; /* Adjust main container to account for navbar width */
+    transition: padding-left 0.3s ease;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .main-container {
+        padding-left: 60px;
+    }
+}
+
 /* Navbar button hover effects */
 .navbar-button:hover {
     transform: translateX(-3px);
@@ -305,8 +318,14 @@ button:active {
     border-radius: 4px 0 0 4px;
 }
 
-.cyberpunk .navbar-button-active::before {
-    box-shadow: 0 0 10px var(--accent-color);
+.navbar-button-active::before {
+    content: '';
+    position: absolute;
+    left: 0; /* Change to left for left sidebar */
+    height: 60%;
+    width: 3px;
+    background-color: var(--accent-color);
+    border-radius: 0 4px 4px 0;
 }
 
 /* Tooltip styles for navbar buttons */
@@ -325,4 +344,68 @@ button:active {
     white-space: nowrap;
     z-index: 100;
     opacity: 0.9;
+}
+
+[data-tooltip]:hover::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    left: 100%; /* Change to left for left sidebar */
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: var(--primary-bg);
+    color: var(--text-color);
+    padding: 0.5rem 1rem;
+    border-radius: var(--border-radius);
+    box-shadow: var(--neon-glow);
+    margin-left: 10px; /* Change to marginLeft */
+    white-space: nowrap;
+    z-index: 100;
+    opacity: 0.9;
+}
+
+/* Ensure gauge meters flex properly on small screens */
+@media (max-width: 600px) {
+    .meter-container {
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+    }
+    
+    .meter-gauge {
+        width: 100%;
+        max-width: 150px;
+    }
+}
+
+/* Center all content in stable diffusion tab */
+.stablediffusion-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+
+.stablediffusion-container > * {
+    max-width: 800px;
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+}
+
+.stablediffusion-container button {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Responsive centering adjustments */
+@media (max-width: 768px) {
+    .button-container {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .button-container button {
+        margin: 0.5rem auto;
+    }
 }
