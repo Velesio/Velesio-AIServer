@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTheme } from '../context/useTheme';
+import ServerStats from './ServerStarts';  // Import the ServerStats component
 
 // Spinning loader component
 const Spinner = () => (
@@ -367,6 +368,11 @@ const ConfigForm = ({ activeTab, setActiveTab }: ConfigFormProps) => {
             <h1 className={`text-3xl font-bold text-center mb-4 ${theme === 'cyberpunk' ? 'glow-text' : ''}`}>
                 Velesio AI Server Control Panel
             </h1>
+            
+            {/* Add ServerStats right after header */}
+            <div className="mb-6">
+                <ServerStats />
+            </div>
 
             {/* Tabs for switching views with theme toggle */}
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '2rem', width: '90%', marginBottom: '2.5rem', marginTop: '2rem', margin: '2rem auto', padding: '0.5rem' }}>

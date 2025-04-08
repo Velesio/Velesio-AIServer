@@ -465,20 +465,6 @@ const IPAccessControlPanel = () => {
                 </div>
             </div>
 
-            <div className="mt-8 p-5 rounded-md text-sm" style={{
-                backgroundColor: theme === 'cyberpunk' ? 'rgba(0, 50, 77, 0.6)' : '#f0f9ff',
-                border: theme === 'cyberpunk' ? '1px solid rgba(0, 150, 255, 0.5)' : '1px solid #bae6fd',
-                color: theme === 'cyberpunk' ? 'var(--text-secondary, #a0cae0)' : '#0369a1'
-            }}>
-                <h3 className="text-lg font-semibold mb-3" style={{ color: theme === 'cyberpunk' ? 'var(--text-color, #fff)' : '#0c4a6e' }}>How IP Access Control Works</h3>
-                <ul className="list-disc pl-5 space-y-2">
-                    <li><strong>Open Access (Default):</strong> If the 'Allowed IPs' list is empty, all IP addresses can connect.</li>
-                    <li><strong>Restricted Access:</strong> Adding one or more IPs to the 'Allowed IPs' list restricts access *only* to those IPs. All other IPs are denied.</li>
-                    <li><strong>Blocking Specific IPs:</strong> Adding IPs to the 'Blocked IPs' list explicitly denies access to those specific IPs, regardless of whether the 'Allowed IPs' list is empty or populated. The block list takes priority.</li>
-                    <li><strong>Server Restart:</strong> Depending on your server configuration, changes made here might require a server restart to take effect.</li>
-                </ul>
-            </div>
-
         </div>
     );
 };
