@@ -140,12 +140,13 @@ function ServerStats() {
     return (
         <div className="p-4 space-y-4 rounded-lg shadow-lg mt-6" style={{ 
             width: '100%', 
-            maxWidth: '800px', 
+            maxWidth: 'calc(100% - 100px)', // Adjust width to account for sidebar
             margin: '0 auto',
+            marginRight: '90px', // Add margin to avoid overlap with navbar
             ...getContainerStyle()
         }}>
             
-            <div style={{ width: '500px', margin: '0 auto', display: 'flex', justifyContent: 'center' }}>
+            <div style={{ width: '100%', maxWidth: '500px', margin: '0 auto', display: 'flex', justifyContent: 'center' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
                     <MeterGauge value={stats.cpu} label="CPU" />
                     <MeterGauge value={stats.ram} label="RAM" />
