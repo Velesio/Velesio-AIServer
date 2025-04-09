@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useTheme } from '../context/useTheme';
 import ServerStats from './ServerStarts';  // Import the ServerStats component
 import Navbar from './Navbar';  // Import the new Navbar component
+import ModelDownload from './ModelDownload'; // Import the ModelDownload component
 
 // Spinning loader component
 const Spinner = () => (
@@ -519,8 +520,8 @@ const ConfigForm = ({ activeTab, setActiveTab }: ConfigFormProps) => {
                                 </div>
                             </div>
                             
-                            {/* Toggle logs button - always visible */}
-                            <div className="mt-6 w-full">
+                            {/* Toggle logs button - moved up */}
+                            <div className="mb-8 w-full">
                                 <div className="text-center">
                                     <button
                                         className="px-4 py-2 rounded-md"
@@ -557,8 +558,12 @@ const ConfigForm = ({ activeTab, setActiveTab }: ConfigFormProps) => {
                                     </div>
                                 )}
                             </div>
+                            
+                            {/* Add ModelDownload component */}
+                            <ModelDownload />
+                            
                         </div>
-                    </>
+                    </> 
                 )}
 
                 {/* StableDiffusion Tab */}
