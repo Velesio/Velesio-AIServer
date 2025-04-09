@@ -144,12 +144,12 @@ const StableDiffusionForm = () => {
     };
 
     return (
-        <div className="mt-6 mb-4 flex flex-col items-center">
+        <div className="mt-6 mb-4">
             <h2 className="text-2xl font-bold text-center mb-6">Stable Diffusion Web UI</h2>
             
-            <div className="flex flex-col items-center" style={{ width: '100%', maxWidth: '350px', margin: '0 auto' }}>
-                {/* Simplified Status Card with Toggle Button */}
-                <div className="mb-6 p-4 rounded-lg flex items-center justify-between shadow-sm w-full" style={{
+            <div className="flex justify-center items-center mt-10 mb-10 flex-col gap-6" style={{width: '100%', margin: '0 auto', textAlign: 'center'}}>
+                {/* Visual Server Status Indicator with integrated action button */}
+                <div className="mb-4 p-4 rounded-lg flex items-center justify-between w-full max-w-md" style={{
                     backgroundColor: theme === 'cyberpunk' ? 'rgba(26, 26, 46, 0.4)' : 'var(--input-bg)',
                     border: theme === 'cyberpunk' ? '1px solid var(--accent-color)' : '1px solid #e5e7eb',
                     boxShadow: theme === 'cyberpunk' ? 'var(--neon-glow)' : '0 1px 3px rgba(0,0,0,0.1)',
@@ -185,9 +185,9 @@ const StableDiffusionForm = () => {
                         </div>
                     </div>
                     
-                    {/* Right side: Single toggle button */}
+                    {/* Right side: Toggle button */}
                     <button
-                        className="px-3 py-1.5 rounded text-sm font-medium inline-flex items-center"
+                        className="px-4 py-2 rounded text-sm font-medium inline-flex items-center"
                         onClick={sdStatus === 'Running' ? handleStopStableDiffusion : handleStartStableDiffusion}
                         disabled={isStartingSD || isStoppingSD}
                         style={{ 
@@ -202,7 +202,7 @@ const StableDiffusionForm = () => {
                                 : 'none',
                             opacity: (isStartingSD || isStoppingSD) ? 0.7 : 1,
                             transition: 'all 0.2s ease',
-                            width: '120px',
+                            width: '140px',
                         }}
                     >
                         {isStartingSD ? (
@@ -229,7 +229,7 @@ const StableDiffusionForm = () => {
                 
                 {/* Status Messages */}
                 {sdOperationStatus && (
-                    <div className="mb-4 px-4 py-3 rounded-md text-sm w-full" style={{
+                    <div className="px-4 py-3 rounded-md text-sm max-w-md w-full" style={{
                         backgroundColor: sdOperationStatus.success ? 
                             (theme === 'cyberpunk' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(16, 185, 129, 0.1)') : 
                             (theme === 'cyberpunk' ? 'rgba(239, 68, 68, 0.15)' : 'rgba(239, 68, 68, 0.1)'),
@@ -239,9 +239,8 @@ const StableDiffusionForm = () => {
                         border: theme === 'cyberpunk' ? 
                             `1px solid ${sdOperationStatus.success ? 'rgba(16, 185, 129, 0.3)' : 'rgba(239, 68, 68, 0.3)'}` : 
                             'none',
-                        textAlign: 'center',
                     }}>
-                        <div className="flex items-center justify-center">
+                        <div className="flex items-center">
                             <div className="mr-3 flex-shrink-0">
                                 {sdOperationStatus.success ? (
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -262,8 +261,8 @@ const StableDiffusionForm = () => {
                 )}
                 
                 {/* Web UI Link or Status */}
-                {sdStatus === 'Running' ? (
-                    <div className="mb-6 p-4 rounded-md text-center w-full" style={{
+                {sdStatus === 'Running' && (
+                    <div className="mb-6 p-4 rounded-md text-center w-full max-w-md" style={{
                         backgroundColor: theme === 'cyberpunk' ? 'rgba(26, 26, 46, 0.4)' : 'var(--input-bg)',
                         border: theme === 'cyberpunk' ? '1px solid var(--accent-color)' : '1px solid #e5e7eb',
                     }}>
@@ -286,60 +285,53 @@ const StableDiffusionForm = () => {
                             Open in New Tab
                         </a>
                     </div>
-                ) : (
-                    <div className="mb-6 p-4 rounded-md text-center w-full" style={{
-                        backgroundColor: theme === 'cyberpunk' ? 'rgba(26, 26, 46, 0.4)' : 'var(--input-bg)',
-                        border: theme === 'cyberpunk' ? '1px solid var(--accent-color)' : '1px solid #e5e7eb',
-                        color: 'var(--text-secondary)',
-                    }}>
-                        <p className="text-sm">Stable Diffusion Web UI is not running</p>
-                        <p className="text-xs mt-1">Press Start to launch the UI</p>
-                    </div>
                 )}
                 
                 {/* Logs Toggle Button */}
-                <div className="mt-4 text-center w-full flex justify-center">
-                    <button 
-                        className="px-3 py-1.5 rounded text-sm font-medium inline-flex items-center justify-center"
+                <div className="mb-8 text-center">
+                    <button
+                        className="px-4 py-2 rounded-md"
                         onClick={() => setShowSdLogs(!showSdLogs)}
                         style={{ 
                             backgroundColor: theme === 'cyberpunk' ? '#2d2d4d' : '#f3f4f6',
                             color: 'var(--text-color)', 
+                            border: theme === 'corporate' ? '1px solid #000' : 'none',
                             boxShadow: theme === 'cyberpunk' ? 'var(--neon-glow)' : 'none',
-                            width: '120px',
+                            width: '180px'
                         }}
                     >
-                        <svg className="mr-1.5" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-6"></path>
-                            <polyline points="14 2 14 8 20 8"></polyline>
-                            <line x1="16" y1="13" x2="8" y2="13"></line>
-                            <line x1="16" y1="17" x2="8" y2="17"></line>
-                            <line x1="10" y1="9" x2="8" y2="9"></line>
-                        </svg>
-                        {showSdLogs ? 'Hide Logs' : 'Show Logs'}
+                        <div className="flex items-center justify-center">
+                            <svg className="mr-1.5" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-6"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                                <line x1="16" y1="13" x2="8" y2="13"></line>
+                                <line x1="16" y1="17" x2="8" y2="17"></line>
+                                <line x1="10" y1="9" x2="8" y2="9"></line>
+                            </svg>
+                            {showSdLogs ? 'Hide Logs' : 'Show Logs'}
+                        </div>
                     </button>
                 </div>
             </div>
             
             {/* Logs Display */}
             {showSdLogs && (
-                <div style={{ width: '80%', maxWidth: '800px', margin: '20px auto 0' }}>
-                    <div className="mx-auto">
-                        <div
-                            className="border p-3 rounded whitespace-pre overflow-y-scroll"
-                            style={{ 
-                                height: '300px', 
-                                overflowY: 'scroll',
-                                backgroundColor: theme === 'cyberpunk' ? '#1a1a2e' : '#f8f9fa',
-                                color: theme === 'cyberpunk' ? 'white' : '#333',
-                                border: theme === 'cyberpunk' ? '1px solid var(--accent-color)' : '1px solid #e5e7eb',
-                                boxShadow: theme === 'cyberpunk' ? 'var(--neon-glow)' : 'none',
-                                fontSize: '0.75rem',
-                                textAlign: 'left' // Keep logs left-aligned for readability
-                            }}
-                        >
-                            {sdLogs || 'No logs available yet.'}
-                        </div>
+                <div className="w-full mt-4" style={{ maxWidth: '800px', margin: '0 auto' }}>
+                    <div
+                        className="border p-4 rounded whitespace-pre overflow-y-scroll"
+                        style={{ 
+                            width: '100%',
+                            height: '400px', 
+                            overflowY: 'scroll',
+                            backgroundColor: theme === 'cyberpunk' ? '#1a1a2e' : '#f8f9fa',
+                            color: theme === 'cyberpunk' ? 'white' : '#333',
+                            border: theme === 'cyberpunk' ? '1px solid var(--accent-color)' : '1px solid #e5e7eb',
+                            boxShadow: theme === 'cyberpunk' ? 'var(--neon-glow)' : 'none',
+                            fontSize: '0.8rem',
+                            textAlign: 'left' // Keep logs left-aligned for readability
+                        }}
+                    >
+                        {sdLogs || 'No logs available yet.'}
                     </div>
                 </div>
             )}
