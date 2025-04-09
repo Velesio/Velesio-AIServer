@@ -413,111 +413,116 @@ const ConfigForm = ({ activeTab, setActiveTab }: ConfigFormProps) => {
                                 />
                             </div>
 
-                            <div className="flex justify-center items-center mt-14 mb-10 flex-col gap-10" style={{width: '100%', margin: '0 auto', textAlign: 'center'}}>
-                                {/* Visual Server Status Indicator */}
-                                <div className="flex flex-col items-center bg-gray-800 p-3 rounded-lg" style={{
-                                    width: '140px',
-                                    margin: '0 auto',
-                                    backgroundColor: theme === 'cyberpunk' ? 'var(--stats-bg)' : 'var(--stats-bg)',
-                                    boxShadow: theme === 'cyberpunk' ? 'var(--neon-glow)' : '0 2px 4px rgba(0, 0, 0, 0.05)',
+                            <div className="flex justify-center items-center mt-14 mb-10 flex-col gap-6" style={{width: '100%', margin: '0 auto', textAlign: 'center'}}>
+                                {/* Visual Server Status Indicator with integrated action button */}
+                                <div className="mb-4 p-4 rounded-lg flex items-center justify-between w-full max-w-md" style={{
+                                    backgroundColor: theme === 'cyberpunk' ? 'rgba(26, 26, 46, 0.4)' : 'var(--input-bg)',
                                     border: theme === 'cyberpunk' ? '1px solid var(--accent-color)' : '1px solid #e5e7eb',
+                                    boxShadow: theme === 'cyberpunk' ? 'var(--neon-glow)' : '0 1px 3px rgba(0,0,0,0.1)',
                                 }}>
-                                    <div className="text-sm text-gray-400 mb-2 text-center">Server Status</div>
+                                    {/* Left side: Status indicator */}
+                                    <div className="flex items-center">
+                                        <div className="relative w-6 h-6 mr-2">
+                                            <div className="w-6 h-6 rounded-full" style={{
+                                                backgroundColor: serverStatus === 'Running' ? '#4ade80' : '#ef4444',
+                                                boxShadow: theme === 'cyberpunk' 
+                                                    ? `0 0 8px ${serverStatus === 'Running' ? '#4ade80' : '#ef4444'}`
+                                                    : 'none',
+                                            }}>
+                                                {serverStatus === 'Running' && (
+                                                    <div className="absolute inset-0 rounded-full animate-ping" style={{
+                                                        backgroundColor: '#4ade80',
+                                                        opacity: 0.3,
+                                                        animationDuration: '2s',
+                                                    }}></div>
+                                                )}
+                                            </div>
+                                        </div>
+                                        <div className="flex flex-col items-start">
+                                            <span className="text-xs opacity-70">LLM Server</span>
+                                            <span className="font-medium text-sm" style={{
+                                                color: serverStatus === 'Running' ? '#4ade80' : '#ef4444',
+                                                textShadow: theme === 'cyberpunk' 
+                                                    ? `0 0 3px ${serverStatus === 'Running' ? '#4ade80' : '#ef4444'}`
+                                                    : 'none',
+                                            }}>
+                                                {serverStatus}
+                                            </span>
+                                        </div>
+                                    </div>
                                     
-                                    {/* Status Light */}
-                                    <div className="relative flex items-center justify-center w-12 h-12 mb-1 mx-auto" style={{
-                                        backgroundColor: theme === 'cyberpunk' ? '#1a1a2e' : '#f3f4f6',
-                                        borderRadius: '50%',
-                                        border: theme === 'cyberpunk' ? '2px solid #333' : '2px solid #d1d5db',
-                                    }}>
-                                        <div className="w-8 h-8 rounded-full relative" style={{
-                                            backgroundColor: serverStatus === 'Running' ? '#4ade80' : '#ef4444',
+                                    {/* Right side: Toggle button */}
+                                    <button
+                                        className="px-4 py-2 rounded text-sm font-medium inline-flex items-center"
+                                        onClick={serverStatus === 'Running' ? handleStopServer : handleStartServer}
+                                        disabled={isStarting || isStopping}
+                                        style={{ 
+                                            backgroundColor: serverStatus === 'Running' 
+                                                ? 'var(--button-danger)' 
+                                                : 'var(--button-primary)',
+                                            color: '#ffffff',
                                             boxShadow: theme === 'cyberpunk' 
-                                                ? `0 0 10px ${serverStatus === 'Running' ? '#4ade80' : '#ef4444'}, 0 0 15px ${serverStatus === 'Running' ? '#4ade80' : '#ef4444'}`
+                                                ? serverStatus === 'Running'
+                                                    ? '0 0 5px rgba(229, 62, 62, 0.5)' 
+                                                    : 'var(--neon-glow)'
                                                 : 'none',
-                                            opacity: serverStatus === 'Running' ? '1' : '0.7',
-                                        }}>
-                                            {/* Pulsing animation for running server */}
-                                            {serverStatus === 'Running' && (
-                                                <div className="absolute inset-0 rounded-full animate-ping" style={{
-                                                    backgroundColor: '#4ade80',
-                                                    opacity: 0.3,
-                                                    animationDuration: '2s',
-                                                }}></div>
-                                            )}
-                                        </div>
-                                    </div>
-                                    
-                                    {/* Status Text */}
-                                    <span className="font-bold text-center block" style={{
-                                        color: serverStatus === 'Running' ? '#4ade80' : '#ef4444',
-                                        textShadow: theme === 'cyberpunk' 
-                                            ? `0 0 3px ${serverStatus === 'Running' ? '#4ade80' : '#ef4444'}`
-                                            : 'none',
+                                            opacity: (isStarting || isStopping) ? 0.7 : 1,
+                                            transition: 'all 0.2s ease',
+                                        }}
+                                    >
+                                        {isStarting ? (
+                                            <><span className="mr-1">Starting</span><Spinner /></>
+                                        ) : isStopping ? (
+                                            <><span className="mr-1">Stopping</span><Spinner /></>
+                                        ) : serverStatus === 'Running' ? (
+                                            <>
+                                                <svg className="mr-1.5" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                    <rect x="6" y="6" width="12" height="12" rx="2" ry="2"></rect>
+                                                </svg>
+                                                Stop Server
+                                            </>
+                                        ) : (
+                                            <>
+                                                <svg className="mr-1.5" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                                                </svg>
+                                                Start Server
+                                            </>
+                                        )}
+                                    </button>
+                                </div>
+                                
+                                {operationStatus && (
+                                    <div className="px-4 py-3 rounded-md text-sm max-w-md w-full" style={{
+                                        backgroundColor: operationStatus.success ? 
+                                            (theme === 'cyberpunk' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(16, 185, 129, 0.1)') : 
+                                            (theme === 'cyberpunk' ? 'rgba(239, 68, 68, 0.15)' : 'rgba(239, 68, 68, 0.1)'),
+                                        color: operationStatus.success ? 
+                                            (theme === 'cyberpunk' ? '#10b981' : '#047857') : 
+                                            (theme === 'cyberpunk' ? '#ef4444' : '#b91c1c'),
+                                        border: theme === 'cyberpunk' ? 
+                                            `1px solid ${operationStatus.success ? 'rgba(16, 185, 129, 0.3)' : 'rgba(239, 68, 68, 0.3)'}` : 
+                                            'none',
                                     }}>
-                                        {serverStatus}
-                                    </span>
-                                </div>
-
-                                <div className="flex flex-col items-center gap-4 w-full">
-                                    <div style={{display: 'flex', justifyContent: 'center', gap: '2rem', width: '100%', margin: '1rem auto'}}>
-                                        <button
-                                            className="px-4 py-2 rounded-md"
-                                            onClick={handleStartServer}
-                                            disabled={isStarting}
-                                            style={{ 
-                                                backgroundColor: 'var(--button-primary)',
-                                                color: '#ffffff', // Explicitly setting white text color
-                                                boxShadow: theme === 'cyberpunk' ? 'var(--neon-glow)' : 'none',
-                                                border: theme === 'corporate' ? '1px solid #000' : 'none',
-                                                transition: 'all 0.2s ease-in-out',
-                                                width: '180px',
-                                                opacity: isStarting ? 0.7 : 1,
-                                                display: 'flex',
-                                                justifyContent: 'center',
-                                                alignItems: 'center'
-                                            }}
-                                        >
-                                            {isStarting ? <>Starting<Spinner /></> : 'Start Server'}
-                                        </button>
-
-                                        <button
-                                            className="px-4 py-2 rounded-md"
-                                            onClick={handleStopServer}
-                                            disabled={isStopping}
-                                            style={{ 
-                                                backgroundColor: 'var(--button-danger)',
-                                                color: '#ffffff', // Explicitly setting white text color
-                                                boxShadow: theme === 'cyberpunk' ? '0 0 5px #e53e3e, 0 0 10px rgba(229, 62, 62, 0.5)' : 'none',
-                                                border: theme === 'corporate' ? '1px solid #000' : 'none',
-                                                transition: 'all 0.2s ease-in-out',
-                                                width: '180px',
-                                                opacity: isStopping ? 0.7 : 1,
-                                                display: 'flex',
-                                                justifyContent: 'center',
-                                                alignItems: 'center'
-                                            }}
-                                        >
-                                            {isStopping ? <>Stopping<Spinner /></> : 'Stop Server'}
-                                        </button>
-                                    </div>
-                                    
-                                    {operationStatus && (
-                                        <div className="mt-4 p-3 rounded-md max-w-[400px] text-center" style={{
-                                            backgroundColor: operationStatus.success ? 
-                                                (theme === 'cyberpunk' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(16, 185, 129, 0.1)') : 
-                                                (theme === 'cyberpunk' ? 'rgba(239, 68, 68, 0.2)' : 'rgba(239, 68, 68, 0.1)'),
-                                            color: operationStatus.success ? 
-                                                (theme === 'cyberpunk' ? '#10b981' : '#047857') : 
-                                                (theme === 'cyberpunk' ? '#ef4444' : '#b91c1c'),
-                                            border: theme === 'cyberpunk' ? 
-                                                `1px solid ${operationStatus.success ? '#10b981' : '#ef4444'}` : 
-                                                'none',
-                                        }}>
-                                            {operationStatus.message}
+                                        <div className="flex items-center">
+                                            <div className="mr-3 flex-shrink-0">
+                                                {operationStatus.success ? (
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                                        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                                                    </svg>
+                                                ) : (
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                        <circle cx="12" cy="12" r="10"></circle>
+                                                        <line x1="12" y1="8" x2="12" y2="12"></line>
+                                                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                                                    </svg>
+                                                )}
+                                            </div>
+                                            <span>{operationStatus.message}</span>
                                         </div>
-                                    )}
-                                </div>
+                                    </div>
+                                )}
                             </div>
                             
                             {/* Toggle logs button - moved up */}
@@ -571,195 +576,199 @@ const ConfigForm = ({ activeTab, setActiveTab }: ConfigFormProps) => {
                     <div className="mt-6 mb-4 flex flex-col items-center">
                         <h2 className="text-2xl font-bold text-center mb-6">Stable Diffusion Web UI</h2>
                         
-                        {/* Visual Server Status Indicator - centered */}
-                        <div className="flex flex-col items-center bg-gray-800 p-3 rounded-lg mb-6" style={{
-                            width: '140px',
-                            margin: '0 auto', // Center this element
-                            backgroundColor: theme === 'cyberpunk' ? 'var(--stats-bg)' : 'var(--stats-bg)',
-                            boxShadow: theme === 'cyberpunk' ? 'var(--neon-glow)' : '0 2px 4px rgba(0, 0, 0, 0.05)',
-                            border: theme === 'cyberpunk' ? '1px solid var(--accent-color)' : '1px solid #e5e7eb',
-                        }}>
-                            <div className="text-sm text-gray-400 mb-2 text-center">SD Status</div>
-                            
-                            {/* Status Light */}
-                            <div className="relative flex items-center justify-center w-12 h-12 mb-1 mx-auto" style={{
-                                backgroundColor: theme === 'cyberpunk' ? '#1a1a2e' : '#f3f4f6',
-                                borderRadius: '50%',
-                                border: theme === 'cyberpunk' ? '2px solid #333' : '2px solid #d1d5db',
+                        <div className="w-full max-w-md mx-auto">
+                            {/* Simplified Status Card with Toggle Button */}
+                            <div className="mb-6 p-4 rounded-lg flex items-center justify-between shadow-sm" style={{
+                                backgroundColor: theme === 'cyberpunk' ? 'rgba(26, 26, 46, 0.4)' : 'var(--input-bg)',
+                                border: theme === 'cyberpunk' ? '1px solid var(--accent-color)' : '1px solid #e5e7eb',
+                                boxShadow: theme === 'cyberpunk' ? 'var(--neon-glow)' : '0 1px 3px rgba(0,0,0,0.1)',
                             }}>
-                                <div className="w-8 h-8 rounded-full relative" style={{
-                                    backgroundColor: sdStatus === 'Running' ? '#4ade80' : '#ef4444',
-                                    boxShadow: theme === 'cyberpunk' 
-                                        ? `0 0 10px ${sdStatus === 'Running' ? '#4ade80' : '#ef4444'}, 0 0 15px ${sdStatus === 'Running' ? '#4ade80' : '#ef4444'}`
-                                        : 'none',
-                                    opacity: sdStatus === 'Running' ? '1' : '0.7',
-                                }}>
-                                    {/* Pulsing animation for running server */}
-                                    {sdStatus === 'Running' && (
-                                        <div className="absolute inset-0 rounded-full animate-ping" style={{
-                                            backgroundColor: '#4ade80',
-                                            opacity: 0.3,
-                                            animationDuration: '2s',
-                                        }}></div>
-                                    )}
+                                {/* Left side: Status indicator */}
+                                <div className="flex items-center">
+                                    <div className="relative w-6 h-6 mr-2">
+                                        <div className="w-6 h-6 rounded-full" style={{
+                                            backgroundColor: sdStatus === 'Running' ? '#4ade80' : '#ef4444',
+                                            boxShadow: theme === 'cyberpunk' 
+                                                ? `0 0 8px ${sdStatus === 'Running' ? '#4ade80' : '#ef4444'}`
+                                                : 'none',
+                                        }}>
+                                            {sdStatus === 'Running' && (
+                                                <div className="absolute inset-0 rounded-full animate-ping" style={{
+                                                    backgroundColor: '#4ade80',
+                                                    opacity: 0.3,
+                                                    animationDuration: '2s',
+                                                }}></div>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <div className="flex flex-col items-start">
+                                        <span className="text-xs opacity-70">SD Web UI</span>
+                                        <span className="font-medium text-sm" style={{
+                                            color: sdStatus === 'Running' ? '#4ade80' : '#ef4444',
+                                            textShadow: theme === 'cyberpunk' 
+                                                ? `0 0 3px ${sdStatus === 'Running' ? '#4ade80' : '#ef4444'}`
+                                                : 'none',
+                                        }}>
+                                            {sdStatus}
+                                        </span>
+                                    </div>
                                 </div>
+                                
+                                {/* Right side: Single toggle button */}
+                                <button
+                                    className="px-4 py-2 rounded text-sm font-medium inline-flex items-center"
+                                    onClick={sdStatus === 'Running' ? handleStopStableDiffusion : handleStartStableDiffusion}
+                                    disabled={isStartingSD || isStoppingSD}
+                                    style={{ 
+                                        backgroundColor: sdStatus === 'Running' 
+                                            ? 'var(--button-danger)' 
+                                            : 'var(--button-primary)',
+                                        color: '#ffffff',
+                                        boxShadow: theme === 'cyberpunk' 
+                                            ? sdStatus === 'Running'
+                                                ? '0 0 5px rgba(229, 62, 62, 0.5)' 
+                                                : 'var(--neon-glow)'
+                                            : 'none',
+                                        opacity: (isStartingSD || isStoppingSD) ? 0.7 : 1,
+                                        transition: 'all 0.2s ease',
+                                    }}
+                                >
+                                    {isStartingSD ? (
+                                        <><span className="mr-1">Starting</span><Spinner /></>
+                                    ) : isStoppingSD ? (
+                                        <><span className="mr-1">Stopping</span><Spinner /></>
+                                    ) : sdStatus === 'Running' ? (
+                                        <>
+                                            <svg className="mr-1.5" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                <rect x="6" y="6" width="12" height="12" rx="2" ry="2"></rect>
+                                            </svg>
+                                            Stop Server
+                                        </>
+                                    ) : (
+                                        <>
+                                            <svg className="mr-1.5" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                                            </svg>
+                                            Start Server
+                                        </>
+                                    )}
+                                </button>
                             </div>
                             
-                            {/* Status Text */}
-                            <span className="font-bold text-center block" style={{
-                                color: sdStatus === 'Running' ? '#4ade80' : '#ef4444',
-                                textShadow: theme === 'cyberpunk' 
-                                    ? `0 0 3px ${sdStatus === 'Running' ? '#4ade80' : '#ef4444'}`
-                                    : 'none',
-                            }}>
-                                {sdStatus}
-                            </span>
-                        </div>
-                        
-                        {/* SD Buttons - centered and properly sized */}
-                        <div className="flex flex-col items-center gap-4 mb-6" style={{
-                            width: '140px', // Match the width of the status indicator above
-                            margin: '0 auto',  // This centers the container
-                        }}>
-                            <button
-                                className="px-4 py-2 rounded-md w-full"
-                                onClick={handleStartStableDiffusion}
-                                disabled={isStartingSD || sdStatus === 'Running'}
-                                style={{ 
-                                    backgroundColor: 'var(--button-primary)',
-                                    color: '#ffffff',
-                                    boxShadow: theme === 'cyberpunk' ? 'var(--neon-glow)' : 'none',
-                                    border: theme === 'corporate' ? '1px solid #000' : 'none',
-                                    transition: 'all 0.2s ease-in-out',
-                                    width: '140px', // Match the width of the container
-                                    opacity: isStartingSD || sdStatus === 'Running' ? 0.7 : 1,
-                                    display: 'flex',
-                                    justifyContent: 'center',
-                                    alignItems: 'center'
-                                }}
-                            >
-                                {isStartingSD ? <>Starting<Spinner /></> : 'Start SD Web UI'}
-                            </button>
-
-                            <button
-                                className="px-4 py-2 rounded-md w-full"
-                                onClick={handleStopStableDiffusion}
-                                disabled={isStoppingSD || sdStatus !== 'Running'}
-                                style={{ 
-                                    backgroundColor: 'var(--button-danger)',
-                                    color: '#ffffff',
-                                    boxShadow: theme === 'cyberpunk' ? '0 0 5px #e53e3e, 0 0 10px rgba(229, 62, 62, 0.5)' : 'none',
-                                    border: theme === 'corporate' ? '1px solid #000' : 'none',
-                                    transition: 'all 0.2s ease-in-out',
-                                    width: '140px', // Match the width of the container
-                                    opacity: isStoppingSD || sdStatus !== 'Running' ? 0.7 : 1,
-                                    display: 'flex',
-                                    justifyContent: 'center',
-                                    alignItems: 'center'
-                                }}
-                            >
-                                {isStoppingSD ? <>Stopping<Spinner /></> : 'Stop SD Web UI'}
-                            </button>
-                        </div>
-                        
-                        {/* Operation status message - centered */}
-                        {sdOperationStatus && (
-                            <div className="mb-6 p-3 rounded-md text-center mx-auto" style={{
-                                maxWidth: '400px',
-                                backgroundColor: sdOperationStatus.success ? 
-                                    (theme === 'cyberpunk' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(16, 185, 129, 0.1)') : 
-                                    (theme === 'cyberpunk' ? 'rgba(239, 68, 68, 0.2)' : 'rgba(239, 68, 68, 0.1)'),
-                                color: sdOperationStatus.success ? 
-                                    (theme === 'cyberpunk' ? '#10b981' : '#047857') : 
-                                    (theme === 'cyberpunk' ? '#ef4444' : '#b91c1c'),
-                                border: theme === 'cyberpunk' ? 
-                                    `1px solid ${sdOperationStatus.success ? '#10b981' : '#ef4444'}` : 
-                                    'none',
-                            }}>
-                                {sdOperationStatus.message}
-                            </div>
-                        )}
-
-                        {sdStatus === 'Running' && (
-                            <>
-                                <div className="mb-6 p-4 bg-gray-800 rounded-lg text-white text-center mx-auto" style={{
-                                    backgroundColor: theme === 'cyberpunk' ? 'var(--stats-bg)' : 'var(--stats-bg)',
-                                    boxShadow: theme === 'cyberpunk' ? 'var(--neon-glow)' : '0 2px 4px rgba(0, 0, 0, 0.05)',
-                                    border: theme === 'cyberpunk' ? '1px solid var(--accent-color)' : '1px solid #e5e7eb',
-                                    width: '100%',
-                                    maxWidth: '600px',
+                            {/* Status Messages */}
+                            {sdOperationStatus && (
+                                <div className="mb-4 px-4 py-3 rounded-md text-sm" style={{
+                                    backgroundColor: sdOperationStatus.success ? 
+                                        (theme === 'cyberpunk' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(16, 185, 129, 0.1)') : 
+                                        (theme === 'cyberpunk' ? 'rgba(239, 68, 68, 0.15)' : 'rgba(239, 68, 68, 0.1)'),
+                                    color: sdOperationStatus.success ? 
+                                        (theme === 'cyberpunk' ? '#10b981' : '#047857') : 
+                                        (theme === 'cyberpunk' ? '#ef4444' : '#b91c1c'),
+                                    border: theme === 'cyberpunk' ? 
+                                        `1px solid ${sdOperationStatus.success ? 'rgba(16, 185, 129, 0.3)' : 'rgba(239, 68, 68, 0.3)'}` : 
+                                        'none',
                                 }}>
-                                    <p className="mb-2 text-center">The Stable Diffusion Web UI is running at:</p>
+                                    <div className="flex items-center">
+                                        <div className="mr-3 flex-shrink-0">
+                                            {sdOperationStatus.success ? (
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                                                </svg>
+                                            ) : (
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                    <circle cx="12" cy="12" r="10"></circle>
+                                                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                                                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                                                </svg>
+                                            )}
+                                        </div>
+                                        <span>{sdOperationStatus.message}</span>
+                                    </div>
+                                </div>
+                            )}
+                            
+                            {/* Web UI Link or Status */}
+                            {sdStatus === 'Running' ? (
+                                <div className="mb-6 p-4 rounded-md text-center" style={{
+                                    backgroundColor: theme === 'cyberpunk' ? 'rgba(26, 26, 46, 0.4)' : 'var(--input-bg)',
+                                    border: theme === 'cyberpunk' ? '1px solid var(--accent-color)' : '1px solid #e5e7eb',
+                                }}>
+                                    <p className="text-sm mb-2">Stable Diffusion Web UI is running at:</p>
                                     <a 
                                         href="http://localhost:7860" 
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="text-blue-400 hover:text-blue-300 underline block text-center"
+                                        className="inline-flex items-center text-sm font-medium"
                                         style={{
                                             color: theme === 'cyberpunk' ? '#50e3c2' : '#3b82f6',
-                                            textShadow: theme === 'cyberpunk' ? '0 0 5px #50e3c2' : 'none',
+                                            textShadow: theme === 'cyberpunk' ? '0 0 3px #50e3c2' : 'none',
                                         }}
                                     >
-                                        Open Stable Diffusion Web UI in New Tab
+                                        <svg className="mr-1.5" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                                            <polyline points="15 3 21 3 21 9"></polyline>
+                                            <line x1="10" y1="14" x2="21" y2="3"></line>
+                                        </svg>
+                                        Open in New Tab
                                     </a>
                                 </div>
-                            </>
-                        )}
-
-                        {sdStatus !== 'Running' && (
-                            <div className="p-6 rounded-xl text-center mx-auto" style={{
-                                backgroundColor: theme === 'cyberpunk' ? 'rgba(26, 26, 46, 0.4)' : 'var(--input-bg)',
-                                border: theme === 'cyberpunk' ? '1px solid var(--accent-color)' : '1px solid #e5e7eb',
-                                boxShadow: theme === 'cyberpunk' ? 'var(--neon-glow)' : '0 4px 6px rgba(0, 0, 0, 0.1)',
-                                width: '100%',
-                                maxWidth: '600px',
-                            }}>
-                                <p className="text-xl mb-4 text-center">Stable Diffusion Web UI is not running</p>
-                                <p className="text-center">Press the Start button above to launch the Stable Diffusion Web UI.</p>
-                            </div>
-                        )}
-                        
-                        {/* SD logs toggle button - centered */}
-                        <div className="mt-8 w-full text-center">
-                            <button
-                                className="px-4 py-2 rounded-md mx-auto"
-                                onClick={() => setShowSdLogs(!showSdLogs)}
-                                style={{ 
-                                    backgroundColor: theme === 'cyberpunk' ? '#2d2d4d' : '#f3f4f6',
-                                    color: 'var(--text-color)', 
-                                    border: theme === 'corporate' ? '1px solid #000' : 'none',
-                                    boxShadow: theme === 'cyberpunk' ? 'var(--neon-glow)' : 'none',
-                                    width: '180px',
-                                    display: 'block',
-                                    margin: '0 auto'
-                                }}
-                            >
-                                {showSdLogs ? 'Hide Logs' : 'Show Logs'}
-                            </button>
+                            ) : (
+                                <div className="mb-6 p-4 rounded-md text-center text-sm" style={{
+                                    backgroundColor: theme === 'cyberpunk' ? 'rgba(26, 26, 46, 0.4)' : 'var(--input-bg)',
+                                    border: theme === 'cyberpunk' ? '1px solid var(--accent-color)' : '1px solid #e5e7eb',
+                                    color: 'var(--text-secondary)'
+                                }}>
+                                    <p>Stable Diffusion Web UI is not running</p>
+                                    <p className="text-xs mt-1">Press Start to launch the UI</p>
+                                </div>
+                            )}
                             
-                            {showSdLogs && (
-                                <div className="w-full mt-4 flex flex-col items-center">
-                                    <h3 className="text-xl font-bold text-center mb-3">Stable Diffusion Logs</h3>
+                            {/* Logs Toggle Button */}
+                            <div className="mt-4 text-center">
+                                <button 
+                                    className="px-3 py-1.5 rounded text-sm font-medium inline-flex items-center"
+                                    onClick={() => setShowSdLogs(!showSdLogs)}
+                                    style={{ 
+                                        backgroundColor: theme === 'cyberpunk' ? '#2d2d4d' : '#f3f4f6',
+                                        color: 'var(--text-color)', 
+                                        boxShadow: theme === 'cyberpunk' ? 'var(--neon-glow)' : 'none',
+                                    }}
+                                >
+                                    <svg className="mr-1.5" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-6"></path>
+                                        <polyline points="14 2 14 8 20 8"></polyline>
+                                        <line x1="16" y1="13" x2="8" y2="13"></line>
+                                        <line x1="16" y1="17" x2="8" y2="17"></line>
+                                        <line x1="10" y1="9" x2="8" y2="9"></line>
+                                    </svg>
+                                    {showSdLogs ? 'Hide Logs' : 'Show Logs'}
+                                </button>
+                            </div>
+                        </div>
+                        
+                        {/* Logs Display */}
+                        {showSdLogs && (
+                            <div className="w-full mt-4">
+                                <div className="max-w-3xl mx-auto">
                                     <div
-                                        className="border p-4 rounded whitespace-pre overflow-y-scroll mx-auto"
+                                        className="border p-3 rounded whitespace-pre overflow-y-scroll"
                                         style={{ 
-                                            width: '100%',
-                                            maxWidth: '800px',
-                                            height: '400px', 
+                                            height: '300px', 
                                             overflowY: 'scroll',
                                             backgroundColor: theme === 'cyberpunk' ? '#1a1a2e' : '#f8f9fa',
                                             color: theme === 'cyberpunk' ? 'white' : '#333',
                                             border: theme === 'cyberpunk' ? '1px solid var(--accent-color)' : '1px solid #e5e7eb',
                                             boxShadow: theme === 'cyberpunk' ? 'var(--neon-glow)' : 'none',
-                                            fontSize: '0.8rem',
+                                            fontSize: '0.75rem',
                                             textAlign: 'left' // Keep logs left-aligned for readability
                                         }}
                                     >
                                         {sdLogs || 'No logs available yet.'}
                                     </div>
                                 </div>
-                            )}
-                        </div>
+                            </div>
+                        )}
                     </div>
                 )}
 
