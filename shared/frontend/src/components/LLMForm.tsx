@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useTheme } from '../context/useTheme';
 import ServerStats from './ServerStarts';  // Import the ServerStats component
-import Navbar from './Navbar';  // Import the new Navbar component
+import Navbar from './Navbar';  // Import the Navbar component
 import ModelDownload from './ModelDownload'; // Import the ModelDownload component
+import StableDiffusionForm from './StableDiffusionForm'; // Import the new StableDiffusionForm component
 
 // Spinning loader component
 const Spinner = () => (
@@ -10,12 +11,12 @@ const Spinner = () => (
          style={{ borderColor: 'white transparent white transparent' }}></div>
 );
 
-interface ConfigFormProps {
+interface LLMFormProps {
     activeTab: string;
     setActiveTab: (tab: string) => void;
 }
 
-const ConfigForm = ({ activeTab, setActiveTab }: ConfigFormProps) => {
+const LLMForm = ({ activeTab, setActiveTab }: LLMFormProps) => {
     const { theme, toggleTheme } = useTheme();
     const [model, setModel] = useState('model');
     const [availableModels, setAvailableModels] = useState<string[]>([]);
@@ -25,17 +26,11 @@ const ConfigForm = ({ activeTab, setActiveTab }: ConfigFormProps) => {
     const [template, setTemplate] = useState('chatml');
     const [customParams, setCustomParams] = useState('');
     const [serverStatus, setServerStatus] = useState('Unknown');
-    const [sdStatus, setSdStatus] = useState('Unknown');
     const [logs, setLogs] = useState('');
-    const [sdLogs, setSdLogs] = useState('');
     const [isStarting, setIsStarting] = useState(false);
     const [isStopping, setIsStopping] = useState(false);
-    const [isStartingSD, setIsStartingSD] = useState(false);
-    const [isStoppingSD, setIsStoppingSD] = useState(false);
     const [operationStatus, setOperationStatus] = useState<{message: string, success: boolean} | null>(null);
-    const [sdOperationStatus, setSdOperationStatus] = useState<{message: string, success: boolean} | null>(null);
     const [showLogs, setShowLogs] = useState(false);
-    const [showSdLogs, setShowSdLogs] = useState(false);
 
     // Theme-based styles
     const getContainerStyle = () => {
@@ -76,11 +71,9 @@ const ConfigForm = ({ activeTab, setActiveTab }: ConfigFormProps) => {
                 const response = await fetch(`${getApiBaseUrl()}/stats/`);
                 const data = await response.json();
                 setServerStatus(data.server_running ? 'Running' : 'Stopped');
-                setSdStatus(data.sd_running ? 'Running' : 'Stopped');
             } catch {
                 // Any error means the server is not running
                 setServerStatus('Stopped');
-                setSdStatus('Stopped');
             }
         };
 
@@ -88,24 +81,6 @@ const ConfigForm = ({ activeTab, setActiveTab }: ConfigFormProps) => {
         checkStatus();
         return () => clearInterval(interval);
     }, []);
-
-    // Auto-refresh StableDiffusion status when in stablediffusion tab
-    useEffect(() => {
-        const checkSdWebUI = async () => {
-            try {
-                const response = await fetch('http://localhost:7860/api/endpoint');
-                // Just parse the JSON to check if it's valid, no need to store or set state
-                await response.json();
-            } catch {
-            }
-        };
-
-        if (activeTab === 'stablediffusion' && sdStatus === 'Running') {
-            const interval = setInterval(checkSdWebUI, 5000);
-            checkSdWebUI();
-            return () => clearInterval(interval);
-        }
-    }, [activeTab, sdStatus]);
 
     // Auto-refresh LLM logs when showing logs in config tab
     useEffect(() => {
@@ -126,25 +101,6 @@ const ConfigForm = ({ activeTab, setActiveTab }: ConfigFormProps) => {
             return () => clearInterval(logInterval);
         }
     }, [activeTab, showLogs]);
-    
-    // Fetch SD logs when needed
-    useEffect(() => {
-        const fetchSdLogs = async () => {
-            try {
-                const response = await fetch(`${getApiBaseUrl()}/sd-logs/`);
-                const data = await response.text();
-                setSdLogs(data);
-            } catch {
-                setSdLogs('Error fetching Stable Diffusion logs.');
-            }
-        };
-
-        if (activeTab === 'stablediffusion' && showSdLogs) {
-            const logInterval = setInterval(fetchSdLogs, 5000);
-            fetchSdLogs();
-            return () => clearInterval(logInterval);
-        }
-    }, [activeTab, showSdLogs]);
 
     // Fetch available models on mount
     useEffect(() => {
@@ -236,72 +192,6 @@ const ConfigForm = ({ activeTab, setActiveTab }: ConfigFormProps) => {
             setIsStopping(false);
         }
     };
-    
-    const handleStartStableDiffusion = async () => {
-        setIsStartingSD(true);
-        setSdOperationStatus(null);
-        
-        try {
-            const response = await fetch(`${getApiBaseUrl()}/start-stable-diffusion/`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' }
-            });
-
-            if (response.ok) {
-                setSdStatus('Running');
-                setSdOperationStatus({
-                    message: 'Stable Diffusion started successfully! WebUI will be available in a moment.',
-                    success: true
-                });
-            } else {
-                const errorData = await response.json();
-                setSdOperationStatus({
-                    message: `Failed to start Stable Diffusion: ${errorData.detail}`,
-                    success: false
-                });
-            }
-        } catch {
-            setSdOperationStatus({
-                message: 'Network error occurred. Please try again.',
-                success: false
-            });
-        } finally {
-            setIsStartingSD(false);
-        }
-    };
-
-    const handleStopStableDiffusion = async () => {
-        setIsStoppingSD(true);
-        setSdOperationStatus(null);
-        
-        try {
-            const response = await fetch(`${getApiBaseUrl()}/stop-stable-diffusion/`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' }
-            });
-
-            if (response.ok) {
-                setSdStatus('Stopped');
-                setSdOperationStatus({
-                    message: 'Stable Diffusion stopped successfully!',
-                    success: true
-                });
-            } else {
-                const errorData = await response.json();
-                setSdOperationStatus({
-                    message: `Failed to stop Stable Diffusion: ${errorData.detail}`,
-                    success: false
-                });
-            }
-        } catch {
-            setSdOperationStatus({
-                message: 'Network error occurred. Please try again.',
-                success: false
-            });
-        } finally {
-            setIsStoppingSD(false);
-        }
-    };
 
     return (
         <>
@@ -313,7 +203,7 @@ const ConfigForm = ({ activeTab, setActiveTab }: ConfigFormProps) => {
             
             <div className="p-6 space-y-6 rounded-lg shadow-lg" style={{ 
                 width: '100%', 
-                maxWidth: 'calc(100% - 100px)',  // Adjust width to account for sidebar
+                maxWidth: 'calc(100% - 100px)',
                 margin: '1.5rem auto',
                 marginLeft: '90px', // Change to left margin for left navbar
                 ...getContainerStyle()
@@ -567,213 +457,13 @@ const ConfigForm = ({ activeTab, setActiveTab }: ConfigFormProps) => {
                             
                             {/* Add ModelDownload component */}
                             <ModelDownload />
-                            
                         </div>
                     </> 
                 )}
 
                 {/* StableDiffusion Tab */}
                 {activeTab === 'stablediffusion' && (
-                    <div className="mt-6 mb-4 flex flex-col items-center">
-                        <h2 className="text-2xl font-bold text-center mb-6">Stable Diffusion Web UI</h2>
-                        
-                        <div className="flex flex-col items-center" style={{ width: '100%', maxWidth: '350px', margin: '0 auto' }}>
-                            {/* Simplified Status Card with Toggle Button */}
-                            <div className="mb-6 p-4 rounded-lg flex items-center justify-between shadow-sm w-full" style={{
-                                backgroundColor: theme === 'cyberpunk' ? 'rgba(26, 26, 46, 0.4)' : 'var(--input-bg)',
-                                border: theme === 'cyberpunk' ? '1px solid var(--accent-color)' : '1px solid #e5e7eb',
-                                boxShadow: theme === 'cyberpunk' ? 'var(--neon-glow)' : '0 1px 3px rgba(0,0,0,0.1)',
-                            }}>
-                                {/* Left side: Status indicator */}
-                                <div className="flex items-center">
-                                    <div className="relative w-6 h-6 mr-2">
-                                        <div className="w-6 h-6 rounded-full" style={{
-                                            backgroundColor: sdStatus === 'Running' ? '#4ade80' : '#ef4444',
-                                            boxShadow: theme === 'cyberpunk' 
-                                                ? `0 0 8px ${sdStatus === 'Running' ? '#4ade80' : '#ef4444'}`
-                                                : 'none',
-                                        }}>
-                                            {sdStatus === 'Running' && (
-                                                <div className="absolute inset-0 rounded-full animate-ping" style={{
-                                                    backgroundColor: '#4ade80',
-                                                    opacity: 0.3,
-                                                    animationDuration: '2s',
-                                                }}></div>
-                                            )}
-                                        </div>
-                                    </div>
-                                    <div className="flex flex-col items-start">
-                                        <span className="text-xs opacity-70">SD Web UI</span>
-                                        <span className="font-medium text-sm" style={{
-                                            color: sdStatus === 'Running' ? '#4ade80' : '#ef4444',
-                                            textShadow: theme === 'cyberpunk' 
-                                                ? `0 0 3px ${sdStatus === 'Running' ? '#4ade80' : '#ef4444'}`
-                                                : 'none',
-                                        }}>
-                                            {sdStatus}
-                                        </span>
-                                    </div>
-                                </div>
-                                
-                                {/* Right side: Single toggle button */}
-                                <button
-                                    className="px-3 py-1.5 rounded text-sm font-medium inline-flex items-center"
-                                    onClick={sdStatus === 'Running' ? handleStopStableDiffusion : handleStartStableDiffusion}
-                                    disabled={isStartingSD || isStoppingSD}
-                                    style={{ 
-                                        backgroundColor: sdStatus === 'Running' 
-                                            ? 'var(--button-danger)' 
-                                            : 'var(--button-primary)',
-                                        color: '#ffffff',
-                                        boxShadow: theme === 'cyberpunk' 
-                                            ? sdStatus === 'Running'
-                                                ? '0 0 5px rgba(229, 62, 62, 0.5)' 
-                                                : 'var(--neon-glow)'
-                                            : 'none',
-                                        opacity: (isStartingSD || isStoppingSD) ? 0.7 : 1,
-                                        transition: 'all 0.2s ease',
-                                        width: '120px',
-                                    }}
-                                >
-                                    {isStartingSD ? (
-                                        <><span className="mr-1">Starting</span><Spinner /></>
-                                    ) : isStoppingSD ? (
-                                        <><span className="mr-1">Stopping</span><Spinner /></>
-                                    ) : sdStatus === 'Running' ? (
-                                        <>
-                                            <svg className="mr-1.5" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                <rect x="6" y="6" width="12" height="12" rx="2" ry="2"></rect>
-                                            </svg>
-                                            Stop
-                                        </>
-                                    ) : (
-                                        <>
-                                            <svg className="mr-1.5" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                <polygon points="5 3 19 12 5 21 5 3"></polygon>
-                                            </svg>
-                                            Start
-                                        </>
-                                    )}
-                                </button>
-                            </div>
-                            
-                            {/* Status Messages */}
-                            {sdOperationStatus && (
-                                <div className="mb-4 px-4 py-3 rounded-md text-sm w-full" style={{
-                                    backgroundColor: sdOperationStatus.success ? 
-                                        (theme === 'cyberpunk' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(16, 185, 129, 0.1)') : 
-                                        (theme === 'cyberpunk' ? 'rgba(239, 68, 68, 0.15)' : 'rgba(239, 68, 68, 0.1)'),
-                                    color: sdOperationStatus.success ? 
-                                        (theme === 'cyberpunk' ? '#10b981' : '#047857') : 
-                                        (theme === 'cyberpunk' ? '#ef4444' : '#b91c1c'),
-                                    border: theme === 'cyberpunk' ? 
-                                        `1px solid ${sdOperationStatus.success ? 'rgba(16, 185, 129, 0.3)' : 'rgba(239, 68, 68, 0.3)'}` : 
-                                        'none',
-                                    textAlign: 'center',
-                                }}>
-                                    <div className="flex items-center justify-center">
-                                        <div className="mr-3 flex-shrink-0">
-                                            {sdOperationStatus.success ? (
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                                                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
-                                                </svg>
-                                            ) : (
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                    <circle cx="12" cy="12" r="10"></circle>
-                                                    <line x1="12" y1="8" x2="12" y2="12"></line>
-                                                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
-                                                </svg>
-                                            )}
-                                        </div>
-                                        <span>{sdOperationStatus.message}</span>
-                                    </div>
-                                </div>
-                            )}
-                            
-                            {/* Web UI Link or Status */}
-                            {sdStatus === 'Running' ? (
-                                <div className="mb-6 p-4 rounded-md text-center w-full" style={{
-                                    backgroundColor: theme === 'cyberpunk' ? 'rgba(26, 26, 46, 0.4)' : 'var(--input-bg)',
-                                    border: theme === 'cyberpunk' ? '1px solid var(--accent-color)' : '1px solid #e5e7eb',
-                                }}>
-                                    <p className="text-sm mb-2">Stable Diffusion Web UI is running at:</p>
-                                    <a 
-                                        href="http://localhost:7860" 
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="inline-flex items-center justify-center text-sm font-medium"
-                                        style={{
-                                            color: theme === 'cyberpunk' ? '#50e3c2' : '#3b82f6',
-                                            textShadow: theme === 'cyberpunk' ? '0 0 3px #50e3c2' : 'none',
-                                        }}
-                                    >
-                                        <svg className="mr-1.5" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-                                            <polyline points="15 3 21 3 21 9"></polyline>
-                                            <line x1="10" y1="14" x2="21" y2="3"></line>
-                                        </svg>
-                                        Open in New Tab
-                                    </a>
-                                </div>
-                            ) : (
-                                <div className="mb-6 p-4 rounded-md text-center w-full" style={{
-                                    backgroundColor: theme === 'cyberpunk' ? 'rgba(26, 26, 46, 0.4)' : 'var(--input-bg)',
-                                    border: theme === 'cyberpunk' ? '1px solid var(--accent-color)' : '1px solid #e5e7eb',
-                                    color: 'var(--text-secondary)',
-                                }}>
-                                    <p className="text-sm">Stable Diffusion Web UI is not running</p>
-                                    <p className="text-xs mt-1">Press Start to launch the UI</p>
-                                </div>
-                            )}
-                            
-                            {/* Logs Toggle Button */}
-                            <div className="mt-4 text-center w-full flex justify-center">
-                                <button 
-                                    className="px-3 py-1.5 rounded text-sm font-medium inline-flex items-center justify-center"
-                                    onClick={() => setShowSdLogs(!showSdLogs)}
-                                    style={{ 
-                                        backgroundColor: theme === 'cyberpunk' ? '#2d2d4d' : '#f3f4f6',
-                                        color: 'var(--text-color)', 
-                                        boxShadow: theme === 'cyberpunk' ? 'var(--neon-glow)' : 'none',
-                                        width: '120px',
-                                    }}
-                                >
-                                    <svg className="mr-1.5" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-6"></path>
-                                        <polyline points="14 2 14 8 20 8"></polyline>
-                                        <line x1="16" y1="13" x2="8" y2="13"></line>
-                                        <line x1="16" y1="17" x2="8" y2="17"></line>
-                                        <line x1="10" y1="9" x2="8" y2="9"></line>
-                                    </svg>
-                                    {showSdLogs ? 'Hide Logs' : 'Show Logs'}
-                                </button>
-                            </div>
-                        </div>
-                        
-                        {/* Logs Display */}
-                        {showSdLogs && (
-                            <div style={{ width: '80%', maxWidth: '800px', margin: '20px auto 0' }}>
-                                <div className="mx-auto">
-                                    <div
-                                        className="border p-3 rounded whitespace-pre overflow-y-scroll"
-                                        style={{ 
-                                            height: '300px', 
-                                            overflowY: 'scroll',
-                                            backgroundColor: theme === 'cyberpunk' ? '#1a1a2e' : '#f8f9fa',
-                                            color: theme === 'cyberpunk' ? 'white' : '#333',
-                                            border: theme === 'cyberpunk' ? '1px solid var(--accent-color)' : '1px solid #e5e7eb',
-                                            boxShadow: theme === 'cyberpunk' ? 'var(--neon-glow)' : 'none',
-                                            fontSize: '0.75rem',
-                                            textAlign: 'left' // Keep logs left-aligned for readability
-                                        }}
-                                    >
-                                        {sdLogs || 'No logs available yet.'}
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-                    </div>
+                    <StableDiffusionForm />
                 )}
 
                 {/* Allowlist Tab */}
@@ -787,4 +477,4 @@ const ConfigForm = ({ activeTab, setActiveTab }: ConfigFormProps) => {
     );
 };
 
-export default ConfigForm;
+export default LLMForm;
