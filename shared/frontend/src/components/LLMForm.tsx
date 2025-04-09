@@ -251,45 +251,52 @@ const LLMForm = ({ activeTab, setActiveTab }: LLMFormProps) => {
 
                         {/* Remaining fields with fixed width and centered */}
                         <div style={{ width: '100%', margin: '0 auto', marginBottom: '2.5rem', textAlign: 'center' }}>
-                            <div className="grid grid-cols-2 gap-8 mb-8">
-                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                                    <label className="block mb-1">Host:</label>
-                                    <input
-                                        type="text"
-                                        value={host}
-                                        onChange={(e) => setHost(e.target.value)}
-                                        style={{ ...getInputStyle(), width: '180px', textAlign: 'center' }}
-                                    />
+                            {/* Host, Port, GPU Layers, and Template in two rows, two per row */}
+                            <div style={{ width: '550px', margin: '1.5rem auto', marginBottom: '2.5rem' }}>
+                                {/* First row: Host and Port */}
+                                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: '1.5rem' }}>
+                                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                        <label className="block mb-1">Host:</label>
+                                        <input
+                                            type="text"
+                                            value={host}
+                                            onChange={(e) => setHost(e.target.value)}
+                                            style={{ ...getInputStyle(), width: '180px', textAlign: 'center' }}
+                                        />
+                                    </div>
+                                    
+                                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                        <label className="block mb-1">Port:</label>
+                                        <input
+                                            type="number"
+                                            value={port}
+                                            onChange={(e) => setPort(Number(e.target.value))}
+                                            style={{ ...getInputStyle(), width: '180px', textAlign: 'center' }}
+                                        />
+                                    </div>
                                 </div>
-
-                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                                    <label className="block mb-1">Port:</label>
-                                    <input
-                                        type="number"
-                                        value={port}
-                                        onChange={(e) => setPort(Number(e.target.value))}
-                                        style={{ ...getInputStyle(), width: '180px', textAlign: 'center' }}
-                                    />
-                                </div>
-
-                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                                    <label className="block mb-1">GPU Layers:</label>
-                                    <input
-                                        type="number"
-                                        value={ngl}
-                                        onChange={(e) => setNgl(Number(e.target.value))}
-                                        style={{ ...getInputStyle(), width: '180px', textAlign: 'center' }}
-                                    />
-                                </div>
-
-                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                                    <label className="block mb-1">Template:</label>
-                                    <input
-                                        type="text"
-                                        value={template}
-                                        onChange={(e) => setTemplate(e.target.value)}
-                                        style={{ ...getInputStyle(), width: '180px', textAlign: 'center' }}
-                                    />
+                                
+                                {/* Second row: GPU Layers and Template */}
+                                <div style={{ display: "flex", justifyContent: "space-between" }}>
+                                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                        <label className="block mb-1">GPU Layers:</label>
+                                        <input
+                                            type="number"
+                                            value={ngl}
+                                            onChange={(e) => setNgl(Number(e.target.value))}
+                                            style={{ ...getInputStyle(), width: '180px', textAlign: 'center' }}
+                                        />
+                                    </div>
+                                    
+                                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                        <label className="block mb-1">Template:</label>
+                                        <input
+                                            type="text"
+                                            value={template}
+                                            onChange={(e) => setTemplate(e.target.value)}
+                                            style={{ ...getInputStyle(), width: '180px', textAlign: 'center' }}
+                                        />
+                                    </div>
                                 </div>
                             </div>
 
