@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { useTheme } from '../context/useTheme';
 import ServerStats from './ServerStarts';  // Import the ServerStats component
 import Navbar from './Navbar';  // Import the Navbar component
-import ModelDownload from './ModelDownload'; // Import the ModelDownload component
 import StableDiffusionForm from './StableDiffusionForm'; // Import the new StableDiffusionForm component
 import IPAccessControlPanel from './AllowlistForm'; // Import the IP Access Control Panel component
 
@@ -463,11 +462,6 @@ const LLMForm = ({ activeTab, setActiveTab }: LLMFormProps) => {
                                     </div>
                                 </div>
                             )}
-                        </div>
-                        
-                        {/* Model download component */}
-                        <div className="mt-8" style={{ textAlign: 'center', width: '100%' }}>
-                            <ModelDownload />
                         </div>
                     </> 
                 )}

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTheme } from '../context/useTheme';
+import ModelDownload from './ModelDownload'; // Import the ModelDownload component
 
 const Spinner = () => (
     <div className="inline-block animate-spin rounded-full border-4 border-solid border-current border-r-transparent h-5 w-5 ml-2"
@@ -209,6 +210,11 @@ const IPAccessControlPanel = () => {
     return (
         <div className="settings-content">
             <h2 className="text-3xl font-bold text-center mb-8" style={{ color: 'var(--text-color)' }}>Settings</h2>
+            
+            {/* Add ModelDownload component here */}
+            <div className="mb-8">
+                <ModelDownload />
+            </div>
 
             {(statusMessage || errorMessage) && (
                 <div className="mb-6 px-5 py-4 rounded-xl flex items-center" style={{
