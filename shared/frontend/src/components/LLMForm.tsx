@@ -4,6 +4,7 @@ import ServerStats from './ServerStarts';  // Import the ServerStats component
 import Navbar from './Navbar';  // Import the Navbar component
 import ModelDownload from './ModelDownload'; // Import the ModelDownload component
 import StableDiffusionForm from './StableDiffusionForm'; // Import the new StableDiffusionForm component
+import IPAccessControlPanel from './AllowlistForm'; // Import the IP Access Control Panel component
 
 // Spinning loader component
 const Spinner = () => (
@@ -479,7 +480,7 @@ const LLMForm = ({ activeTab, setActiveTab }: LLMFormProps) => {
                 {/* Allowlist Tab */}
                 {activeTab === 'allowlist' && (
                     <div className="mt-6">
-                        {/* This would normally just include the AllowlistForm component */}
+                        <IPAccessControlPanel />
                     </div>
                 )}
             </div>

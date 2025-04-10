@@ -17,29 +17,6 @@ const IPAccessControlPanel = () => {
     const [statusMessage, setStatusMessage] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
 
-    const getContainerStyle = (): React.CSSProperties => {
-        return theme === 'cyberpunk'
-            ? {
-                backgroundColor: 'var(--primary-bg)',
-                color: 'var(--text-color)',
-                boxShadow: 'var(--neon-glow)',
-                border: '1px solid rgba(157, 78, 221, 0.3)',
-                borderRadius: '1rem',
-                backdropFilter: 'blur(10px)',
-                padding: '2rem',
-                margin: '2rem auto',
-              }
-            : {
-                backgroundColor: 'var(--primary-bg)',
-                color: 'var(--text-color)',
-                boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05)',
-                border: '1px solid #f0f0f0',
-                borderRadius: '1rem',
-                padding: '2rem',
-                margin: '2rem auto',
-              };
-    };
-
     const getInputStyle = (): React.CSSProperties => {
         return {
             padding: "0.75rem 1rem",
@@ -230,8 +207,8 @@ const IPAccessControlPanel = () => {
     }, []);
 
     return (
-        <div className="card" style={getContainerStyle()}>
-            <h2 className="text-3xl font-bold text-center mb-8" style={{ color: 'var(--text-color)' }}>IP Access Settings</h2>
+        <div className="settings-content">
+            <h2 className="text-3xl font-bold text-center mb-8" style={{ color: 'var(--text-color)' }}>Settings</h2>
 
             {(statusMessage || errorMessage) && (
                 <div className="mb-6 px-5 py-4 rounded-xl flex items-center" style={{
