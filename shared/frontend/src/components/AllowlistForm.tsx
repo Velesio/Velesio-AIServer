@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useRef } from 'react';
 import { useTheme } from '../context/useTheme';
 import ModelDownload from './ModelDownload'; // Import the ModelDownload component
 
@@ -6,6 +6,124 @@ const Spinner = () => (
     <div className="inline-block animate-spin rounded-full border-4 border-solid border-current border-r-transparent h-5 w-5 ml-2"
          style={{ borderColor: 'currentColor transparent currentColor transparent' }}></div>
 );
+
+// Create a reusable component for the IP tables
+const IPTable = ({ 
+    title, 
+    ipList, 
+    actionType, 
+    removeIP, 
+    theme 
+}: { 
+    title: string; 
+    ipList: string[]; 
+    actionType: 'allow' | 'block'; 
+    removeIP: (ip: string, type: 'allow' | 'block') => Promise<void>; 
+    theme: string;
+}) => {
+    return (
+        <div className="space-y-4">
+            <div className="flex justify-between items-center mb-2">
+                <h3 className="text-xl font-semibold" style={{ color: 'var(--text-color)' }}>{title}</h3>
+                <span className="text-sm py-1 px-3 rounded-full" style={{ 
+                    backgroundColor: theme === 'cyberpunk' ? 'rgba(157, 78, 221, 0.2)' : '#f3f4f6',
+                    color: 'var(--text-secondary)'
+                }}>
+                    {ipList.length} IPs
+                </span>
+            </div>
+            
+            {ipList.length > 0 ? (
+                <div className="overflow-hidden rounded-xl shadow-sm" style={{ 
+                    border: theme === 'cyberpunk' ? '1px solid rgba(157, 78, 221, 0.3)' : '1px solid rgba(229, 231, 235, 0.5)',
+                }}>
+                    <div className="overflow-x-auto">
+                        <table className="min-w-full divide-y" style={{
+                            borderCollapse: 'collapse',
+                            width: '100%',
+                            color: 'var(--text-color)',
+                            borderColor: theme === 'cyberpunk' ? 'rgba(157, 78, 221, 0.2)' : 'rgba(229, 231, 235, 0.5)',
+                        }}>
+                            <thead style={{ backgroundColor: theme === 'cyberpunk' ? 'rgba(45, 45, 77, 0.5)' : '#f9fafb' }}>
+                                <tr>
+                                    <th scope="col" className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>#</th>
+                                    <th scope="col" className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>IP Address</th>
+                                    <th scope="col" className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y" style={{
+                                backgroundColor: theme === 'cyberpunk' ? 'rgba(26, 26, 46, 0.4)' : '#ffffff',
+                                borderColor: theme === 'cyberpunk' ? 'rgba(157, 78, 221, 0.2)' : 'rgba(229, 231, 235, 0.5)',
+                            }}>
+                                {ipList.map((ip, index) => (
+                                    <tr key={`${actionType}-${ip}-${index}`} style={{
+                                        transition: 'all 0.2s ease',
+                                        backgroundColor: index % 2 !== 0 
+                                            ? (theme === 'cyberpunk' ? 'rgba(45, 45, 77, 0.3)' : '#f9fafb')
+                                            : 'transparent'
+                                    }}>
+                                        <td className="px-4 py-3 whitespace-nowrap text-sm font-medium">{index + 1}</td>
+                                        <td className="px-4 py-3 whitespace-nowrap text-sm font-mono">{ip}</td>
+                                        <td className="px-4 py-3 whitespace-nowrap text-sm text-right">
+                                            <button
+                                                onClick={() => removeIP(ip, actionType)}
+                                                className="inline-flex items-center px-3 py-1 rounded-full"
+                                                style={{ 
+                                                    color: theme === 'cyberpunk' ? '#f87171' : '#dc2626',
+                                                    backgroundColor: theme === 'cyberpunk' ? 'rgba(239, 68, 68, 0.1)' : '#fef2f2',
+                                                    transition: 'all 0.2s ease'
+                                                }}
+                                                aria-label={`Remove ${actionType === 'allow' ? 'allowed' : 'blocked'} IP ${ip}`}
+                                            >
+                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                </svg>
+                                                Remove
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            ) : (
+                <div className="text-center p-6 rounded-xl flex flex-col items-center justify-center" style={{
+                    backgroundColor: theme === 'cyberpunk' ? 'rgba(26, 26, 46, 0.4)' : 'var(--input-bg)',
+                    border: theme === 'cyberpunk' ? '1px dashed rgba(157, 78, 221, 0.3)' : '1px dashed #d1d5db',
+                    color: 'var(--text-secondary)',
+                    minHeight: '12rem'
+                }}>
+                    <div className="w-12 h-12 mb-4 rounded-full flex items-center justify-center" style={{
+                        backgroundColor: actionType === 'allow' 
+                            ? (theme === 'cyberpunk' ? 'rgba(16, 185, 129, 0.2)' : '#ecfdf5')
+                            : (theme === 'cyberpunk' ? 'rgba(157, 78, 221, 0.2)' : '#f3f3f3'),
+                        color: actionType === 'allow' ? '#10b981' : (theme === 'cyberpunk' ? '#c77dff' : '#6366f1')
+                    }}>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            {actionType === 'allow' ? (
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                            ) : (
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" />
+                            )}
+                        </svg>
+                    </div>
+                    <p className="font-medium text-base mb-1">
+                        {actionType === 'allow' ? 'Open Access Mode Active' : 'No IPs are currently blocked'}
+                    </p>
+                    <p className="text-sm">
+                        {actionType === 'allow' 
+                            ? 'Add IPs to the allow list to restrict access' 
+                            : 'Add IPs to the block list using the form above'}
+                    </p>
+                </div>
+            )}
+        </div>
+    );
+};
+
+// Unique identifier for this component
+const COMPONENT_UNIQUE_CLASS = 'ip-access-control-panel-root';
 
 const IPAccessControlPanel = () => {
     const { theme } = useTheme();
@@ -17,6 +135,32 @@ const IPAccessControlPanel = () => {
     const [actionType, setActionType] = useState<'allow' | 'block'>('allow');
     const [statusMessage, setStatusMessage] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
+    
+    // Track if this instance should render content
+    const [shouldRender, setShouldRender] = useState(true);
+    const componentRef = useRef<HTMLDivElement>(null);
+    
+    // Check for duplicates before initial render
+    useLayoutEffect(() => {
+        const existingInstances = document.getElementsByClassName(COMPONENT_UNIQUE_CLASS);
+        
+        // If this is not the first instance, don't render
+        if (existingInstances.length > 0 && componentRef.current !== existingInstances[0]) {
+            setShouldRender(false);
+        }
+    }, []);
+    
+    useEffect(() => {
+        // Only fetch data if this is the instance that should render
+        if (shouldRender) {
+            fetchIPLists();
+        }
+    }, [shouldRender]);
+
+    // Don't render anything if this is a duplicate
+    if (!shouldRender) {
+        return null;
+    }
 
     const getInputStyle = (): React.CSSProperties => {
         return {
@@ -203,19 +347,20 @@ const IPAccessControlPanel = () => {
          }
      };
 
-    useEffect(() => {
-        fetchIPLists();
-    }, []);
-
     return (
-        <div className="settings-content">
+        <div 
+            className={`settings-content ${COMPONENT_UNIQUE_CLASS}`} 
+            ref={componentRef} 
+            data-component="ip-access-control"
+        >
             <h2 className="text-3xl font-bold text-center mb-8" style={{ color: 'var(--text-color)' }}>Settings</h2>
             
-            {/* Add ModelDownload component here */}
-            <div className="mb-8">
+            <div className="mb-12">
                 <ModelDownload />
             </div>
 
+            <h3 className="text-2xl font-semibold mb-6" style={{ color: 'var(--text-color)' }}>IP Access Control</h3>
+            
             {(statusMessage || errorMessage) && (
                 <div className="mb-6 px-5 py-4 rounded-xl flex items-center" style={{
                     backgroundColor: statusMessage
@@ -249,7 +394,7 @@ const IPAccessControlPanel = () => {
             )}
 
             <div className="mb-8">
-                 <h3 className="text-xl font-semibold mb-4" style={{ color: 'var(--text-color)' }}>Current Status</h3>
+                 <h4 className="text-xl font-semibold mb-4" style={{ color: 'var(--text-color)' }}>Current Status</h4>
                  <div className="p-5 border rounded-xl flex items-center gap-6" style={{
                     backgroundColor: theme === 'cyberpunk' ? 'rgba(26, 26, 46, 0.4)' : 'var(--input-bg)',
                     border: theme === 'cyberpunk' ? '1px solid rgba(157, 78, 221, 0.3)' : '1px solid rgba(229, 231, 235, 0.5)',
@@ -308,7 +453,7 @@ const IPAccessControlPanel = () => {
             </div>
 
             <div className="mb-10">
-                <h3 className="text-xl font-semibold mb-4" style={{ color: 'var(--text-color)' }}>Manage IP Access</h3>
+                <h4 className="text-xl font-semibold mb-4" style={{ color: 'var(--text-color)' }}>Manage IP Access</h4>
                 <form onSubmit={(e) => { e.preventDefault(); addIP(); }} className="space-y-4">
                      <div className="flex flex-col sm:flex-row items-stretch sm:items-start gap-4">
                         <div className="flex-grow">
@@ -378,177 +523,21 @@ const IPAccessControlPanel = () => {
             </div>
 
             <div className="grid gap-8 grid-cols-1 md:grid-cols-2">
-                <div className="space-y-4">
-                    <div className="flex justify-between items-center mb-2">
-                        <h3 className="text-xl font-semibold" style={{ color: 'var(--text-color)' }}>Allowed IPs</h3>
-                        <span className="text-sm py-1 px-3 rounded-full" style={{ 
-                            backgroundColor: theme === 'cyberpunk' ? 'rgba(157, 78, 221, 0.2)' : '#f3f4f6',
-                            color: 'var(--text-secondary)'
-                        }}>
-                            {ipList.length} IPs
-                        </span>
-                    </div>
-                    
-                    {ipList.length > 0 ? (
-                        <div className="overflow-hidden rounded-xl shadow-sm" style={{ 
-                            border: theme === 'cyberpunk' ? '1px solid rgba(157, 78, 221, 0.3)' : '1px solid rgba(229, 231, 235, 0.5)',
-                        }}>
-                            <div className="overflow-x-auto">
-                                <table className="min-w-full divide-y" style={{
-                                    borderCollapse: 'collapse',
-                                    width: '100%',
-                                    color: 'var(--text-color)',
-                                    borderColor: theme === 'cyberpunk' ? 'rgba(157, 78, 221, 0.2)' : 'rgba(229, 231, 235, 0.5)',
-                                }}>
-                                    <thead style={{ backgroundColor: theme === 'cyberpunk' ? 'rgba(45, 45, 77, 0.5)' : '#f9fafb' }}>
-                                        <tr>
-                                            <th scope="col" className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>#</th>
-                                            <th scope="col" className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>IP Address</th>
-                                            <th scope="col" className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y" style={{
-                                        backgroundColor: theme === 'cyberpunk' ? 'rgba(26, 26, 46, 0.4)' : '#ffffff',
-                                        borderColor: theme === 'cyberpunk' ? 'rgba(157, 78, 221, 0.2)' : 'rgba(229, 231, 235, 0.5)',
-                                    }}>
-                                        {ipList.map((ip, index) => (
-                                            <tr key={`allow-${ip}-${index}`} style={{
-                                                transition: 'all 0.2s ease',
-                                                backgroundColor: index % 2 !== 0 
-                                                    ? (theme === 'cyberpunk' ? 'rgba(45, 45, 77, 0.3)' : '#f9fafb')
-                                                    : 'transparent'
-                                            }}>
-                                                <td className="px-4 py-3 whitespace-nowrap text-sm font-medium">{index + 1}</td>
-                                                <td className="px-4 py-3 whitespace-nowrap text-sm font-mono">{ip}</td>
-                                                <td className="px-4 py-3 whitespace-nowrap text-sm text-right">
-                                                    <button
-                                                        onClick={() => removeIP(ip, 'allow')}
-                                                        className="inline-flex items-center px-3 py-1 rounded-full"
-                                                        style={{ 
-                                                            color: theme === 'cyberpunk' ? '#f87171' : '#dc2626',
-                                                            backgroundColor: theme === 'cyberpunk' ? 'rgba(239, 68, 68, 0.1)' : '#fef2f2',
-                                                            transition: 'all 0.2s ease'
-                                                        }}
-                                                        aria-label={`Remove allowed IP ${ip}`}
-                                                    >
-                                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                        </svg>
-                                                        Remove
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    ) : (
-                        <div className="text-center p-6 rounded-xl flex flex-col items-center justify-center" style={{
-                            backgroundColor: theme === 'cyberpunk' ? 'rgba(26, 26, 46, 0.4)' : 'var(--input-bg)',
-                            border: theme === 'cyberpunk' ? '1px dashed rgba(157, 78, 221, 0.3)' : '1px dashed #d1d5db',
-                            color: 'var(--text-secondary)',
-                            minHeight: '12rem'
-                        }}>
-                            <div className="w-12 h-12 mb-4 rounded-full flex items-center justify-center" style={{
-                                backgroundColor: theme === 'cyberpunk' ? 'rgba(16, 185, 129, 0.2)' : '#ecfdf5',
-                                color: '#10b981'
-                            }}>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                                </svg>
-                            </div>
-                            <p className="font-medium text-base mb-1">Open Access Mode Active</p>
-                            <p className="text-sm">Add IPs to the allow list to restrict access</p>
-                        </div>
-                    )}
-                </div>
-
-                <div className="space-y-4">
-                    <div className="flex justify-between items-center mb-2">
-                        <h3 className="text-xl font-semibold" style={{ color: 'var(--text-color)' }}>Blocked IPs</h3>
-                        <span className="text-sm py-1 px-3 rounded-full" style={{ 
-                            backgroundColor: theme === 'cyberpunk' ? 'rgba(157, 78, 221, 0.2)' : '#f3f4f6',
-                            color: 'var(--text-secondary)'
-                        }}>
-                            {blockedIPs.length} IPs
-                        </span>
-                    </div>
-                    
-                    {blockedIPs.length > 0 ? (
-                        <div className="overflow-hidden rounded-xl shadow-sm" style={{ 
-                            border: theme === 'cyberpunk' ? '1px solid rgba(157, 78, 221, 0.3)' : '1px solid rgba(229, 231, 235, 0.5)',
-                        }}>
-                            <div className="overflow-x-auto">
-                                <table className="min-w-full divide-y" style={{
-                                    borderCollapse: 'collapse',
-                                    width: '100%',
-                                    color: 'var(--text-color)',
-                                    borderColor: theme === 'cyberpunk' ? 'rgba(157, 78, 221, 0.2)' : 'rgba(229, 231, 235, 0.5)',
-                                }}>
-                                    <thead style={{ backgroundColor: theme === 'cyberpunk' ? 'rgba(45, 45, 77, 0.5)' : '#f9fafb' }}>
-                                        <tr>
-                                            <th scope="col" className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>#</th>
-                                            <th scope="col" className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>IP Address</th>
-                                            <th scope="col" className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y" style={{
-                                        backgroundColor: theme === 'cyberpunk' ? 'rgba(26, 26, 46, 0.4)' : '#ffffff',
-                                        borderColor: theme === 'cyberpunk' ? 'rgba(157, 78, 221, 0.2)' : 'rgba(229, 231, 235, 0.5)',
-                                    }}>
-                                        {blockedIPs.map((ip, index) => (
-                                            <tr key={`block-${ip}-${index}`} style={{
-                                                transition: 'all 0.2s ease',
-                                                backgroundColor: index % 2 !== 0 
-                                                    ? (theme === 'cyberpunk' ? 'rgba(45, 45, 77, 0.3)' : '#f9fafb')
-                                                    : 'transparent'
-                                            }}>
-                                                <td className="px-4 py-3 whitespace-nowrap text-sm font-medium">{index + 1}</td>
-                                                <td className="px-4 py-3 whitespace-nowrap text-sm font-mono">{ip}</td>
-                                                <td className="px-4 py-3 whitespace-nowrap text-sm text-right">
-                                                    <button
-                                                        onClick={() => removeIP(ip, 'block')}
-                                                        className="inline-flex items-center px-3 py-1 rounded-full"
-                                                        style={{ 
-                                                            color: theme === 'cyberpunk' ? '#f87171' : '#dc2626',
-                                                            backgroundColor: theme === 'cyberpunk' ? 'rgba(239, 68, 68, 0.1)' : '#fef2f2',
-                                                            transition: 'all 0.2s ease'
-                                                        }}
-                                                        aria-label={`Remove blocked IP ${ip}`}
-                                                    >
-                                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                        </svg>
-                                                        Remove
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    ) : (
-                        <div className="text-center p-6 rounded-xl flex flex-col items-center justify-center" style={{
-                            backgroundColor: theme === 'cyberpunk' ? 'rgba(26, 26, 46, 0.4)' : 'var(--input-bg)',
-                            border: theme === 'cyberpunk' ? '1px dashed rgba(157, 78, 221, 0.3)' : '1px dashed #d1d5db',
-                            color: 'var(--text-secondary)',
-                            minHeight: '12rem'
-                        }}>
-                            <div className="w-12 h-12 mb-4 rounded-full flex items-center justify-center" style={{
-                                backgroundColor: theme === 'cyberpunk' ? 'rgba(157, 78, 221, 0.2)' : '#f3f3f3',
-                                color: theme === 'cyberpunk' ? '#c77dff' : '#6366f1'
-                            }}>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" />
-                                </svg>
-                            </div>
-                            <p className="font-medium text-base mb-1">No IPs are currently blocked</p>
-                            <p className="text-sm">Add IPs to the block list using the form above</p>
-                        </div>
-                    )}
-                </div>
+                <IPTable 
+                    title="Allowed IPs" 
+                    ipList={ipList} 
+                    actionType="allow" 
+                    removeIP={removeIP} 
+                    theme={theme} 
+                />
+                
+                <IPTable 
+                    title="Blocked IPs" 
+                    ipList={blockedIPs} 
+                    actionType="block" 
+                    removeIP={removeIP} 
+                    theme={theme} 
+                />
             </div>
         </div>
     );
