@@ -148,12 +148,8 @@ const StableDiffusionForm = () => {
             <h2 className="text-2xl font-bold text-center mb-6">Stable Diffusion Web UI</h2>
             
             <div className="flex justify-center items-center mt-10 mb-10 flex-col gap-6" style={{width: '100%', margin: '0 auto', textAlign: 'center'}}>
-                {/* Visual Server Status Indicator with integrated action button */}
-                <div className="mb-4 p-4 rounded-lg flex items-center justify-between w-full max-w-md" style={{
-                    backgroundColor: theme === 'cyberpunk' ? 'rgba(26, 26, 46, 0.4)' : 'var(--input-bg)',
-                    border: theme === 'cyberpunk' ? '1px solid var(--accent-color)' : '1px solid #e5e7eb',
-                    boxShadow: theme === 'cyberpunk' ? 'var(--neon-glow)' : '0 1px 3px rgba(0,0,0,0.1)',
-                }}>
+                {/* Visual Server Status Indicator with integrated action button - box removed but layout maintained */}
+                <div className="mb-4 flex items-center justify-between w-full max-w-md">
                     {/* Left side: Status indicator */}
                     <div className="flex items-center">
                         <div className="relative w-6 h-6 mr-2">
