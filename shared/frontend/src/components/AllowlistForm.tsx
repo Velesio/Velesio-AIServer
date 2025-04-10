@@ -359,185 +359,190 @@ const IPAccessControlPanel = () => {
                 <ModelDownload />
             </div>
 
-            <h3 className="text-2xl font-semibold mb-6" style={{ color: 'var(--text-color)' }}>IP Access Control</h3>
-            
-            {(statusMessage || errorMessage) && (
-                <div className="mb-6 px-5 py-4 rounded-xl flex items-center" style={{
-                    backgroundColor: statusMessage
-                        ? (theme === 'cyberpunk' ? 'rgba(16, 185, 129, 0.15)' : '#f0fdf4')
-                        : (theme === 'cyberpunk' ? 'rgba(239, 68, 68, 0.15)' : '#fef2f2'),
-                    border: statusMessage
-                        ? (theme === 'cyberpunk' ? '1px solid rgba(16, 185, 129, 0.3)' : '1px solid #dcfce7')
-                        : (theme === 'cyberpunk' ? '1px solid rgba(239, 68, 68, 0.3)' : '1px solid #fee2e2'),
-                    color: statusMessage
-                        ? (theme === 'cyberpunk' ? '#34d399' : '#166534')
-                        : (theme === 'cyberpunk' ? '#f87171' : '#b91c1c')
-                }}>
-                    <div className="mr-4 flex-shrink-0">
-                        {statusMessage ? (
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                                <polyline points="22 4 12 14.01 9 11.01"></polyline>
-                            </svg>
-                        ) : (
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <circle cx="12" cy="12" r="10"></circle>
-                                <line x1="12" y1="8" x2="12" y2="12"></line>
-                                <line x1="12" y1="16" x2="12.01" y2="16"></line>
-                            </svg>
-                        )}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div>
+                    <h3 className="text-2xl font-semibold mb-6" style={{ color: 'var(--text-color)' }}>IP Access Control</h3>
+                    
+                    {(statusMessage || errorMessage) && (
+                        <div className="mb-6 px-5 py-4 rounded-xl flex items-center" style={{
+                            backgroundColor: statusMessage
+                                ? (theme === 'cyberpunk' ? 'rgba(16, 185, 129, 0.15)' : '#f0fdf4')
+                                : (theme === 'cyberpunk' ? 'rgba(239, 68, 68, 0.15)' : '#fef2f2'),
+                            border: statusMessage
+                                ? (theme === 'cyberpunk' ? '1px solid rgba(16, 185, 129, 0.3)' : '1px solid #dcfce7')
+                                : (theme === 'cyberpunk' ? '1px solid rgba(239, 68, 68, 0.3)' : '1px solid #fee2e2'),
+                            color: statusMessage
+                                ? (theme === 'cyberpunk' ? '#34d399' : '#166534')
+                                : (theme === 'cyberpunk' ? '#f87171' : '#b91c1c')
+                        }}>
+                            <div className="mr-4 flex-shrink-0">
+                                {statusMessage ? (
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                                    </svg>
+                                ) : (
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <circle cx="12" cy="12" r="10"></circle>
+                                        <line x1="12" y1="8" x2="12" y2="12"></line>
+                                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                                    </svg>
+                                )}
+                            </div>
+                            <div className="text-sm font-medium">
+                                {statusMessage || errorMessage}
+                            </div>
+                        </div>
+                    )}
+
+                    <div className="mb-6">
+                        <h4 className="text-xl font-semibold mb-4" style={{ color: 'var(--text-color)' }}>Current Status</h4>
+                        <div className="p-5 border rounded-xl flex items-center gap-6" style={{
+                            backgroundColor: theme === 'cyberpunk' ? 'rgba(26, 26, 46, 0.4)' : 'var(--input-bg)',
+                            border: theme === 'cyberpunk' ? '1px solid rgba(157, 78, 221, 0.3)' : '1px solid rgba(229, 231, 235, 0.5)',
+                            color: 'var(--text-color)',
+                            boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)'
+                        }}>
+                            <div className="flex items-center justify-center w-14 h-14 rounded-full" style={{
+                                backgroundColor: theme === 'cyberpunk' ? 'rgba(18, 18, 37, 0.7)' : '#f9fafb',
+                                boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
+                            }}>
+                                <div className="w-10 h-10 rounded-full flex-shrink-0 relative flex items-center justify-center" style={{
+                                    backgroundColor: ipList.length === 0 ? '#10b981' : '#ef4444',
+                                    boxShadow: theme === 'cyberpunk'
+                                        ? `0 0 12px ${ipList.length === 0 ? 'rgba(16, 185, 129, 0.7)' : 'rgba(239, 68, 68, 0.7)'}`
+                                        : '0 1px 3px rgba(0, 0, 0, 0.1)',
+                                }}>
+                                    {ipList.length === 0 ? (
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                                        </svg>
+                                    ) : (
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                        </svg>
+                                    )}
+                                    
+                                    {ipList.length === 0 && theme === 'cyberpunk' && (
+                                        <div className="absolute inset-0 rounded-full animate-ping" style={{
+                                            backgroundColor: 'rgba(16, 185, 129, 0.5)',
+                                            animationDuration: '1.5s'
+                                        }}></div>
+                                    )}
+                                </div>
+                            </div>
+                            <div>
+                                <div className="status-badge mb-2" style={{
+                                    backgroundColor: ipList.length === 0 
+                                        ? (theme === 'cyberpunk' ? 'rgba(16, 185, 129, 0.2)' : '#ecfdf5')
+                                        : (theme === 'cyberpunk' ? 'rgba(239, 68, 68, 0.2)' : '#fef2f2'),
+                                    color: ipList.length === 0 ? '#10b981' : '#ef4444',
+                                }}>
+                                    <div className="status-indicator" style={{ backgroundColor: ipList.length === 0 ? '#10b981' : '#ef4444' }}></div>
+                                    <span>{ipList.length === 0 ? 'OPEN ACCESS' : 'RESTRICTED ACCESS'}</span>
+                                </div>
+                                
+                                <p className="text-lg font-medium" style={{ color: 'var(--text-color)' }}>
+                                    {ipList.length === 0 ? 'All IPs allowed' : `Access restricted to ${ipList.length} IP(s)`}
+                                </p>
+                                
+                                <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>
+                                    {blockedIPs.length > 0 && `${blockedIPs.length} IP(s) explicitly blocked`}
+                                    {blockedIPs.length === 0 && ipList.length === 0 && "No restrictions configured"}
+                                </p>
+                            </div>
+                        </div>
                     </div>
-                    <div className="text-sm font-medium">
-                        {statusMessage || errorMessage}
+
+                    <div className="mb-6">
+                        <h4 className="text-xl font-semibold mb-4" style={{ color: 'var(--text-color)' }}>Manage IP Access</h4>
+                        <form onSubmit={(e) => { e.preventDefault(); addIP(); }} className="space-y-4">
+                            <div className="space-y-3">
+                                <div>
+                                    <label htmlFor="ipToAdd" className="block text-sm font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>IP Address</label>
+                                    <input
+                                        id="ipToAdd"
+                                        type="text"
+                                        value={ipToAdd}
+                                        onChange={(e) => setIpToAdd(e.target.value)}
+                                        placeholder="Enter IP Address (e.g., 192.168.1.1)"
+                                        style={getInputStyle()}
+                                        className="w-full"
+                                        aria-label="IP Address to add or block"
+                                        aria-describedby="ip-error-message"
+                                        aria-invalid={!!errorMessage && (errorMessage.includes('IP format') || errorMessage.includes('empty'))}
+                                    />
+                                </div>
+                                <div className="flex gap-3">
+                                    <div className="w-1/2">
+                                        <label htmlFor="actionType" className="block text-sm font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>Action</label>
+                                        <select
+                                            id="actionType"
+                                            value={actionType}
+                                            onChange={(e) => setActionType(e.target.value as 'allow' | 'block')}
+                                            style={{ ...getInputStyle(), width: '100%' }}
+                                            className="h-full"
+                                            aria-label="Select action: Allow or Block IP"
+                                        >
+                                            <option value="allow">Allow</option>
+                                            <option value="block">Block</option>
+                                        </select>
+                                    </div>
+                                    <div className="w-1/2">
+                                        <label className="block text-sm font-medium mb-1 opacity-0">Action Button</label>
+                                        <button
+                                            type="submit"
+                                            className="px-5 py-3 font-semibold w-full"
+                                            disabled={isAddingAllow || isAddingBlock || !ipToAdd}
+                                            style={{
+                                                ...getButtonStyle(true, actionType === 'block'),
+                                                display: 'inline-flex',
+                                                justifyContent: 'center',
+                                                alignItems: 'center',
+                                                opacity: (isAddingAllow || isAddingBlock || !ipToAdd) ? 0.6 : 1,
+                                                cursor: (isAddingAllow || isAddingBlock || !ipToAdd) ? 'not-allowed' : 'pointer',
+                                            }}
+                                        >
+                                            {(actionType === 'allow' ? isAddingAllow : isAddingBlock) ? (
+                                                <>
+                                                    {actionType === 'allow' ? 'Adding' : 'Blocking'}
+                                                    <Spinner />
+                                                </>
+                                            ) : (
+                                                actionType === 'allow' ? 'Allow IP' : 'Block IP'
+                                            )}
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="ip-error-message" className="h-6">
+                                {errorMessage && (errorMessage.includes('IP format') || errorMessage.includes('empty') || errorMessage.includes('already in the')) && (
+                                    <p className="text-red-600 text-sm mt-1" style={{ color: theme === 'cyberpunk' ? '#f87171' : '#dc2626' }}>
+                                        {errorMessage}
+                                    </p>
+                                )}
+                            </div>
+                        </form>
                     </div>
                 </div>
-            )}
 
-            <div className="mb-8">
-                 <h4 className="text-xl font-semibold mb-4" style={{ color: 'var(--text-color)' }}>Current Status</h4>
-                 <div className="p-5 border rounded-xl flex items-center gap-6" style={{
-                    backgroundColor: theme === 'cyberpunk' ? 'rgba(26, 26, 46, 0.4)' : 'var(--input-bg)',
-                    border: theme === 'cyberpunk' ? '1px solid rgba(157, 78, 221, 0.3)' : '1px solid rgba(229, 231, 235, 0.5)',
-                    color: 'var(--text-color)',
-                    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)'
-                 }}>
-                    <div className="flex items-center justify-center w-14 h-14 rounded-full" style={{
-                        backgroundColor: theme === 'cyberpunk' ? 'rgba(18, 18, 37, 0.7)' : '#f9fafb',
-                        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
-                    }}>
-                        <div className="w-10 h-10 rounded-full flex-shrink-0 relative flex items-center justify-center" style={{
-                            backgroundColor: ipList.length === 0 ? '#10b981' : '#ef4444',
-                            boxShadow: theme === 'cyberpunk'
-                                ? `0 0 12px ${ipList.length === 0 ? 'rgba(16, 185, 129, 0.7)' : 'rgba(239, 68, 68, 0.7)'}`
-                                : '0 1px 3px rgba(0, 0, 0, 0.1)',
-                        }}>
-                            {ipList.length === 0 ? (
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                                </svg>
-                            ) : (
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                                </svg>
-                            )}
-                            
-                            {ipList.length === 0 && theme === 'cyberpunk' && (
-                                <div className="absolute inset-0 rounded-full animate-ping" style={{
-                                    backgroundColor: 'rgba(16, 185, 129, 0.5)',
-                                    animationDuration: '1.5s'
-                                }}></div>
-                            )}
-                        </div>
-                    </div>
-                    <div>
-                        <div className="status-badge mb-2" style={{
-                            backgroundColor: ipList.length === 0 
-                                ? (theme === 'cyberpunk' ? 'rgba(16, 185, 129, 0.2)' : '#ecfdf5')
-                                : (theme === 'cyberpunk' ? 'rgba(239, 68, 68, 0.2)' : '#fef2f2'),
-                            color: ipList.length === 0 ? '#10b981' : '#ef4444',
-                        }}>
-                            <div className="status-indicator" style={{ backgroundColor: ipList.length === 0 ? '#10b981' : '#ef4444' }}></div>
-                            <span>{ipList.length === 0 ? 'OPEN ACCESS' : 'RESTRICTED ACCESS'}</span>
-                        </div>
-                        
-                        <p className="text-lg font-medium" style={{ color: 'var(--text-color)' }}>
-                            {ipList.length === 0 ? 'All IPs allowed' : `Access restricted to ${ipList.length} IP(s)`}
-                        </p>
-                        
-                        <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>
-                            {blockedIPs.length > 0 && `${blockedIPs.length} IP(s) explicitly blocked`}
-                            {blockedIPs.length === 0 && ipList.length === 0 && "No restrictions configured"}
-                        </p>
-                    </div>
-                 </div>
-            </div>
-
-            <div className="mb-10">
-                <h4 className="text-xl font-semibold mb-4" style={{ color: 'var(--text-color)' }}>Manage IP Access</h4>
-                <form onSubmit={(e) => { e.preventDefault(); addIP(); }} className="space-y-4">
-                     <div className="flex flex-col sm:flex-row items-stretch sm:items-start gap-4">
-                        <div className="flex-grow">
-                            <label htmlFor="ipToAdd" className="block text-sm font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>IP Address</label>
-                            <input
-                                id="ipToAdd"
-                                type="text"
-                                value={ipToAdd}
-                                onChange={(e) => setIpToAdd(e.target.value)}
-                                placeholder="Enter IP Address (e.g., 192.168.1.1)"
-                                style={getInputStyle()}
-                                className="w-full"
-                                aria-label="IP Address to add or block"
-                                aria-describedby="ip-error-message"
-                                aria-invalid={!!errorMessage && (errorMessage.includes('IP format') || errorMessage.includes('empty'))}
-                            />
-                        </div>
-                        <div className="sm:self-end">
-                            <label htmlFor="actionType" className="block text-sm font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>Action</label>
-                            <select
-                                id="actionType"
-                                value={actionType}
-                                onChange={(e) => setActionType(e.target.value as 'allow' | 'block')}
-                                style={{ ...getInputStyle(), minWidth: '140px' }}
-                                className="h-full w-full sm:w-auto"
-                                aria-label="Select action: Allow or Block IP"
-                            >
-                                <option value="allow">Allow</option>
-                                <option value="block">Block</option>
-                            </select>
-                        </div>
-                        <div className="sm:self-end">
-                            <button
-                                type="submit"
-                                className="px-6 py-3 font-semibold"
-                                disabled={isAddingAllow || isAddingBlock || !ipToAdd}
-                                style={{
-                                    ...getButtonStyle(true, actionType === 'block'),
-                                    display: 'inline-flex',
-                                    justifyContent: 'center',
-                                    alignItems: 'center',
-                                    minWidth: '140px',
-                                    height: '100%',
-                                    opacity: (isAddingAllow || isAddingBlock || !ipToAdd) ? 0.6 : 1,
-                                    cursor: (isAddingAllow || isAddingBlock || !ipToAdd) ? 'not-allowed' : 'pointer',
-                                }}
-                            >
-                                {(actionType === 'allow' ? isAddingAllow : isAddingBlock) ? (
-                                    <>
-                                        {actionType === 'allow' ? 'Adding' : 'Blocking'}
-                                        <Spinner />
-                                    </>
-                                ) : (
-                                    actionType === 'allow' ? 'Allow IP' : 'Block IP'
-                                )}
-                            </button>
-                        </div>
-                    </div>
-                     <div id="ip-error-message" className="h-6">
-                         {errorMessage && (errorMessage.includes('IP format') || errorMessage.includes('empty') || errorMessage.includes('already in the')) && (
-                             <p className="text-red-600 text-sm mt-1" style={{ color: theme === 'cyberpunk' ? '#f87171' : '#dc2626' }}>
-                                 {errorMessage}
-                             </p>
-                         )}
-                     </div>
-                </form>
-            </div>
-
-            <div className="grid gap-8 grid-cols-1 md:grid-cols-2">
-                <IPTable 
-                    title="Allowed IPs" 
-                    ipList={ipList} 
-                    actionType="allow" 
-                    removeIP={removeIP} 
-                    theme={theme} 
-                />
-                
-                <IPTable 
-                    title="Blocked IPs" 
-                    ipList={blockedIPs} 
-                    actionType="block" 
-                    removeIP={removeIP} 
-                    theme={theme} 
-                />
+                <div className="grid gap-8 grid-cols-1">
+                    <IPTable 
+                        title="Allowed IPs" 
+                        ipList={ipList} 
+                        actionType="allow" 
+                        removeIP={removeIP} 
+                        theme={theme} 
+                    />
+                    
+                    <IPTable 
+                        title="Blocked IPs" 
+                        ipList={blockedIPs} 
+                        actionType="block" 
+                        removeIP={removeIP} 
+                        theme={theme} 
+                    />
+                </div>
             </div>
         </div>
     );
