@@ -7,14 +7,13 @@ function ServerStats() {
 
     useEffect(() => {
         const fetchStats = async () => {
-            // Use relative URL instead of hardcoded localhost
             const res = await fetch('/api/stats/');
             const data = await res.json();
             setStats(data);
         };
 
         const interval = setInterval(fetchStats, 5000);
-        fetchStats(); // Initial fetch
+        fetchStats(); 
         return () => clearInterval(interval);
     }, []);
 
@@ -104,18 +103,6 @@ function ServerStats() {
                 }}>
                     {label}
                 </div>
-                
-                {/* Additional info text for better context */}
-                <div style={{
-                    fontSize: '0.75rem',
-                    color: labelColor,
-                    marginTop: '2px',
-                    opacity: 0.8,
-                }}>
-                    {value > 80 ? 'Very High' : 
-                     value > 60 ? 'High' : 
-                     value > 40 ? 'Moderate' : 'Low'} Usage
-                </div>
             </div>
         );
     };
@@ -127,15 +114,18 @@ function ServerStats() {
             alignItems: 'center',
             padding: '15px 0',
             width: '100%',
-            marginLeft: '90px', // Keep the left margin for sidebar
-            maxWidth: 'calc(100% - 100px)',
+            maxWidth: '100%', 
+            marginLeft: 0,
         }}>
             <div className="stats-container" style={{
                 display: 'flex',
-                justifyContent: 'center',
+                justifyContent: 'space-between',
                 gap: '30px',
                 flexWrap: 'wrap',
-                margin: '0 auto',
+                width: '100%',
+                maxWidth: '600px', 
+                padding: '0 20px', 
+                margin: '0 auto', 
             }}>
                 <StatMeter value={stats.cpu} label="CPU" />
                 <StatMeter value={stats.ram} label="RAM" />
