@@ -389,9 +389,12 @@ const LLMForm = ({ activeTab, setActiveTab }: LLMFormProps) => {
                             
                             {/* Operation status message */}
                             {operationStatus && (
-                                <div className="px-4 py-3 rounded-md text-sm mx-auto mt-4" style={{
+                                <div className="px-4 py-3 rounded-md text-sm mt-4" style={{
                                     maxWidth: '450px',
-                                    width: '100%',
+                                    margin: '0 auto',
+                                    textAlign: 'center',
+                                    display: 'flex',
+                                    justifyContent: 'center',
                                     backgroundColor: operationStatus.success ? 
                                         (theme === 'cyberpunk' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(16, 185, 129, 0.1)') : 
                                         (theme === 'cyberpunk' ? 'rgba(239, 68, 68, 0.15)' : 'rgba(239, 68, 68, 0.1)'),
@@ -403,7 +406,7 @@ const LLMForm = ({ activeTab, setActiveTab }: LLMFormProps) => {
                                         'none',
                                 }}
                                 >
-                                    <div className="flex items-center">
+                                    <div className="flex items-center justify-center">
                                         <div className="mr-3 flex-shrink-0">
                                             {operationStatus.success ? (
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
