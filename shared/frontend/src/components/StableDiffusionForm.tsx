@@ -181,46 +181,76 @@ const StableDiffusionForm = () => {
                         </div>
                     </div>
                     
-                    {/* Right side: Toggle button */}
-                    <button
-                        className="px-4 py-2 rounded text-sm font-medium inline-flex items-center"
-                        onClick={sdStatus === 'Running' ? handleStopStableDiffusion : handleStartStableDiffusion}
-                        disabled={isStartingSD || isStoppingSD}
-                        style={{ 
-                            backgroundColor: sdStatus === 'Running' 
-                                ? 'var(--button-danger)' 
-                                : 'var(--button-primary)',
-                            color: '#ffffff',
-                            boxShadow: theme === 'cyberpunk' 
-                                ? sdStatus === 'Running'
-                                    ? '0 0 5px rgba(229, 62, 62, 0.5)' 
-                                    : 'var(--neon-glow)'
-                                : 'none',
-                            opacity: (isStartingSD || isStoppingSD) ? 0.7 : 1,
-                            transition: 'all 0.2s ease',
-                            width: '140px',
-                        }}
-                    >
-                        {isStartingSD ? (
-                            <><span className="mr-1">Starting</span><Spinner /></>
-                        ) : isStoppingSD ? (
-                            <><span className="mr-1">Stopping</span><Spinner /></>
-                        ) : sdStatus === 'Running' ? (
-                            <>
-                                <svg className="mr-1.5" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <rect x="6" y="6" width="12" height="12" rx="2" ry="2"></rect>
-                                </svg>
-                                Stop
-                            </>
-                        ) : (
-                            <>
-                                <svg className="mr-1.5" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
-                                </svg>
-                                Start
-                            </>
-                        )}
-                    </button>
+                    {/* Right side: Buttons styled to match LLMForm.tsx */}
+                    <div style={{ 
+                        display: 'flex', 
+                        justifyContent: 'center',
+                        gap: '20px'
+                    }}>
+                        {/* Toggle button */}
+                        <button
+                            className="px-4 py-2 rounded text-sm font-medium inline-flex items-center"
+                            onClick={sdStatus === 'Running' ? handleStopStableDiffusion : handleStartStableDiffusion}
+                            disabled={isStartingSD || isStoppingSD}
+                            style={{ 
+                                backgroundColor: sdStatus === 'Running' 
+                                    ? 'var(--button-danger)' 
+                                    : 'var(--button-primary)',
+                                color: '#ffffff',
+                                boxShadow: theme === 'cyberpunk' 
+                                    ? sdStatus === 'Running'
+                                        ? '0 0 5px rgba(229, 62, 62, 0.5)' 
+                                        : 'var(--neon-glow)'
+                                    : 'none',
+                                opacity: (isStartingSD || isStoppingSD) ? 0.7 : 1,
+                                transition: 'all 0.2s ease',
+                                width: '120px',
+                            }}
+                        >
+                            {isStartingSD ? (
+                                <><span className="mr-1">Starting</span><Spinner /></>
+                            ) : isStoppingSD ? (
+                                <><span className="mr-1">Stopping</span><Spinner /></>
+                            ) : sdStatus === 'Running' ? (
+                                <>
+                                    <svg className="mr-1.5" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <rect x="6" y="6" width="12" height="12" rx="2" ry="2"></rect>
+                                    </svg>
+                                    Stop
+                                </>
+                            ) : (
+                                <>
+                                    <svg className="mr-1.5" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                                    </svg>
+                                    Start
+                                </>
+                            )}
+                        </button>
+
+                        {/* Show/Hide Logs button */}
+                        <button
+                            className="px-4 py-2 rounded text-sm font-medium inline-flex items-center"
+                            onClick={() => setShowSdLogs(!showSdLogs)}
+                            style={{ 
+                                backgroundColor: theme === 'cyberpunk' ? '#2d2d4d' : '#f3f4f6',
+                                color: 'var(--text-color)', 
+                                border: theme === 'corporate' ? '1px solid #000' : 'none',
+                                boxShadow: theme === 'cyberpunk' ? 'var(--neon-glow)' : 'none',
+                                width: '120px',
+                                transition: 'all 0.2s ease',
+                            }}
+                        >
+                            <svg className="mr-1.5" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-6"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                                <line x1="16" y1="13" x2="8" y2="13"></line>
+                                <line x1="16" y1="17" x2="8" y2="17"></line>
+                                <line x1="10" y1="9" x2="8" y2="9"></line>
+                            </svg>
+                            {showSdLogs ? 'Hide' : 'Logs'}
+                        </button>
+                    </div>
                 </div>
                 
                 {/* Status Messages */}
@@ -282,32 +312,6 @@ const StableDiffusionForm = () => {
                         </a>
                     </div>
                 )}
-                
-                {/* Logs Toggle Button */}
-                <div className="mb-8 text-center">
-                    <button
-                        className="px-4 py-2 rounded-md"
-                        onClick={() => setShowSdLogs(!showSdLogs)}
-                        style={{ 
-                            backgroundColor: theme === 'cyberpunk' ? '#2d2d4d' : '#f3f4f6',
-                            color: 'var(--text-color)', 
-                            border: theme === 'corporate' ? '1px solid #000' : 'none',
-                            boxShadow: theme === 'cyberpunk' ? 'var(--neon-glow)' : 'none',
-                            width: '180px'
-                        }}
-                    >
-                        <div className="flex items-center justify-center">
-                            <svg className="mr-1.5" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-6"></path>
-                                <polyline points="14 2 14 8 20 8"></polyline>
-                                <line x1="16" y1="13" x2="8" y2="13"></line>
-                                <line x1="16" y1="17" x2="8" y2="17"></line>
-                                <line x1="10" y1="9" x2="8" y2="9"></line>
-                            </svg>
-                            {showSdLogs ? 'Hide Logs' : 'Show Logs'}
-                        </div>
-                    </button>
-                </div>
             </div>
             
             {/* Logs Display */}
