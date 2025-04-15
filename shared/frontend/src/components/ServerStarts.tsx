@@ -17,19 +17,16 @@ function ServerStats() {
         return () => clearInterval(interval);
     }, []);
 
-    // Get color based on value
     const getColor = (value: number) => {
-        if (value > 80) return '#ef4444'; // Red for very high usage
-        if (value > 60) return '#f97316'; // Orange for high usage
-        if (value > 40) return '#eab308'; // Yellow for medium usage
-        return '#4ade80'; // Green for low usage
+        if (value > 80) return '#ef4444';
+        if (value > 60) return '#f97316';
+        if (value > 40) return '#eab308';
+        return '#4ade80';
     };
 
-    // Visual meter component with redesigned look
     const StatMeter = ({ value, label }: { value: number, label: string }) => {
         const color = getColor(value);
         
-        // Theme-specific styles
         const meterBgColor = theme === 'cyberpunk' ? '#1a1a2e' : '#f5f5f7';
         const labelColor = theme === 'cyberpunk' ? '#a0a0b0' : '#71717a';
         const glowEffect = theme === 'cyberpunk' ? `0 0 10px ${color}40` : 'none';
@@ -43,14 +40,12 @@ function ServerStats() {
                 borderRadius: '16px',
                 background: 'transparent',
             }}>
-                {/* Modern circular gauge */}
                 <div className="gauge-container" style={{
                     position: 'relative',
                     width: '100px',
                     height: '100px',
                     margin: '0 auto',
                 }}>
-                    {/* Background circle */}
                     <svg width="100" height="100" style={{ transform: 'rotate(-90deg)' }}>
                         <circle 
                             cx="50" 
@@ -60,7 +55,6 @@ function ServerStats() {
                             strokeWidth="8" 
                             fill="transparent" 
                         />
-                        {/* Progress arc */}
                         <circle 
                             cx="50" 
                             cy="50" 
@@ -77,7 +71,6 @@ function ServerStats() {
                         />
                     </svg>
                     
-                    {/* Center value display */}
                     <div style={{
                         position: 'absolute',
                         top: '50%',
@@ -92,7 +85,6 @@ function ServerStats() {
                     </div>
                 </div>
                 
-                {/* Label */}
                 <div style={{
                     marginTop: '10px',
                     fontSize: '0.9rem',

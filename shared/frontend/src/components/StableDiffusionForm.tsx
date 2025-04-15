@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTheme } from '../context/useTheme';
 
-// Spinning loader component
 const Spinner = () => (
     <div className="inline-block animate-spin rounded-full border-4 border-solid border-current border-r-transparent h-5 w-5 ml-1" 
          style={{ borderColor: 'white transparent white transparent' }}></div>
@@ -16,13 +15,10 @@ const StableDiffusionForm = () => {
     const [sdOperationStatus, setSdOperationStatus] = useState<{message: string, success: boolean} | null>(null);
     const [showSdLogs, setShowSdLogs] = useState(false);
 
-    // Helper function to get the API base URL
     const getApiBaseUrl = () => {
-        // In production, use relative URLs that will work in any environment
         return '/api';
     };
 
-    // Poll for server status every 3 seconds
     useEffect(() => {
         const checkStatus = async () => {
             try {
@@ -30,7 +26,6 @@ const StableDiffusionForm = () => {
                 const data = await response.json();
                 setSdStatus(data.sd_running ? 'Running' : 'Stopped');
             } catch {
-                // Any error means the server is not running
                 setSdStatus('Stopped');
             }
         };
@@ -40,12 +35,10 @@ const StableDiffusionForm = () => {
         return () => clearInterval(interval);
     }, []);
 
-    // Auto-refresh StableDiffusion status
     useEffect(() => {
         const checkSdWebUI = async () => {
             try {
                 const response = await fetch('http://localhost:7860/api/endpoint');
-                // Just parse the JSON to check if it's valid, no need to store or set state
                 await response.json();
             } catch {
             }
@@ -58,7 +51,6 @@ const StableDiffusionForm = () => {
         }
     }, [sdStatus]);
     
-    // Fetch SD logs when needed
     useEffect(() => {
         const fetchSdLogs = async () => {
             try {
@@ -148,9 +140,7 @@ const StableDiffusionForm = () => {
             <h2 className="text-2xl font-bold text-center mb-6">Stable Diffusion Web UI</h2>
             
             <div className="flex justify-center items-center mt-10 mb-10 flex-col gap-6" style={{width: '100%', margin: '0 auto', textAlign: 'center'}}>
-                {/* Visual Server Status Indicator with integrated action button - box removed but layout maintained */}
                 <div className="mb-4 flex items-center justify-between w-full max-w-md">
-                    {/* Left side: Status indicator */}
                     <div className="flex items-center">
                         <div className="relative w-6 h-6 mr-2">
                             <div className="w-6 h-6 rounded-full" style={{
@@ -181,13 +171,11 @@ const StableDiffusionForm = () => {
                         </div>
                     </div>
                     
-                    {/* Right side: Buttons styled to match LLMForm.tsx */}
                     <div style={{ 
                         display: 'flex', 
                         justifyContent: 'center',
                         gap: '20px'
                     }}>
-                        {/* Toggle button */}
                         <button
                             className="px-4 py-2 rounded text-sm font-medium inline-flex items-center"
                             onClick={sdStatus === 'Running' ? handleStopStableDiffusion : handleStartStableDiffusion}
@@ -228,7 +216,6 @@ const StableDiffusionForm = () => {
                             )}
                         </button>
 
-                        {/* Show/Hide Logs button */}
                         <button
                             className="px-4 py-2 rounded text-sm font-medium inline-flex items-center"
                             onClick={() => setShowSdLogs(!showSdLogs)}
@@ -253,7 +240,6 @@ const StableDiffusionForm = () => {
                     </div>
                 </div>
                 
-                {/* Status Messages */}
                 {sdOperationStatus && (
                     <div className="px-4 py-3 rounded-md text-sm max-w-md w-full" style={{
                         backgroundColor: sdOperationStatus.success ? 
@@ -286,7 +272,6 @@ const StableDiffusionForm = () => {
                     </div>
                 )}
                 
-                {/* Web UI Link or Status */}
                 {sdStatus === 'Running' && (
                     <div className="mb-6 p-4 rounded-md text-center w-full max-w-md" style={{
                         backgroundColor: theme === 'cyberpunk' ? 'rgba(26, 26, 46, 0.4)' : 'var(--input-bg)',
@@ -304,7 +289,7 @@ const StableDiffusionForm = () => {
                             }}
                         >
                             <svg className="mr-1.5" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1-2-2h6"></path>
                                 <polyline points="15 3 21 3 21 9"></polyline>
                                 <line x1="10" y1="14" x2="21" y2="3"></line>
                             </svg>
@@ -314,7 +299,6 @@ const StableDiffusionForm = () => {
                 )}
             </div>
             
-            {/* Logs Display */}
             {showSdLogs && (
                 <div className="w-full mt-4" style={{ maxWidth: '800px', margin: '0 auto' }}>
                     <div
@@ -328,7 +312,7 @@ const StableDiffusionForm = () => {
                             border: theme === 'cyberpunk' ? '1px solid var(--accent-color)' : '1px solid #e5e7eb',
                             boxShadow: theme === 'cyberpunk' ? 'var(--neon-glow)' : 'none',
                             fontSize: '0.8rem',
-                            textAlign: 'left' // Keep logs left-aligned for readability
+                            textAlign: 'left'
                         }}
                     >
                         {sdLogs || 'No logs available yet.'}

@@ -1,13 +1,11 @@
 import { useState } from 'react';
 import { useTheme } from '../context/useTheme';
 
-// Spinning loader component
 const Spinner = () => (
     <div className="inline-block animate-spin rounded-full border-4 border-solid border-current border-r-transparent h-8 w-8" 
          style={{ borderColor: 'var(--accent-color) transparent var(--accent-color) transparent' }}></div>
 );
 
-// Container for placing components side by side
 export function ModelDownloadContainer() {
     return (
         <div style={{ 
@@ -17,9 +15,9 @@ export function ModelDownloadContainer() {
             gap: '20px',
             width: '100%',
             flexWrap: 'wrap',
-            minWidth: '280px', // Ensure minimum width for small screens
-            maxWidth: '850px', // Control maximum width to ensure components stay side-by-side
-            margin: '0 auto' // Center the container
+            minWidth: '280px',
+            maxWidth: '850px',
+            margin: '0 auto'
         }}>
             <LLMModelDownload />
             <SDModelDownload />
@@ -27,7 +25,6 @@ export function ModelDownloadContainer() {
     );
 }
 
-// Renamed from predefinedModels
 const predefinedLLMModels = {
     "Medium models": [
         { name: "Llama 3.1 8B", url: "https://huggingface.co/bartowski/Meta-Llama-3.1-8B-Instruct-GGUF/resolve/main/Meta-Llama-3.1-8B-Instruct-Q4_K_M.gguf?download=true", filename: "llama3.1-8b" },
@@ -45,7 +42,6 @@ const predefinedLLMModels = {
     ]
 };
 
-// New constant for Stable Diffusion models
 const predefinedSDModels = {
     "Stable Diffusion v1.5": [
         { name: "SD v1.5 Pruned Emaonly", url: "https://huggingface.co/stable-diffusion-v1-5/stable-diffusion-v1-5/resolve/main/v1-5-pruned-emaonly.safetensors", filename: "stable-diffusion-v1-5" }
