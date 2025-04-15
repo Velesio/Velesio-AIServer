@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useLayoutEffect } from 'react';
 import { useTheme } from '../context/useTheme';
 
 const Spinner = () => (
@@ -6,19 +6,45 @@ const Spinner = () => (
          style={{ borderColor: 'var(--accent-color) transparent var(--accent-color) transparent' }}></div>
 );
 
+// Unique identifier for the component
+const COMPONENT_UNIQUE_CLASS = 'model-download-container-root';
+
 export function ModelDownloadContainer() {
+    // Track if this instance should render content
+    const [shouldRender, setShouldRender] = useState(true);
+    const componentRef = useRef<HTMLDivElement>(null);
+    
+    // Check for duplicates before initial render
+    useLayoutEffect(() => {
+        const existingInstances = document.getElementsByClassName(COMPONENT_UNIQUE_CLASS);
+        
+        // If this is not the first instance, don't render
+        if (existingInstances.length > 0 && componentRef.current !== existingInstances[0]) {
+            setShouldRender(false);
+        }
+    }, []);
+    
+    // Don't render anything if this is a duplicate
+    if (!shouldRender) {
+        return null;
+    }
+
     return (
-        <div style={{ 
-            display: 'flex', 
-            flexDirection: 'row', 
-            justifyContent: 'center', 
-            gap: '20px',
-            width: '100%',
-            flexWrap: 'wrap',
-            minWidth: '280px',
-            maxWidth: '850px',
-            margin: '0 auto'
-        }}>
+        <div 
+            ref={componentRef}
+            className={COMPONENT_UNIQUE_CLASS}
+            style={{ 
+                display: 'flex', 
+                flexDirection: 'row', 
+                justifyContent: 'center', 
+                gap: '20px',
+                width: '100%',
+                flexWrap: 'wrap',
+                minWidth: '280px',
+                maxWidth: '850px',
+                margin: '0 auto'
+            }}
+        >
             <LLMModelDownload />
             <SDModelDownload />
         </div>
