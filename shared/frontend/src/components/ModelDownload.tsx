@@ -7,6 +7,26 @@ const Spinner = () => (
          style={{ borderColor: 'var(--accent-color) transparent var(--accent-color) transparent' }}></div>
 );
 
+// Container for placing components side by side
+export function ModelDownloadContainer() {
+    return (
+        <div style={{ 
+            display: 'flex', 
+            flexDirection: 'row', 
+            justifyContent: 'center', 
+            gap: '20px',
+            width: '100%',
+            flexWrap: 'wrap',
+            minWidth: '280px', // Ensure minimum width for small screens
+            maxWidth: '850px', // Control maximum width to ensure components stay side-by-side
+            margin: '0 auto' // Center the container
+        }}>
+            <LLMModelDownload />
+            <SDModelDownload />
+        </div>
+    );
+}
+
 // Renamed from predefinedModels
 const predefinedLLMModels = {
     "Medium models": [
@@ -112,19 +132,19 @@ export function LLMModelDownload() {
     return (
         <div className="p-4 space-y-4 rounded-lg shadow-lg mt-6" style={{ 
             width: '100%', 
-            maxWidth: '800px', 
+            maxWidth: '400px', 
             margin: '0 auto',
             ...getContainerStyle()
         }}>
             <h2 className={`text-2xl font-bold text-center mb-4 ${theme === 'cyberpunk' ? 'glow-text' : ''}`}>
-                Download LLM Models (.gguf)
+                LlamaCPP (.gguf)
             </h2>
 
-            <div style={{ width: '500px', margin: '0 auto' }}>
+            <div style={{ width: '100%', margin: '0 auto' }}>
                 <div className="mb-8 text-center" style={{display: 'flex', flexDirection: 'column', alignItems: 'center'}}>
                     <label className="block mb-3">Pre-configured LLM Models:</label>
                     <select
-                        style={{...getInputStyle(), textAlign: 'center', width: '300px'}}
+                        style={{...getInputStyle(), textAlign: 'center', width: '280px'}}
                         onChange={(e) => {
                             const selected = Object.values(predefinedLLMModels)
                                 .flat()
@@ -161,7 +181,7 @@ export function LLMModelDownload() {
                             setSelectedModel(null);
                         }}
                         placeholder="LLM Model URL (.gguf)"
-                        style={{...getInputStyle(), textAlign: 'center', width: '300px'}}
+                        style={{...getInputStyle(), textAlign: 'center', width: '280px'}}
                     />
                 </div>
 
@@ -290,19 +310,19 @@ export function SDModelDownload() {
     return (
         <div className="p-4 space-y-4 rounded-lg shadow-lg mt-6" style={{ 
             width: '100%', 
-            maxWidth: '800px', 
+            maxWidth: '400px', 
             margin: '0 auto',
             ...getContainerStyle()
         }}>
             <h2 className={`text-2xl font-bold text-center mb-4 ${theme === 'cyberpunk' ? 'glow-text' : ''}`}>
-                Download Stable Diffusion Models (.safetensors)
+                Stable Diffusion (.safetensors)
             </h2>
 
-            <div style={{ width: '500px', margin: '0 auto' }}>
+            <div style={{ width: '100%', margin: '0 auto' }}>
                 <div className="mb-8 text-center" style={{display: 'flex', flexDirection: 'column', alignItems: 'center'}}>
                     <label className="block mb-3">Pre-configured SD Models:</label>
                     <select
-                        style={{...getInputStyle(), textAlign: 'center', width: '300px'}}
+                        style={{...getInputStyle(), textAlign: 'center', width: '280px'}}
                         onChange={(e) => {
                             const selected = Object.values(predefinedSDModels)
                                 .flat()
@@ -339,7 +359,7 @@ export function SDModelDownload() {
                             setSelectedModel(null);
                         }}
                         placeholder="SD Model URL (.safetensors)"
-                        style={{...getInputStyle(), textAlign: 'center', width: '300px'}}
+                        style={{...getInputStyle(), textAlign: 'center', width: '280px'}}
                     />
                 </div>
 
