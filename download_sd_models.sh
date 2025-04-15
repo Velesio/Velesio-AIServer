@@ -1,1 +1,1 @@
-wget --show-progress https://huggingface.co/Lykon/dreamshaper-8/resolve/main/dreamshaper_8.safetensors -O shared/models/stable-diffusion/dreamshaper-8.safetensors
+wget --show-progress https://huggingface.co/stable-diffusion-v1-5/stable-diffusion-v1-5/resolve/main/v1-5-pruned-emaonly.safetensors

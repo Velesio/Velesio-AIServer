@@ -7,7 +7,8 @@ const Spinner = () => (
          style={{ borderColor: 'var(--accent-color) transparent var(--accent-color) transparent' }}></div>
 );
 
-const predefinedModels = {
+// Renamed from predefinedModels
+const predefinedLLMModels = {
     "Medium models": [
         { name: "Llama 3.1 8B", url: "https://huggingface.co/bartowski/Meta-Llama-3.1-8B-Instruct-GGUF/resolve/main/Meta-Llama-3.1-8B-Instruct-Q4_K_M.gguf?download=true", filename: "llama3.1-8b" },
         { name: "Qwen 2.5 7B", url: "https://huggingface.co/lmstudio-community/Qwen2.5-7B-Instruct-GGUF/resolve/main/Qwen2.5-7B-Instruct-Q4_K_M.gguf?download=true", filename: "qwen2.5-7b" },
@@ -24,14 +25,20 @@ const predefinedModels = {
     ]
 };
 
-function ModelDownload() {
+// New constant for Stable Diffusion models
+const predefinedSDModels = {
+    "Stable Diffusion v1.5": [
+        { name: "SD v1.5 Pruned Emaonly", url: "https://huggingface.co/stable-diffusion-v1-5/stable-diffusion-v1-5/resolve/main/v1-5-pruned-emaonly.safetensors", filename: "stable-diffusion-v1-5" }
+    ]
+};
+
+export function LLMModelDownload() {
     const { theme } = useTheme();
     const [url, setUrl] = useState('');
     const [selectedModel, setSelectedModel] = useState<{ url: string; filename: string } | null>(null);
     const [isDownloading, setIsDownloading] = useState(false);
     const [downloadStatus, setDownloadStatus] = useState<{message: string, success: boolean} | null>(null);
 
-    // Theme-based styles
     const getContainerStyle = () => {
         return theme === 'cyberpunk'
             ? {
@@ -57,19 +64,22 @@ function ModelDownload() {
         };
     };
 
-    // Helper function to get the API base URL
     const getApiBaseUrl = () => {
-        // In production, use relative URLs that will work in any environment
         return '/api';
     };
 
     const handleDownload = async () => {
         setIsDownloading(true);
         setDownloadStatus(null);
-        
-        const downloadData = selectedModel
-            ? { url: selectedModel.url, filename: selectedModel.filename }
-            : { url };
+
+        const filename = selectedModel ? selectedModel.filename : 'model';
+        const downloadUrl = selectedModel ? selectedModel.url : url;
+
+        const downloadData = {
+            url: downloadUrl,
+            filename: filename,
+            type: 'llm'
+        };
 
         try {
             const response = await fetch(`${getApiBaseUrl()}/download-model/`, {
@@ -80,7 +90,7 @@ function ModelDownload() {
 
             if (response.ok) {
                 setDownloadStatus({
-                    message: `Model downloaded successfully as "${selectedModel?.filename || 'model'}"!`,
+                    message: `Model downloaded successfully as "${filename}.gguf"!`,
                     success: true
                 });
             } else {
@@ -107,30 +117,30 @@ function ModelDownload() {
             ...getContainerStyle()
         }}>
             <h2 className={`text-2xl font-bold text-center mb-4 ${theme === 'cyberpunk' ? 'glow-text' : ''}`}>
-                Download Models (gguf)
+                Download LLM Models (.gguf)
             </h2>
 
             <div style={{ width: '500px', margin: '0 auto' }}>
-                {/* Dropdown for Predefined Models */}
                 <div className="mb-8 text-center" style={{display: 'flex', flexDirection: 'column', alignItems: 'center'}}>
-                    <label className="block mb-3">Pre-configured Models:</label>
+                    <label className="block mb-3">Pre-configured LLM Models:</label>
                     <select
                         style={{...getInputStyle(), textAlign: 'center', width: '300px'}}
                         onChange={(e) => {
-                            const selected = Object.values(predefinedModels)
+                            const selected = Object.values(predefinedLLMModels)
                                 .flat()
                                 .find((model) => model.name === e.target.value);
 
                             if (selected) {
                                 setSelectedModel(selected);
-                                setUrl(selected.url); // Show URL in the input field
+                                setUrl(selected.url);
                             } else {
                                 setSelectedModel(null);
+                                setUrl('');
                             }
                         }}
                     >
                         <option value="">-- Select a Model --</option>
-                        {Object.entries(predefinedModels).map(([category, models]) => (
+                        {Object.entries(predefinedLLMModels).map(([category, models]) => (
                             <optgroup label={category} key={category}>
                                 {models.map((model) => (
                                     <option key={model.name} value={model.name}>
@@ -142,13 +152,15 @@ function ModelDownload() {
                     </select>
                 </div>
 
-                {/* Manual URL Input (Optional) */}
                 <div className="mb-8 text-center" style={{display: 'flex', flexDirection: 'column', alignItems: 'center'}}>
-                    <label className="block mb-3">Custom URL:</label>
+                    <label className="block mb-3">Custom LLM URL:</label>
                     <input
                         value={url}
-                        onChange={(e) => setUrl(e.target.value)}
-                        placeholder="Model URL"
+                        onChange={(e) => {
+                            setUrl(e.target.value);
+                            setSelectedModel(null);
+                        }}
+                        placeholder="LLM Model URL (.gguf)"
                         style={{...getInputStyle(), textAlign: 'center', width: '300px'}}
                     />
                 </div>
@@ -160,7 +172,7 @@ function ModelDownload() {
                         disabled={isDownloading}
                         style={{ 
                             backgroundColor: 'var(--button-primary)',
-                            color: '#ffffff', // Explicitly setting white text color
+                            color: '#ffffff',
                             boxShadow: theme === 'cyberpunk' ? 'var(--neon-glow)' : 'none',
                             border: theme === 'corporate' ? '1px solid #000' : 'none',
                             transition: 'all 0.2s ease-in-out',
@@ -198,4 +210,180 @@ function ModelDownload() {
     );
 }
 
-export default ModelDownload;
+export function SDModelDownload() {
+    const { theme } = useTheme();
+    const [url, setUrl] = useState('');
+    const [selectedModel, setSelectedModel] = useState<{ url: string; filename: string } | null>(null);
+    const [isDownloading, setIsDownloading] = useState(false);
+    const [downloadStatus, setDownloadStatus] = useState<{message: string, success: boolean} | null>(null);
+
+    const getContainerStyle = () => {
+        return theme === 'cyberpunk'
+            ? {
+                backgroundColor: 'var(--primary-bg)',
+                boxShadow: 'var(--neon-glow)',
+                border: '1px solid var(--accent-color)'
+              }
+            : {
+                backgroundColor: 'var(--primary-bg)',
+                boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1)',
+                border: '1px solid #e5e7eb'
+              };
+    };
+
+    const getInputStyle = () => {
+        return {
+            width: '100%',
+            padding: '0.5rem',
+            borderRadius: '0.25rem',
+            backgroundColor: 'var(--input-bg)',
+            color: 'var(--text-color)',
+            border: theme === 'cyberpunk' ? '1px solid #666' : '1px solid #d1d5db'
+        };
+    };
+
+    const getApiBaseUrl = () => {
+        return '/api';
+    };
+
+    const handleDownload = async () => {
+        setIsDownloading(true);
+        setDownloadStatus(null);
+
+        const filename = selectedModel ? selectedModel.filename : 'model';
+        const downloadUrl = selectedModel ? selectedModel.url : url;
+
+        const downloadData = {
+            url: downloadUrl,
+            filename: filename,
+            type: 'sd'
+        };
+
+        try {
+            const response = await fetch(`${getApiBaseUrl()}/download-model/`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(downloadData)
+            });
+
+            if (response.ok) {
+                setDownloadStatus({
+                    message: `Model downloaded successfully as "${filename}.safetensors"!`,
+                    success: true
+                });
+            } else {
+                setDownloadStatus({
+                    message: 'Failed to download model. Please try again.',
+                    success: false
+                });
+            }
+        } catch (error) {
+            setDownloadStatus({
+                message: 'Network error occurred. Please check your connection.',
+                success: false
+            });
+        } finally {
+            setIsDownloading(false);
+        }
+    };
+
+    return (
+        <div className="p-4 space-y-4 rounded-lg shadow-lg mt-6" style={{ 
+            width: '100%', 
+            maxWidth: '800px', 
+            margin: '0 auto',
+            ...getContainerStyle()
+        }}>
+            <h2 className={`text-2xl font-bold text-center mb-4 ${theme === 'cyberpunk' ? 'glow-text' : ''}`}>
+                Download Stable Diffusion Models (.safetensors)
+            </h2>
+
+            <div style={{ width: '500px', margin: '0 auto' }}>
+                <div className="mb-8 text-center" style={{display: 'flex', flexDirection: 'column', alignItems: 'center'}}>
+                    <label className="block mb-3">Pre-configured SD Models:</label>
+                    <select
+                        style={{...getInputStyle(), textAlign: 'center', width: '300px'}}
+                        onChange={(e) => {
+                            const selected = Object.values(predefinedSDModels)
+                                .flat()
+                                .find((model) => model.name === e.target.value);
+
+                            if (selected) {
+                                setSelectedModel(selected);
+                                setUrl(selected.url);
+                            } else {
+                                setSelectedModel(null);
+                                setUrl('');
+                            }
+                        }}
+                    >
+                        <option value="">-- Select a Model --</option>
+                        {Object.entries(predefinedSDModels).map(([category, models]) => (
+                            <optgroup label={category} key={category}>
+                                {models.map((model) => (
+                                    <option key={model.name} value={model.name}>
+                                        {model.name}
+                                    </option>
+                                ))}
+                            </optgroup>
+                        ))}
+                    </select>
+                </div>
+
+                <div className="mb-8 text-center" style={{display: 'flex', flexDirection: 'column', alignItems: 'center'}}>
+                    <label className="block mb-3">Custom SD URL:</label>
+                    <input
+                        value={url}
+                        onChange={(e) => {
+                            setUrl(e.target.value);
+                            setSelectedModel(null);
+                        }}
+                        placeholder="SD Model URL (.safetensors)"
+                        style={{...getInputStyle(), textAlign: 'center', width: '300px'}}
+                    />
+                </div>
+
+                <div style={{display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', width: '100%', margin: '0 auto', textAlign: 'center'}} className="mt-10 mb-4">
+                    <button 
+                        onClick={handleDownload} 
+                        className="px-4 py-2 rounded-md mx-auto"
+                        disabled={isDownloading}
+                        style={{ 
+                            backgroundColor: 'var(--button-primary)',
+                            color: '#ffffff',
+                            boxShadow: theme === 'cyberpunk' ? 'var(--neon-glow)' : 'none',
+                            border: theme === 'corporate' ? '1px solid #000' : 'none',
+                            transition: 'all 0.2s ease-in-out',
+                            width: '180px',
+                            opacity: isDownloading ? 0.7 : 1,
+                            display: 'flex',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            gap: '8px'
+                        }}
+                    >
+                        {isDownloading && <Spinner />}
+                        {isDownloading ? 'Downloading...' : 'Download Model'}
+                    </button>
+                    
+                    {downloadStatus && (
+                        <div className="mt-4 p-3 rounded-md" style={{
+                            backgroundColor: downloadStatus.success ? 
+                                (theme === 'cyberpunk' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(16, 185, 129, 0.1)') : 
+                                (theme === 'cyberpunk' ? 'rgba(239, 68, 68, 0.2)' : 'rgba(239, 68, 68, 0.1)'),
+                            color: downloadStatus.success ? 
+                                (theme === 'cyberpunk' ? '#10b981' : '#047857') : 
+                                (theme === 'cyberpunk' ? '#ef4444' : '#b91c1c'),
+                            border: theme === 'cyberpunk' ? 
+                                `1px solid ${downloadStatus.success ? '#10b981' : '#ef4444'}` : 
+                                'none',
+                            maxWidth: '400px',
+                        }}>
+                            {downloadStatus.message}
+                        </div>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+}

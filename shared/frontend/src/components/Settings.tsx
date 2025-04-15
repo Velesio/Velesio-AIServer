@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useLayoutEffect, useRef } from 'react';
 import { useTheme } from '../context/useTheme';
-import ModelDownload from './ModelDownload'; // Import the ModelDownload component
+import { LLMModelDownload, SDModelDownload } from './ModelDownload'; // Update this import from default to named
 
 const Spinner = () => (
     <div className="inline-block animate-spin rounded-full border-4 border-solid border-current border-r-transparent h-5 w-5 ml-2"
@@ -356,7 +356,8 @@ const IPAccessControlPanel = () => {
             <h2 className="text-3xl font-bold text-center mb-8" style={{ color: 'var(--text-color)' }}>Settings</h2>
             
             <div className="mb-12">
-                <ModelDownload />
+                <LLMModelDownload />
+                <SDModelDownload />
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">

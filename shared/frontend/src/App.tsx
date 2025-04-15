@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import ConfigForm from './components/LLMForm';
-import AllowlistForm from './components/AllowlistForm';
+import AllowlistForm from './components/Settings';
 import { ThemeProvider } from './context/ThemeContext';
 
 function App() {
