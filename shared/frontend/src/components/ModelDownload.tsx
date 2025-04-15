@@ -45,6 +45,23 @@ const predefinedLLMModels = {
 const predefinedSDModels = {
     "Stable Diffusion v1.5": [
         { name: "SD v1.5 Pruned Emaonly", url: "https://huggingface.co/stable-diffusion-v1-5/stable-diffusion-v1-5/resolve/main/v1-5-pruned-emaonly.safetensors", filename: "stable-diffusion-v1-5" }
+    ],
+    "DreamShaper Models": [
+        { 
+            name: "DreamShaper 5.0 (General Purpose)", 
+            url: "https://huggingface.co/Lykon/DreamShaper/resolve/main/DreamShaper_5.safetensors", 
+            filename: "dreamshaper-5"
+        },
+        { 
+            name: "DreamShaper 6.0 (Realism Focused)", 
+            url: "https://huggingface.co/Lykon/DreamShaper/resolve/main/DreamShaper_6.safetensors", 
+            filename: "dreamshaper-6"
+        },
+        { 
+            name: "DreamShaper Anime (Anime Style)", 
+            url: "https://huggingface.co/Lykon/DreamShaper/resolve/main/DreamShaper_Anime.safetensors", 
+            filename: "dreamshaper-anime"
+        }
     ]
 };
 
