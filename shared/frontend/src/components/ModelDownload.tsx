@@ -48,19 +48,9 @@ const predefinedSDModels = {
     ],
     "DreamShaper Models": [
         { 
-            name: "DreamShaper 5.0 (General Purpose)", 
-            url: "https://huggingface.co/Lykon/DreamShaper/resolve/main/DreamShaper_5.safetensors", 
-            filename: "dreamshaper-5"
-        },
-        { 
-            name: "DreamShaper 6.0 (Realism Focused)", 
-            url: "https://huggingface.co/Lykon/DreamShaper/resolve/main/DreamShaper_6.safetensors", 
-            filename: "dreamshaper-6"
-        },
-        { 
-            name: "DreamShaper Anime (Anime Style)", 
-            url: "https://huggingface.co/Lykon/DreamShaper/resolve/main/DreamShaper_Anime.safetensors", 
-            filename: "dreamshaper-anime"
+            name: "DreamShaper 8.0 (Realistic)", 
+            url: "https://civitai.com/api/download/models/128713?type=Model&format=SafeTensor&size=pruned&fp=fp16", 
+            filename: "dreamshaper-8"
         }
     ]
 };
