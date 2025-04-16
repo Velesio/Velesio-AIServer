@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import ConfigForm from './components/LLMForm';
-import AllowlistForm from './components/Settings';
 import { ThemeProvider } from './context/ThemeContext';
 
 function App() {
@@ -11,8 +10,6 @@ function App() {
         <ThemeProvider>
             <div className="main-container">
                 <ConfigForm activeTab={activeTab} setActiveTab={setActiveTab} />
-                
-                {activeTab === 'allowlist' && <AllowlistForm />}
             </div>
         </ThemeProvider>
     );
