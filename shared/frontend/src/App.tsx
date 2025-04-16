@@ -95,14 +95,12 @@ const SettingsPage = () => {
 
 
 function AppContent() {
-    const { toggleTheme } = useTheme();
-
     return (
         <div className="main-container">
-            <Navbar toggleTheme={toggleTheme} />
+            <Navbar />
             <Routes>
                 <Route path="/" element={<HomePage />} />
-                <Route path="/config" element={<ConfigPage />} />
+                <Route path="/llm" element={<ConfigPage />} />
                 <Route path="/stablediffusion" element={<StableDiffusionPage />} />
                 <Route path="/settings" element={<SettingsPage />} />
                 {/* Add other routes as needed */}
