@@ -1,6 +1,6 @@
 import { Routes, Route } from 'react-router-dom';
-import { ThemeProvider } from './context/ThemeContext'; // Keep this
-import { useTheme } from './context/useTheme'; // Correct import path for useTheme
+import { ThemeProvider } from './context/ThemeContext';
+import { useTheme } from './context/useTheme';
 import Navbar from './components/Navbar';
 import ServerStats from './components/ServerStats';
 import LLMForm from './components/LLMForm';
