@@ -8,7 +8,7 @@ import Settings from './components/Settings'
 
 const HomePage = () => {
     return (
-        <div className="container mx-auto p-6 space-y-10">e()
+        <div className="container mx-auto p-6 space-y-10">
             <h1 className="text-3xl font-bold text-center">Dashboard</h1>
             <ServerStats />
             <LLMForm />
