@@ -19,6 +19,18 @@ const StableDiffusionForm = () => {
         return '/api';
     };
 
+    const getContainerStyle = () => theme === 'cyberpunk'
+        ? {
+            backgroundColor: 'var(--primary-bg)',
+            boxShadow: 'var(--neon-glow)',
+            border: '1px solid var(--accent-color)'
+          }
+        : {
+            backgroundColor: 'var(--primary-bg)',
+            boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1)',
+            border: '1px solid #e5e7eb'
+          };
+
     useEffect(() => {
         const checkStatus = async () => {
             try {
@@ -136,7 +148,16 @@ const StableDiffusionForm = () => {
     };
 
     return (
-        <div className="mt-6 mb-4">
+        <div
+            className="p-6 space-y-6 rounded-lg shadow-lg"
+            style={{
+                width: '100%',
+                maxWidth: 'calc(100% - 100px)',
+                margin: '1.5rem auto',
+                marginLeft: '90px', // account for navbar
+                ...getContainerStyle()
+            }}
+        >
             <h2 className="text-2xl font-bold text-center mb-6">Stable Diffusion Web UI</h2>
             
             <div className="flex justify-center items-center mt-10 mb-10 flex-col gap-6" style={{width: '100%', margin: '0 auto', textAlign: 'center'}}>

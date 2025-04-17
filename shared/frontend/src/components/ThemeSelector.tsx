@@ -5,23 +5,27 @@ const ThemeSelector = () => {
 
     const themes: ThemeType[] = ['cyberpunk', 'corporate'];
 
+    // Adjusted container style for symmetry
     const getContainerStyle = () => {
+        const common = {
+            width: '100%',
+            maxWidth: '400px',
+            margin: '2rem auto',
+            padding: '1.5rem',
+            borderRadius: 'var(--border-radius)',
+        };
         return theme === 'cyberpunk'
             ? {
+                ...common,
                 backgroundColor: 'var(--primary-bg)',
                 boxShadow: 'var(--neon-glow)',
                 border: '1px solid var(--accent-color)',
-                padding: '1.5rem',
-                borderRadius: 'var(--border-radius)',
-                marginTop: '2rem',
               }
             : {
+                ...common,
                 backgroundColor: 'var(--primary-bg)',
                 boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1)',
                 border: '1px solid #e5e7eb',
-                padding: '1.5rem',
-                borderRadius: 'var(--border-radius)',
-                marginTop: '2rem',
               };
     };
 
