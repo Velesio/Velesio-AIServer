@@ -5,10 +5,11 @@ FROM nvidia/cuda:12.4.1-runtime-ubuntu22.04 AS base
 
 WORKDIR /app
 
-# Install system dependencies and Node.js
+# Install system dependencies, Node.js, and Nginx
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libstdc++6 libgomp1 openssh-server sudo curl unzip wget vim nvtop \
-    python3 python3-pip python3-venv python3-dev git ffmpeg libsm6 libxext6 libgl1 ufw && \
+    python3 python3-pip python3-venv python3-dev git ffmpeg libsm6 libxext6 libgl1 ufw \
+    nginx && \
     curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && \
     apt-get install -y nodejs && \
     rm -rf /var/lib/apt/lists/*
@@ -127,6 +128,9 @@ COPY shared/frontend /app/frontend
 # Copy Stable Diffusion WebUI from the base stage
 COPY --from=base /app/stable-diffusion-webui /app/stable-diffusion-webui
 
+# Copy Nginx configuration
+COPY shared/nginx/nginx.conf /etc/nginx/nginx.conf
+
 # Ensure models directory exists
 RUN mkdir -p /models
 
@@ -134,15 +138,54 @@ RUN mkdir -p /models
 # Create RunPod entrypoint script
 # ------------------
 WORKDIR /app
-RUN printf '#!/bin/bash\n\n# Ensure directories exist\nmkdir -p /run/sshd\nmkdir -p /models/stable-diffusion\nmkdir -p /models/llm\n\n# Check for Stable Diffusion models\necho "Checking for Stable Diffusion models in /models/stable-diffusion..."\nif [ -d "/models/stable-diffusion" ]; then\n  # First check if there are any models at all without using wildcards\n  file_count=$(find /models/stable-diffusion -type f \\( -name "*.safetensors" -o -name "*.ckpt" \\) 2>/dev/null | wc -l)\n  if [ "$file_count" -gt "0" ]; then\n    echo "Found $file_count Stable Diffusion model files in /models/stable-diffusion"\n    find /models/stable-diffusion -type f \\( -name "*.safetensors" -o -name "*.ckpt" \\) -exec ls -la {} \\;\n  else\n    echo "No Stable Diffusion models found in /models/stable-diffusion. Please add .safetensors or .ckpt files to this directory."\n  fi\nfi\n\n# Check for LLM models\necho "Checking for LLM models in /models/llm..."\nif [ -d "/models/llm" ]; then\n  file_count=$(find /models/llm -type f -name "*.gguf" 2>/dev/null | wc -l)\n  if [ "$file_count" -gt "0" ]; then\n    echo "Found $file_count LLM model files in /models/llm"\n    find /models/llm -type f -name "*.gguf" -exec ls -la {} \\;\n  else\n    echo "No LLM models found in /models/llm. Please add .gguf files to this directory."\n  fi\nfi\n\n# Start the services\ntrap "exit" INT TERM\ntrap "kill 0" EXIT\n\n# Start backend API\ncd /app/backend\necho "Starting backend API on port 8000..."\nuvicorn main:app --host 0.0.0.0 --port 8000 &\nbackend_pid=$!\n\n# Wait a moment for the backend to start\nsleep 2\n\n# Check if backend started successfully\nif ! kill -0 $backend_pid 2>/dev/null; then\n  echo "Failed to start backend. Exiting."\n  exit 1\nfi\n\n# Start frontend\ncd /app/frontend\necho "Starting frontend on port 3000..."\nnpm run preview -- --host 0.0.0.0 --port 3000 &\nfrontend_pid=$!\n\n# Wait a moment for the frontend to start\nsleep 2\n\n# Check if frontend started successfully\nif ! kill -0 $frontend_pid 2>/dev/null; then\n  echo "Failed to start frontend. Exiting."\n  exit 1\nfi\n\necho "Server started on port 3000 with API proxy to backend port 8000"\necho "Stable Diffusion WebUI will be available on port 7860 when started through the UI"\n\n# Start SSH server if no command is passed\nif [ "$#" -eq 0 ]; then\n  echo "Starting SSH server..."\n  /usr/sbin/sshd -D &\n  sshd_pid=$!\n\n  # Wait for all processes to finish\n  wait $sshd_pid\nelse\n  # Execute the given command\n  exec "$@"\nfi\n' > /app/entrypoint.sh && chmod +x /app/entrypoint.sh
+RUN printf '#!/bin/bash\n\n\
+# Ensure directories exist\n\
+mkdir -p /run/sshd\n\
+mkdir -p /models/stable-diffusion\n\
+mkdir -p /models/llm\n\n\
+# Check for Stable Diffusion models\n\
+echo "Checking for Stable Diffusion models in /models/stable-diffusion..."\n\
+if [ -d "/models/stable-diffusion" ]; then\n\
+  file_count=$(find /models/stable-diffusion -type f \\( -name "*.safetensors" -o -name "*.ckpt" \\) | wc -l)\n\
+  if [ "$file_count" -gt 0 ]; then\n\
+    echo "Found $file_count SD model(s)"\n\
+  else\n\
+    echo "No SD models found."\n\
+  fi\n\
+fi\n\n\
+# Check for LLM models\n\
+echo "Checking for LLM models in /models/llm..."\n\
+if [ -d "/models/llm" ]; then\n\
+  file_count=$(find /models/llm -type f -name "*.gguf" | wc -l)\n\
+  if [ "$file_count" -gt 0 ]; then\n\
+    echo "Found $file_count LLM model(s)"\n\
+  else\n\
+    echo "No LLM models found."\n\
+  fi\n\
+fi\n\n\
+# Start services\n\
+trap "exit" INT TERM\n\
+trap "kill 0" EXIT\n\n\
+# Backend API\n\
+cd /app/backend\n\
+echo "Starting backend API on port 8000..."\n\
+uvicorn main:app --host 0.0.0.0 --port 8000 &\n\
+\n\
+# Frontend\n\
+cd /app/frontend\n\
+echo "Starting frontend on port 3000..."\n\
+npm run preview -- --host 0.0.0.0 --port 3000 &\n\n\
+# SSH and Nginx\n\
+echo "Starting SSH and Nginx..."\n\
+/usr/sbin/sshd -D &\n\
+nginx\n\n\
+# Block on SSH process\n\
+wait $!\n' > /app/entrypoint.sh && chmod +x /app/entrypoint.sh
 
 # ------------------
 # Build frontend production assets
 # ------------------
 WORKDIR /app/frontend
 RUN npm run build
-
-# Expose the necessary ports
-EXPOSE 3000 8000 22 7860
 
 ENTRYPOINT ["/app/entrypoint.sh"]
