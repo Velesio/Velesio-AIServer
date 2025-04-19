@@ -145,18 +145,19 @@ mkdir -p /run/sshd\n\
 mkdir -p /models/stable-diffusion\n\
 mkdir -p /models/llm\n\n\
 # Configure Nginx IP whitelisting\n\
-if [ -z "$ALLOWLIST" ] || [ "$ALLOWWLIST" = "all" ]; then\n\
-  echo "# Allow all IPs by default" > /etc/nginx/allowed_ips.conf\n\
+if [ -z "$ALLOWLIST" ] || [ "$ALLOWLIST" = "all" ] || [ "$ALLOWLIST" = "0.0.0.0" ] || [ "$ALLOWLIST" = "0.0.0.0/0" ]; then\n\
+  echo "# Allow all IPs (ALLOWLIST=$ALLOWLIST)" > /etc/nginx/allowed_ips.conf\n\
   echo "0.0.0.0/0 1;" >> /etc/nginx/allowed_ips.conf\n\
+  echo "IP whitelist configuration: ALL IPS ALLOWED"\n\
 else\n\
-  echo "# Generated whitelist from ALLOWED_IPS env var" > /etc/nginx/allowed_ips.conf\n\
+  echo "# Generated whitelist from ALLOWLIST env var" > /etc/nginx/allowed_ips.conf\n\
   IFS="," read -ra IPS <<< "$ALLOWLIST"\n\
   for ip in "${IPS[@]}"; do\n\
     echo "$ip 1;" >> /etc/nginx/allowed_ips.conf\n\
   done\n\
-fi\n\
-echo "IP whitelist configuration:"\n\
-cat /etc/nginx/allowed_ips.conf\n\n\
+  echo "IP whitelist configuration:"\n\
+  cat /etc/nginx/allowed_ips.conf\n\
+fi\n\n\
 # Check for Stable Diffusion models\n\
 echo "Checking for Stable Diffusion models in /models/stable-diffusion..."\n\
 if [ -d "/models/stable-diffusion" ]; then\n\

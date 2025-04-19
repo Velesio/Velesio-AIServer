@@ -14,7 +14,8 @@ services:
       - ./models/llm:/models/llm
     environment:
       - NVIDIA_VISIBLE_DEVICES=all
-      - ALLOWLIST=172.18.0.1
+      # - ALLOWLIST=172.18.0.1 
+      - ALLOWLIST=0.0.0.0/0
     deploy:
       resources:
         reservations:
