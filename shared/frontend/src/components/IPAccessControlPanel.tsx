@@ -146,7 +146,7 @@ const IPAccessControlPanel = () => {
             </h3>
 
             <p className="text-sm text-center mb-4" style={{ color: 'var(--text-secondary)' }}>
-                Edit the allowlist below. Each line should be an IP address or CIDR range followed by `1;`. Example: `192.168.1.100 1;` or `10.0.0.0/8 1;`. Use `0.0.0.0/0 1;` to allow all IPs.
+                Edit the allowlist below. Enter one IP address or CIDR range per line. Example: `192.168.1.100` or `10.0.0.0/8`. Use `0.0.0.0/0` to allow all IPs.
             </p>
 
             {isLoading ? (

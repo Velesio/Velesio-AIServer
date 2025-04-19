@@ -363,22 +363,34 @@ async def check_sd_webui():
 # -----------------------
 @app.get("/get-allowed-ips/", response_class=PlainTextResponse)
 async def get_allowed_ips():
-    """Reads and returns the content of the Nginx IP allowlist file."""
+    """Reads and returns the content of the Nginx IP allowlist file, formatted for the UI."""
     try:
         # Check if file exists before reading
         if not os.path.exists(nginx_allowlist_file):
             logger.warning(f"Allowlist file not found: {nginx_allowlist_file}")
             # Return a default or empty state if the file doesn't exist
-            return "# Allowlist file not found. Create one with IP rules.\n# Example: 192.168.1.1 1;\n# Example: 0.0.0.0/0 1; (Allow all)"
+            return "# Allowlist file not found. Enter IPs/CIDRs below.\n# Example: 192.168.1.1\n# Example: 0.0.0.0/0 (Allow all)"
         with open(nginx_allowlist_file, "r") as f:
-            return f.read()
+            lines = f.readlines()
+            # Process lines to remove the " 1;" suffix for UI display
+            processed_lines = []
+            for line in lines:
+                stripped_line = line.strip()
+                if stripped_line.endswith(" 1;"):
+                    processed_lines.append(stripped_line[:-3].strip())
+                elif stripped_line and not stripped_line.startswith("#"): # Keep non-empty lines that don't end with " 1;" (e.g., comments)
+                    processed_lines.append(stripped_line)
+                elif stripped_line.startswith("#"): # Keep comments as is
+                    processed_lines.append(stripped_line)
+
+            return "\n".join(processed_lines)
     except Exception as e:
         logger.error(f"Error reading allowlist file: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to read allowlist file: {e}")
 
 @app.post("/update-allowed-ips/")
 async def update_allowed_ips(request: Request):
-    """Updates the Nginx IP allowlist file with the provided content."""
+    """Updates the Nginx IP allowlist file, adding ' 1;' to each entry."""
     try:
         data = await request.json()
         content = data.get("content")
@@ -389,8 +401,18 @@ async def update_allowed_ips(request: Request):
         if not isinstance(content, str):
             raise HTTPException(status_code=400, detail="'content' must be a string.")
 
+        # Process lines to add " 1;" suffix before writing
+        lines = content.splitlines()
+        processed_lines = []
+        for line in lines:
+            stripped_line = line.strip()
+            if stripped_line and not stripped_line.startswith("#"): # Only add to non-empty, non-comment lines
+                processed_lines.append(f"{stripped_line} 1;")
+            elif stripped_line: # Keep comment lines
+                processed_lines.append(stripped_line)
+
         with open(nginx_allowlist_file, "w") as f:
-            f.write(content)
+            f.write("\n".join(processed_lines) + "\n") # Add trailing newline
         logger.info(f"Successfully updated {nginx_allowlist_file}")
         return {"status": "Allowlist updated successfully. Restart Nginx to apply changes."}
     except HTTPException:
