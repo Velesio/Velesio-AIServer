@@ -20,12 +20,16 @@ const IPAccessControlPanel = () => {
         ? {
             backgroundColor: 'var(--primary-bg)',
             boxShadow: 'var(--neon-glow)',
-            border: '1px solid var(--accent-color)'
+            border: '1px solid var(--accent-color)',
+            borderRadius: 'var(--border-radius)',
+            padding: '1.5rem',
           }
         : {
             backgroundColor: 'var(--primary-bg)',
             boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1)',
-            border: '1px solid #e5e7eb'
+            border: '1px solid #e5e7eb',
+            borderRadius: 'var(--border-radius)',
+            padding: '1.5rem',
           };
 
     const getTextAreaStyle = () => ({
@@ -133,18 +137,14 @@ const IPAccessControlPanel = () => {
 
     return (
         <div
-            className="p-6 space-y-6 rounded-lg shadow-lg"
+            className="space-y-6 rounded-lg shadow-lg"
             style={{
                 width: '100%',
-                maxWidth: '600px',
-                margin: '2rem auto',
+                maxWidth: '800px',
+                margin: 'auto',
                 ...getContainerStyle()
             }}
         >
-            <h3 className={`text-xl font-semibold mb-4 text-center ${theme === 'cyberpunk' ? 'glow-text' : ''}`}>
-                Nginx IP Access Control (Port 6969)
-            </h3>
-
             <p className="text-sm text-center mb-4" style={{ color: 'var(--text-secondary)' }}>
                 Edit the allowlist below. Enter one IP address or CIDR range per line. Example: `192.168.1.100` or `10.0.0.0/8`. Use `0.0.0.0/0` to allow all IPs.
             </p>

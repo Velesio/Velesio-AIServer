@@ -9,8 +9,6 @@ const ThemeSelector = () => {
     const getContainerStyle = () => {
         const common = {
             width: '100%',
-            maxWidth: '400px',
-            margin: '2rem auto',
             padding: '1.5rem',
             borderRadius: 'var(--border-radius)',
         };
@@ -49,9 +47,6 @@ const ThemeSelector = () => {
 
     return (
         <div style={getContainerStyle()}>
-            <h3 className={`text-xl font-semibold mb-4 text-center ${theme === 'cyberpunk' ? 'glow-text' : ''}`}>
-                Appearance
-            </h3>
             <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem' }}>
                 {themes.map((themeOption) => (
                     <button

@@ -41,7 +41,6 @@ export function ModelDownloadContainer() {
                 width: '100%',
                 flexWrap: 'wrap',
                 minWidth: '280px',
-                maxWidth: '850px',
                 margin: '0 auto'
             }}
         >
@@ -89,17 +88,18 @@ export function LLMModelDownload() {
     const [downloadStatus, setDownloadStatus] = useState<{message: string, success: boolean} | null>(null);
 
     const getContainerStyle = () => {
-        return theme === 'cyberpunk'
-            ? {
-                backgroundColor: 'var(--primary-bg)',
-                boxShadow: 'var(--neon-glow)',
-                border: '1px solid var(--accent-color)'
-              }
-            : {
-                backgroundColor: 'var(--primary-bg)',
-                boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1)',
-                border: '1px solid #e5e7eb'
-              };
+        return {
+            width: '100%', 
+            maxWidth: 'calc(50% - 10px)', 
+            margin: '0',
+            padding: '1.5rem',
+            borderRadius: 'var(--border-radius)',
+            backgroundColor: 'var(--input-bg)',
+            boxShadow: theme === 'cyberpunk' ? '0 0 10px rgba(0, 0, 0, 0.3)' : '0 2px 5px rgba(0, 0, 0, 0.1)',
+            border: theme === 'cyberpunk' ? '1px solid rgba(157, 78, 221, 0.3)' : '1px solid #eaeaea',
+            flex: '1',
+            minWidth: '300px'
+        };
     };
 
     const getInputStyle = () => {
@@ -159,12 +159,7 @@ export function LLMModelDownload() {
     };
 
     return (
-        <div className="p-4 space-y-4 rounded-lg shadow-lg mt-6" style={{ 
-            width: '100%', 
-            maxWidth: '400px', 
-            margin: '0 auto',
-            ...getContainerStyle()
-        }}>
+        <div className="p-4 space-y-4 rounded-lg shadow-lg" style={getContainerStyle()}>
             <h2 className={`text-2xl font-bold text-center mb-4 ${theme === 'cyberpunk' ? 'glow-text' : ''}`}>
                 LlamaCPP (.gguf)
             </h2>
@@ -267,17 +262,18 @@ export function SDModelDownload() {
     const [downloadStatus, setDownloadStatus] = useState<{message: string, success: boolean} | null>(null);
 
     const getContainerStyle = () => {
-        return theme === 'cyberpunk'
-            ? {
-                backgroundColor: 'var(--primary-bg)',
-                boxShadow: 'var(--neon-glow)',
-                border: '1px solid var(--accent-color)'
-              }
-            : {
-                backgroundColor: 'var(--primary-bg)',
-                boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1)',
-                border: '1px solid #e5e7eb'
-              };
+        return {
+            width: '100%', 
+            maxWidth: 'calc(50% - 10px)', 
+            margin: '0',
+            padding: '1.5rem',
+            borderRadius: 'var(--border-radius)',
+            backgroundColor: 'var(--input-bg)',
+            boxShadow: theme === 'cyberpunk' ? '0 0 10px rgba(0, 0, 0, 0.3)' : '0 2px 5px rgba(0, 0, 0, 0.1)',
+            border: theme === 'cyberpunk' ? '1px solid rgba(157, 78, 221, 0.3)' : '1px solid #eaeaea',
+            flex: '1',
+            minWidth: '300px'
+        };
     };
 
     const getInputStyle = () => {
@@ -337,12 +333,7 @@ export function SDModelDownload() {
     };
 
     return (
-        <div className="p-4 space-y-4 rounded-lg shadow-lg mt-6" style={{ 
-            width: '100%', 
-            maxWidth: '400px', 
-            margin: '0 auto',
-            ...getContainerStyle()
-        }}>
+        <div className="p-4 space-y-4 rounded-lg shadow-lg" style={getContainerStyle()}>
             <h2 className={`text-2xl font-bold text-center mb-4 ${theme === 'cyberpunk' ? 'glow-text' : ''}`}>
                 Stable Diffusion (.safetensors)
             </h2>
