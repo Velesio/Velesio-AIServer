@@ -1,5 +1,6 @@
 import { ModelDownloadContainer } from './ModelDownload'; // Import the ModelDownload container component
 import ThemeSelector from './ThemeSelector'; // Import the new ThemeSelector component
+import IPAccessControlPanel from './IPAccessControlPanel'; // Import the new IP Access Control Panel
 
 const Settings = () => {
     return (
@@ -11,11 +12,15 @@ const Settings = () => {
                 <ThemeSelector />
             </div>
 
+            {/* Render IP Access Control Panel */}
+            <div className="mb-12">
+                <IPAccessControlPanel />
+            </div>
+
             {/* Render ModelDownloadContainer */}
             <div className="mb-12">
                 <ModelDownloadContainer />
             </div>
-            {/* Removed IPAccessControlPanel - assuming ModelDownload is the main content */}
         </div>
     );
 };

@@ -2,11 +2,13 @@ import threading
 import time
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import PlainTextResponse  # Added
 import subprocess
 import psutil
 import os
 import requests
 import logging
+import shlex  # Added
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -38,6 +40,7 @@ server_process = None
 stable_diffusion_process = None  # Process for Stable Diffusion
 log_file = "/app/server_logs.txt"
 sd_log_file = "/app/sd_logs.txt"  # Logs for Stable Diffusion
+nginx_allowlist_file = "/etc/nginx/allowed_ips.conf"  # Added
 
 # -----------------------
 # Server Endpoints
@@ -354,3 +357,69 @@ async def check_sd_webui():
         return {"available": response.status_code == 200}
     except requests.RequestException:
         return {"available": False}
+
+# -----------------------
+# Nginx IP Allowlist Management
+# -----------------------
+@app.get("/get-allowed-ips/", response_class=PlainTextResponse)
+async def get_allowed_ips():
+    """Reads and returns the content of the Nginx IP allowlist file."""
+    try:
+        # Check if file exists before reading
+        if not os.path.exists(nginx_allowlist_file):
+            logger.warning(f"Allowlist file not found: {nginx_allowlist_file}")
+            # Return a default or empty state if the file doesn't exist
+            return "# Allowlist file not found. Create one with IP rules.\n# Example: 192.168.1.1 1;\n# Example: 0.0.0.0/0 1; (Allow all)"
+        with open(nginx_allowlist_file, "r") as f:
+            return f.read()
+    except Exception as e:
+        logger.error(f"Error reading allowlist file: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to read allowlist file: {e}")
+
+@app.post("/update-allowed-ips/")
+async def update_allowed_ips(request: Request):
+    """Updates the Nginx IP allowlist file with the provided content."""
+    try:
+        data = await request.json()
+        content = data.get("content")
+        if content is None:
+            raise HTTPException(status_code=400, detail="Missing 'content' in request body.")
+
+        # Basic validation
+        if not isinstance(content, str):
+            raise HTTPException(status_code=400, detail="'content' must be a string.")
+
+        with open(nginx_allowlist_file, "w") as f:
+            f.write(content)
+        logger.info(f"Successfully updated {nginx_allowlist_file}")
+        return {"status": "Allowlist updated successfully. Restart Nginx to apply changes."}
+    except HTTPException:
+        raise  # Re-raise validation errors
+    except Exception as e:
+        logger.error(f"Error writing allowlist file: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to write allowlist file: {e}")
+
+@app.post("/restart-nginx/")
+async def restart_nginx():
+    """Restarts the Nginx server to apply configuration changes."""
+    try:
+        # Use 'nginx -s reload' for graceful restart/reload
+        command = ["nginx", "-s", "reload"]
+        logger.info(f"Executing Nginx reload command: {' '.join(command)}")
+        # Using check=False to handle non-zero exit codes manually
+        result = subprocess.run(command, capture_output=True, text=True, check=False)
+
+        if result.returncode == 0:
+            logger.info("Nginx reloaded successfully.")
+            return {"status": "Nginx reloaded successfully."}
+        else:
+            # Log the error output from nginx command
+            error_message = f"Nginx reload failed. Return code: {result.returncode}. Error: {result.stderr or result.stdout}"
+            logger.error(error_message)
+            raise HTTPException(status_code=500, detail=error_message)
+    except FileNotFoundError:
+        logger.error("Nginx command not found.")
+        raise HTTPException(status_code=500, detail="Nginx command not found. Is Nginx installed and in PATH?")
+    except Exception as e:
+        logger.error(f"Error restarting Nginx: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to restart Nginx: {e}")
