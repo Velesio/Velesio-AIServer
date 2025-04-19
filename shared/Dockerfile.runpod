@@ -130,6 +130,7 @@ COPY --from=base /app/stable-diffusion-webui /app/stable-diffusion-webui
 
 # Copy Nginx configuration
 COPY shared/nginx/nginx.conf /etc/nginx/nginx.conf
+COPY shared/nginx/allowed_ips.conf /etc/nginx/allowed_ips.conf
 
 # Ensure models directory exists
 RUN mkdir -p /models
@@ -143,6 +144,19 @@ RUN printf '#!/bin/bash\n\n\
 mkdir -p /run/sshd\n\
 mkdir -p /models/stable-diffusion\n\
 mkdir -p /models/llm\n\n\
+# Configure Nginx IP whitelisting\n\
+if [ -z "$ALLOWLIST" ] || [ "$ALLOWWLIST" = "all" ]; then\n\
+  echo "# Allow all IPs by default" > /etc/nginx/allowed_ips.conf\n\
+  echo "0.0.0.0/0 1;" >> /etc/nginx/allowed_ips.conf\n\
+else\n\
+  echo "# Generated whitelist from ALLOWED_IPS env var" > /etc/nginx/allowed_ips.conf\n\
+  IFS="," read -ra IPS <<< "$ALLOWLIST"\n\
+  for ip in "${IPS[@]}"; do\n\
+    echo "$ip 1;" >> /etc/nginx/allowed_ips.conf\n\
+  done\n\
+fi\n\
+echo "IP whitelist configuration:"\n\
+cat /etc/nginx/allowed_ips.conf\n\n\
 # Check for Stable Diffusion models\n\
 echo "Checking for Stable Diffusion models in /models/stable-diffusion..."\n\
 if [ -d "/models/stable-diffusion" ]; then\n\
