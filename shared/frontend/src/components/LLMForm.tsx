@@ -29,12 +29,14 @@ const LLMForm = () => {
             ? {
                 backgroundColor: 'var(--primary-bg)',
                 boxShadow: 'var(--neon-glow)',
-                border: '1px solid var(--accent-color)'
+                border: '1px solid var(--accent-color)',
+                borderRadius: '1rem'
               }
             : {
                 backgroundColor: 'var(--primary-bg)',
                 boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1)',
-                border: '1px solid #e5e7eb'
+                border: '1px solid #e5e7eb',
+                borderRadius: '1rem'
               };
     };
 
@@ -42,7 +44,7 @@ const LLMForm = () => {
         return {
             width: "220px",
             padding: "0.5rem",
-            borderRadius: "0.25rem",
+            borderRadius: "0.75rem",
             backgroundColor: "var(--input-bg)",
             color: "var(--text-color)",
             border: theme === 'cyberpunk' ? '1px solid #666' : '1px solid #d1d5db'
@@ -185,7 +187,7 @@ const LLMForm = () => {
     };
 
     return (
-        <div className="p-6 space-y-6 rounded-lg shadow-lg" style={{ 
+        <div className="p-6 space-y-6 rounded-2xl shadow-lg" style={{ 
             width: '100%', 
             maxWidth: 'calc(100% - 100px)',
             margin: '1.5rem auto',
@@ -328,7 +330,7 @@ const LLMForm = () => {
                     }}>
                         {/* Toggle button */}
                         <button
-                            className="px-4 py-2 rounded text-sm font-medium inline-flex items-center"
+                            className="px-4 py-2 rounded-full text-sm font-medium inline-flex items-center"
                             onClick={serverStatus === 'Running' ? handleStopServer : handleStartServer}
                             disabled={isStarting || isStopping}
                             style={{ 
@@ -369,7 +371,7 @@ const LLMForm = () => {
                         
                         {/* Log toggle button */}
                         <button
-                            className="px-4 py-2 rounded-md"
+                            className="px-4 py-2 rounded-full"
                             onClick={() => setShowLogs(!showLogs)}
                             style={{ 
                                 backgroundColor: theme === 'cyberpunk' ? '#2d2d4d' : '#f3f4f6',
@@ -395,7 +397,7 @@ const LLMForm = () => {
                 
                 {/* Operation status message */}
                 {operationStatus && (
-                    <div className="px-4 py-3 rounded-md text-sm mt-4" style={{
+                    <div className="px-4 py-3 rounded-xl text-sm mt-4" style={{
                         maxWidth: '450px',
                         margin: '0 auto',
                         textAlign: 'center',
@@ -437,7 +439,7 @@ const LLMForm = () => {
             {showLogs && (
                 <div className="w-full mt-6 mb-12">
                     <div
-                        className="border p-4 rounded whitespace-pre overflow-y-scroll"
+                        className="border p-4 rounded-xl whitespace-pre overflow-y-scroll"
                         style={{ 
                             width: '100%',
                             height: '400px', 

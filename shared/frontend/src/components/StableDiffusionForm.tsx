@@ -23,12 +23,14 @@ const StableDiffusionForm = () => {
         ? {
             backgroundColor: 'var(--primary-bg)',
             boxShadow: 'var(--neon-glow)',
-            border: '1px solid var(--accent-color)'
+            border: '1px solid var(--accent-color)',
+            borderRadius: '1rem'
           }
         : {
             backgroundColor: 'var(--primary-bg)',
             boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1)',
-            border: '1px solid #e5e7eb'
+            border: '1px solid #e5e7eb',
+            borderRadius: '1rem'
           };
 
     useEffect(() => {
@@ -149,7 +151,7 @@ const StableDiffusionForm = () => {
 
     return (
         <div
-            className="p-6 space-y-6 rounded-lg shadow-lg"
+            className="p-6 space-y-6 rounded-2xl shadow-lg"
             style={{
                 width: '100%',
                 maxWidth: 'calc(100% - 100px)',
@@ -198,7 +200,7 @@ const StableDiffusionForm = () => {
                         gap: '20px'
                     }}>
                         <button
-                            className="px-4 py-2 rounded text-sm font-medium inline-flex items-center"
+                            className="px-4 py-2 rounded-full text-sm font-medium inline-flex items-center"
                             onClick={sdStatus === 'Running' ? handleStopStableDiffusion : handleStartStableDiffusion}
                             disabled={isStartingSD || isStoppingSD}
                             style={{ 
@@ -238,7 +240,7 @@ const StableDiffusionForm = () => {
                         </button>
 
                         <button
-                            className="px-4 py-2 rounded text-sm font-medium inline-flex items-center"
+                            className="px-4 py-2 rounded-full text-sm font-medium inline-flex items-center"
                             onClick={() => setShowSdLogs(!showSdLogs)}
                             style={{ 
                                 backgroundColor: theme === 'cyberpunk' ? '#2d2d4d' : '#f3f4f6',
@@ -262,7 +264,7 @@ const StableDiffusionForm = () => {
                 </div>
                 
                 {sdOperationStatus && (
-                    <div className="px-4 py-3 rounded-md text-sm max-w-md w-full" style={{
+                    <div className="px-4 py-3 rounded-xl text-sm max-w-md w-full" style={{
                         backgroundColor: sdOperationStatus.success ? 
                             (theme === 'cyberpunk' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(16, 185, 129, 0.1)') : 
                             (theme === 'cyberpunk' ? 'rgba(239, 68, 68, 0.15)' : 'rgba(239, 68, 68, 0.1)'),
@@ -294,7 +296,7 @@ const StableDiffusionForm = () => {
                 )}
                 
                 {sdStatus === 'Running' && (
-                    <div className="mb-6 p-4 rounded-md text-center w-full max-w-md" style={{
+                    <div className="mb-6 p-4 rounded-xl text-center w-full max-w-md" style={{
                         backgroundColor: theme === 'cyberpunk' ? 'rgba(26, 26, 46, 0.4)' : 'var(--input-bg)',
                         border: theme === 'cyberpunk' ? '1px solid var(--accent-color)' : '1px solid #e5e7eb',
                     }}>
@@ -323,7 +325,7 @@ const StableDiffusionForm = () => {
             {showSdLogs && (
                 <div className="w-full mt-4" style={{ maxWidth: '800px', margin: '0 auto' }}>
                     <div
-                        className="border p-4 rounded whitespace-pre overflow-y-scroll"
+                        className="border p-4 rounded-xl whitespace-pre overflow-y-scroll"
                         style={{ 
                             width: '100%',
                             height: '400px', 
