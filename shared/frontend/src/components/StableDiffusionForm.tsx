@@ -181,17 +181,6 @@ const StableDiffusionForm = () => {
                                 )}
                             </div>
                         </div>
-                        <div className="flex flex-col items-start">
-                            <span className="text-xs opacity-70">SD Web UI</span>
-                            <span className="font-medium text-sm" style={{
-                                color: sdStatus === 'Running' ? '#4ade80' : '#ef4444',
-                                textShadow: theme === 'cyberpunk' 
-                                    ? `0 0 3px ${sdStatus === 'Running' ? '#4ade80' : '#ef4444'}`
-                                    : 'none',
-                            }}>
-                                {sdStatus}
-                            </span>
-                        </div>
                     </div>
                     
                     <div style={{ 
@@ -265,6 +254,8 @@ const StableDiffusionForm = () => {
                 
                 {sdOperationStatus && (
                     <div className="px-4 py-3 rounded-xl text-sm max-w-md w-full" style={{
+                        maxWidth: '450px',
+                        margin: '0 auto',
                         backgroundColor: sdOperationStatus.success ? 
                             (theme === 'cyberpunk' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(16, 185, 129, 0.1)') : 
                             (theme === 'cyberpunk' ? 'rgba(239, 68, 68, 0.15)' : 'rgba(239, 68, 68, 0.1)'),

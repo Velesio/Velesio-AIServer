@@ -308,17 +308,6 @@ const LLMForm = () => {
                                 )}
                             </div>
                         </div>
-                        <div className="flex flex-col">
-                            <span className="text-xs opacity-70">LLM Server</span>
-                            <span className="font-medium text-sm" style={{
-                                color: serverStatus === 'Running' ? '#4ade80' : '#ef4444',
-                                textShadow: theme === 'cyberpunk' 
-                                    ? `0 0 3px ${serverStatus === 'Running' ? '#4ade80' : '#ef4444'}`
-                                    : 'none',
-                            }}>
-                                {serverStatus}
-                            </span>
-                        </div>
                     </div>
                     
                     {/* Buttons container - placed side by side */}
@@ -357,14 +346,14 @@ const LLMForm = () => {
                                     <svg className="mr-1.5" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                         <rect x="6" y="6" width="12" height="12" rx="2" ry="2"></rect>
                                     </svg>
-                                    Stop Server
+                                    Stop
                                 </>
                             ) : (
                                 <>
                                     <svg className="mr-1.5" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                         <polygon points="5 3 19 12 5 21 5 3"></polygon>
                                     </svg>
-                                    Start Server
+                                    Start
                                 </>
                             )}
                         </button>
