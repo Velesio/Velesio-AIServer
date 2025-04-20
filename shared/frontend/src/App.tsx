@@ -8,8 +8,8 @@ import Settings from './components/Settings'
 
 const HomePage = () => {
     return (
-        <div className="container mx-auto p-6 space-y-16"> {/* Increased space-y from 10 to 16 */}
-            <h1 className="text-3xl font-bold text-center mt-10">Dashboard</h1> {/* Increased mt from 6 to 10 */}
+        <div className="container mx-auto p-6 space-y-16">
+            <h1 className="text-3xl font-bold text-center mt-10">Dashboard</h1>
             <ServerStats />
             <LLMForm />
             <StableDiffusionForm />
@@ -32,7 +32,6 @@ function AppContent() {
             <Routes>
                 <Route path="/" element={<HomePage />} />
                 <Route path="/settings" element={<SettingsPage />} />
-                {/* other routes removed */}
             </Routes>
         </div>
     )
