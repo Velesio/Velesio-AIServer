@@ -50,15 +50,14 @@ const HomePage = () => {
     // Style for the title containers to match component box positioning
     const titleContainerStyle = {
         width: '100%',
-        maxWidth: 'calc(100% - 100px)', // Match component box max-width
+        maxWidth: '800px', // Set max-width for centering
         margin: '0 auto', // Center the container itself horizontally
-        marginLeft: '90px', // Apply left margin to account for navbar
         textAlign: 'center' as const, // Center the text within this container
         marginBottom: '1rem', // Add some space below the title
     };
 
     return (
-        <div className="container mx-auto p-6 space-y-8">
+        <div className="container mx-auto p-6 space-y-8"> {/* Main page container */}
             <h1 className="text-3xl font-bold text-center mt-10" style={getTitleStyle()}>Dashboard</h1>
 
             {/* Moved button container above ServerStats */}
@@ -107,16 +106,21 @@ const HomePage = () => {
                 </button>
             </div>
 
-            {/* Conditionally render ServerStats (No Title) */}
+            {/* Conditionally render ServerStats with Centered Title */}
             {showServerStats && (
-                <div className="w-full">
+                <div className="w-full" style={{ maxWidth: '800px', margin: '0 auto' }}> {/* Centering Wrapper */}
+                    <div style={titleContainerStyle}> {/* Title Container */}
+                        <h3 className="text-xl font-semibold" style={getTitleStyle()}>
+                            Stats
+                        </h3>
+                    </div>
                     <ServerStats />
                 </div>
             )}
 
             {/* Conditionally render LLMForm with Centered Title */}
             {showLLMForm && (
-                 <div className="w-full">
+                 <div className="w-full" style={{ maxWidth: '800px', margin: '0 auto' }}> {/* Centering Wrapper */}
                     <div style={titleContainerStyle}>
                         <h3 className="text-xl font-semibold" style={getTitleStyle()}>
                             LLM Server
@@ -128,7 +132,7 @@ const HomePage = () => {
 
             {/* Conditionally render StableDiffusionForm with Centered Title */}
             {showStableDiffusionForm && (
-                 <div className="w-full">
+                 <div className="w-full" style={{ maxWidth: '800px', margin: '0 auto' }}> {/* Centering Wrapper */}
                      <div style={titleContainerStyle}>
                         <h3 className="text-xl font-semibold" style={getTitleStyle()}>
                             Stable Diffusion
@@ -143,7 +147,7 @@ const HomePage = () => {
 
 const SettingsPage = () => {
     return (
-        <div className="container mx-auto p-6">
+        <div className="container mx-auto p-6"> {/* Main page container */}
             <Settings />
         </div>
     )

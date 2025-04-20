@@ -99,15 +99,28 @@ function ServerStats() {
         );
     };
 
+    const getContainerStyle = () => {
+        return theme === 'cyberpunk'
+            ? {
+                backgroundColor: 'var(--primary-bg)',
+                boxShadow: 'var(--neon-glow)',
+                border: '1px solid var(--accent-color)',
+                borderRadius: '1rem',
+                padding: '1.5rem',
+              }
+            : {
+                backgroundColor: 'var(--primary-bg)',
+                boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1)',
+                border: '1px solid #e5e7eb',
+                borderRadius: '1rem',
+                padding: '1.5rem',
+              };
+    };
+
     return (
-        <div className="stats-dashboard" style={{
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            padding: '15px 0',
+        <div className="server-stats-container" style={{
             width: '100%',
-            maxWidth: '100%', 
-            marginLeft: 0,
+            ...getContainerStyle()
         }}>
             <div className="stats-container" style={{
                 display: 'flex',

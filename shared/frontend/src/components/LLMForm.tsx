@@ -188,10 +188,7 @@ const LLMForm = () => {
 
     return (
         <div className="p-6 space-y-6 rounded-2xl shadow-lg" style={{
-            width: '100%',
-            maxWidth: 'calc(100% - 100px)', // Standardized max-width
-            margin: '0 auto', // Center horizontally
-            marginLeft: '90px', // Keep left margin for navbar spacing
+            width: '100%', // Fill the parent container
             ...getContainerStyle()
         }}>
             {/* Model row */}
