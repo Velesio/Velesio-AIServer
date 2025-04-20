@@ -51,7 +51,8 @@ const HomePage = () => {
     const titleContainerStyle = {
         width: '100%',
         maxWidth: 'calc(100% - 100px)', // Match component box max-width
-        marginLeft: '90px', // Match component box margin-left
+        margin: '0 auto', // Center the container itself horizontally
+        marginLeft: '90px', // Apply left margin to account for navbar
         textAlign: 'center' as const, // Center the text within this container
         marginBottom: '1rem', // Add some space below the title
     };

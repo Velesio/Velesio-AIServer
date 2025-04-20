@@ -13,24 +13,6 @@ const Settings = () => {
     const [showModels, setShowModels] = useState(true);
     const [showAccess, setShowAccess] = useState(true);
 
-    // Common section container style for consistent appearance
-    const getSectionStyle = () => ({
-        width: '100%',
-        maxWidth: '800px',
-        margin: '0 auto 2.5rem auto',
-        borderRadius: 'var(--border-radius)',
-        backgroundColor: theme === 'cyberpunk' 
-            ? 'var(--primary-bg)' 
-            : 'var(--primary-bg)',
-        boxShadow: theme === 'cyberpunk' 
-            ? 'var(--neon-glow)' 
-            : '0 4px 15px rgba(0, 0, 0, 0.1)',
-        border: theme === 'cyberpunk' 
-            ? '1px solid var(--accent-color)' 
-            : '1px solid #e5e7eb',
-        padding: '1.5rem',
-    });
-
     // Define container style for the icon buttons
     const getButtonContainerStyle = () => {
         const common = {
@@ -75,10 +57,8 @@ const Settings = () => {
 
     return (
         <div className="settings-container" style={{
-            maxWidth: 'calc(100% - 100px)',
-            margin: '0 auto',
-            marginLeft: '90px', // account for navbar
-            padding: '2rem 1rem',
+            // Removed maxWidth, margin, marginLeft - handled by parent/global styles
+            padding: '2rem 1rem', // Keep padding consistent
         }}>
             <h2 className="text-3xl font-bold text-center mb-10" style={getTitleStyle()}>
                 Settings
@@ -137,7 +117,7 @@ const Settings = () => {
                                 Theme
                             </h3>
                         </div>
-                        {/* ThemeSelector applies its own max-width and centering */}
+                        {/* ThemeSelector applies its own container style */}
                         <ThemeSelector />
                     </section>
                 )}
@@ -150,9 +130,8 @@ const Settings = () => {
                                 Model Downloads
                             </h3>
                         </div>
-                        <div style={getSectionStyle()}>
-                            <ModelDownloadContainer />
-                        </div>
+                        {/* ModelDownloadContainer is a flex wrapper, styling applied inside */}
+                        <ModelDownloadContainer />
                     </section>
                 )}
 
@@ -164,6 +143,7 @@ const Settings = () => {
                                 Access Control
                             </h3>
                         </div>
+                        {/* IPAccessControlPanel applies its own container style */}
                         <IPAccessControlPanel />
                     </section>
                 )}

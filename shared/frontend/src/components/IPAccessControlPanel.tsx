@@ -23,6 +23,8 @@ const IPAccessControlPanel = () => {
             border: '1px solid var(--accent-color)',
             borderRadius: 'var(--border-radius)',
             padding: '1.5rem',
+            maxWidth: '800px', // Match standard content box width
+            margin: '0 auto', // Center the container
           }
         : {
             backgroundColor: 'var(--primary-bg)',
@@ -30,6 +32,8 @@ const IPAccessControlPanel = () => {
             border: '1px solid #e5e7eb',
             borderRadius: 'var(--border-radius)',
             padding: '1.5rem',
+            maxWidth: '800px', // Match standard content box width
+            margin: '0 auto', // Center the container
           };
 
     const getTextAreaStyle = () => ({
@@ -139,9 +143,6 @@ const IPAccessControlPanel = () => {
         <div
             className="space-y-6 rounded-lg shadow-lg"
             style={{
-                width: '100%',
-                maxWidth: '800px',
-                margin: 'auto',
                 ...getContainerStyle()
             }}
         >

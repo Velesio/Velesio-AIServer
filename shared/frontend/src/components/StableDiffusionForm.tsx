@@ -154,14 +154,14 @@ const StableDiffusionForm = () => {
             className="p-6 space-y-6 rounded-2xl shadow-lg"
             style={{
                 width: '100%',
-                maxWidth: 'calc(100% - 100px)',
-                margin: '1.5rem auto',
+                maxWidth: 'calc(100% - 100px)', // Standardized max-width
+                margin: '0 auto', // Center horizontally
                 marginLeft: '90px', // account for navbar
                 ...getContainerStyle()
             }}
         >            
-            <div className="flex justify-center items-center mt-10 mb-10 flex-col gap-6" style={{width: '100%', margin: '0 auto', textAlign: 'center'}}>
-                <div className="mb-4 flex items-center justify-between w-full max-w-md">
+            <div className="flex justify-center items-center mt-10 mb-10 flex-col gap-6" style={{width: '100%', maxWidth: '450px', margin: '0 auto', textAlign: 'center'}}>
+                <div className="mb-4 flex items-center justify-between w-full">
                     <div className="flex items-center">
                         <div className="relative w-6 h-6 mr-2">
                             <div className="w-6 h-6 rounded-full" style={{

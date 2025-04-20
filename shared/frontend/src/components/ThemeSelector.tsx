@@ -9,6 +9,8 @@ const ThemeSelector = () => {
     const getContainerStyle = () => {
         const common = {
             width: '100%',
+            maxWidth: '800px', // Match standard content box width
+            margin: '0 auto', // Center the container
             padding: '1.5rem',
             borderRadius: 'var(--border-radius)',
         };

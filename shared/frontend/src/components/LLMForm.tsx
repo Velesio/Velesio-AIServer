@@ -187,17 +187,17 @@ const LLMForm = () => {
     };
 
     return (
-        <div className="p-6 space-y-6 rounded-2xl shadow-lg" style={{ 
-            width: '100%', 
-            maxWidth: 'calc(100% - 100px)',
-            margin: '1.5rem auto',
+        <div className="p-6 space-y-6 rounded-2xl shadow-lg" style={{
+            width: '100%',
+            maxWidth: 'calc(100% - 100px)', // Standardized max-width
+            margin: '0 auto', // Center horizontally
             marginLeft: '90px', // Keep left margin for navbar spacing
             ...getContainerStyle()
         }}>
             {/* Model row */}
-            <div style={{ width: '550px', margin: '1.5rem auto', marginBottom: '2.5rem' }}>
-                <div style={{ display: "flex", justifyContent: "space-between" }}>
-                    <div style={{ marginRight: '15px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <div style={{ width: '100%', maxWidth: '550px', margin: '1.5rem auto', marginBottom: '2.5rem' }}>
+                <div style={{ display: "flex", justifyContent: "space-between", flexWrap: 'wrap', gap: '1rem' }}>
+                    <div style={{ flex: '1 1 180px', minWidth: '180px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                         <label className="block mb-1">Model:</label>
                         <input
                             type="text"
@@ -207,7 +207,7 @@ const LLMForm = () => {
                         />
                     </div>
                     
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                    <div style={{ flex: '1 1 180px', minWidth: '180px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                         <label className="block mb-1">Available Models:</label>
                         <select
                             onChange={(e) => setModel(e.target.value)}
@@ -226,10 +226,10 @@ const LLMForm = () => {
             </div>
 
             {/* Host, Port, GPU Layers, and Template */}
-            <div style={{ width: '550px', margin: '1.5rem auto', marginBottom: '2.5rem' }}>
+            <div style={{ width: '100%', maxWidth: '550px', margin: '1.5rem auto', marginBottom: '2.5rem' }}>
                 {/* First row: Host and Port */}
-                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: '1.5rem' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
+                    <div style={{ flex: '1 1 180px', minWidth: '180px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                         <label className="block mb-1">Host:</label>
                         <input
                             type="text"
@@ -239,7 +239,7 @@ const LLMForm = () => {
                         />
                     </div>
                     
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                    <div style={{ flex: '1 1 180px', minWidth: '180px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                         <label className="block mb-1">Port:</label>
                         <input
                             type="number"
@@ -251,8 +251,8 @@ const LLMForm = () => {
                 </div>
                 
                 {/* Second row: GPU Layers and Template */}
-                <div style={{ display: "flex", justifyContent: "space-between" }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                <div style={{ display: "flex", justifyContent: "space-between", flexWrap: 'wrap', gap: '1rem' }}>
+                    <div style={{ flex: '1 1 180px', minWidth: '180px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                         <label className="block mb-1">GPU Layers:</label>
                         <input
                             type="number"
@@ -262,7 +262,7 @@ const LLMForm = () => {
                         />
                     </div>
                     
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                    <div style={{ flex: '1 1 180px', minWidth: '180px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                         <label className="block mb-1">Template:</label>
                         <input
                             type="text"

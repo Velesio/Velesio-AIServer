@@ -39,9 +39,9 @@ export function ModelDownloadContainer() {
                 justifyContent: 'center', 
                 gap: '20px',
                 width: '100%',
+                maxWidth: '800px', // Match standard content box width
+                margin: '0 auto', // Center the container
                 flexWrap: 'wrap',
-                minWidth: '280px',
-                margin: '0 auto'
             }}
         >
             <LLMModelDownload />
@@ -88,17 +88,18 @@ export function LLMModelDownload() {
     const [downloadStatus, setDownloadStatus] = useState<{message: string, success: boolean} | null>(null);
 
     const getContainerStyle = () => {
+        // Standardized style for individual download boxes
         return {
-            width: '100%', 
-            maxWidth: 'calc(50% - 10px)', 
-            margin: '0',
+            width: '100%',
+            maxWidth: 'calc(50% - 10px)', // Adjust width for side-by-side layout
+            minWidth: '300px', // Ensure minimum width on smaller screens/wraps
+            margin: '0', // Margin handled by parent flex gap
             padding: '1.5rem',
             borderRadius: 'var(--border-radius)',
-            backgroundColor: 'var(--input-bg)',
-            boxShadow: theme === 'cyberpunk' ? '0 0 10px rgba(0, 0, 0, 0.3)' : '0 2px 5px rgba(0, 0, 0, 0.1)',
-            border: theme === 'cyberpunk' ? '1px solid rgba(157, 78, 221, 0.3)' : '1px solid #eaeaea',
-            flex: '1',
-            minWidth: '300px'
+            backgroundColor: theme === 'cyberpunk' ? 'var(--primary-bg)' : 'var(--primary-bg)', // Use primary for consistency with Settings sections
+            boxShadow: theme === 'cyberpunk' ? 'var(--neon-glow)' : '0 4px 15px rgba(0, 0, 0, 0.1)',
+            border: theme === 'cyberpunk' ? '1px solid var(--accent-color)' : '1px solid #e5e7eb',
+            flex: '1', // Allow flex grow/shrink
         };
     };
 
@@ -262,17 +263,18 @@ export function SDModelDownload() {
     const [downloadStatus, setDownloadStatus] = useState<{message: string, success: boolean} | null>(null);
 
     const getContainerStyle = () => {
+        // Standardized style for individual download boxes
         return {
-            width: '100%', 
-            maxWidth: 'calc(50% - 10px)', 
-            margin: '0',
+            width: '100%',
+            maxWidth: 'calc(50% - 10px)', // Adjust width for side-by-side layout
+            minWidth: '300px', // Ensure minimum width on smaller screens/wraps
+            margin: '0', // Margin handled by parent flex gap
             padding: '1.5rem',
             borderRadius: 'var(--border-radius)',
-            backgroundColor: 'var(--input-bg)',
-            boxShadow: theme === 'cyberpunk' ? '0 0 10px rgba(0, 0, 0, 0.3)' : '0 2px 5px rgba(0, 0, 0, 0.1)',
-            border: theme === 'cyberpunk' ? '1px solid rgba(157, 78, 221, 0.3)' : '1px solid #eaeaea',
-            flex: '1',
-            minWidth: '300px'
+            backgroundColor: theme === 'cyberpunk' ? 'var(--primary-bg)' : 'var(--primary-bg)', // Use primary for consistency with Settings sections
+            boxShadow: theme === 'cyberpunk' ? 'var(--neon-glow)' : '0 4px 15px rgba(0, 0, 0, 0.1)',
+            border: theme === 'cyberpunk' ? '1px solid var(--accent-color)' : '1px solid #e5e7eb',
+            flex: '1', // Allow flex grow/shrink
         };
     };
 
