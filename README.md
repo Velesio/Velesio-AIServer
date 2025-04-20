@@ -27,11 +27,11 @@ To build this locally and self-host simply docker compose up --build
 
 Veles is in early development. Stay tuned for:
 
-- ✅ Unity Package Manager support  
-- ✅ Unity Editor integration  
-- ✅ Documentation & API access  
-- ✅ Community Discord
+- ✅ Unity Integration combining the projects this is based on
+- ✅ Documentation
+- ✅ API Service
 - ✅ Flux support
+- ✅ Ollama support
 - ✅ Proprietary models support
 
 Follow the repo, drop a ⭐, and join the journey!

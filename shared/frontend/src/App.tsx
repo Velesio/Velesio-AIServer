@@ -50,11 +50,11 @@ const HomePage = () => {
                 {/* Buttons are direct children now */}
                 <button
                     onClick={() => setShowLLMForm(!showLLMForm)}
-                    // Removed flex/space-x from parent, styles are on button directly or via container gap
-                    className={`p-3 rounded-lg border-2 transition-colors duration-200 ${
+                    // Added ring for 'on' state, opacity for 'off' state
+                    className={`p-3 rounded-lg border-2 transition-all duration-200 ${
                         showLLMForm
-                            ? 'bg-blue-100 dark:bg-blue-900 border-blue-500 text-blue-700 dark:text-blue-300'
-                            : 'bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-400'
+                            ? 'bg-blue-100 dark:bg-blue-900 border-blue-500 text-blue-700 dark:text-blue-300 ring-2 ring-offset-1 ring-blue-500' // Enhanced 'on' state
+                            : 'bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-400 opacity-70 hover:opacity-100' // Subdued 'off' state
                     }`}
                     title={showLLMForm ? 'Hide LLM Form' : 'Show LLM Form'}
                 >
@@ -64,10 +64,11 @@ const HomePage = () => {
                     onClick={() =>
                         setShowStableDiffusionForm(!showStableDiffusionForm)
                     }
-                    className={`p-3 rounded-lg border-2 transition-colors duration-200 ${
+                    // Added ring for 'on' state, opacity for 'off' state
+                    className={`p-3 rounded-lg border-2 transition-all duration-200 ${
                         showStableDiffusionForm
-                            ? 'bg-purple-100 dark:bg-purple-900 border-purple-500 text-purple-700 dark:text-purple-300'
-                            : 'bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-400'
+                            ? 'bg-purple-100 dark:bg-purple-900 border-purple-500 text-purple-700 dark:text-purple-300 ring-2 ring-offset-1 ring-purple-500' // Enhanced 'on' state
+                            : 'bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-400 opacity-70 hover:opacity-100' // Subdued 'off' state
                     }`}
                     title={
                         showStableDiffusionForm

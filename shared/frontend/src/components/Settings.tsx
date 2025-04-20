@@ -79,10 +79,11 @@ const Settings = () => {
                 {/* Theme Toggle Button */}
                 <button
                     onClick={() => setShowTheme(!showTheme)}
-                    className={`p-3 rounded-lg border-2 transition-colors duration-200 ${
+                    // Added ring for 'on' state, opacity for 'off' state
+                    className={`p-3 rounded-lg border-2 transition-all duration-200 ${
                         showTheme
-                            ? 'bg-teal-100 dark:bg-teal-900 border-teal-500 text-teal-700 dark:text-teal-300' // Theme colors
-                            : 'bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-400'
+                            ? 'bg-teal-100 dark:bg-teal-900 border-teal-500 text-teal-700 dark:text-teal-300 ring-2 ring-offset-1 ring-teal-500' // Enhanced 'on' state
+                            : 'bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-400 opacity-70 hover:opacity-100' // Subdued 'off' state
                     }`}
                     title={showTheme ? 'Hide Theme Section' : 'Show Theme Section'}
                 >
@@ -91,10 +92,11 @@ const Settings = () => {
                 {/* Model Download Toggle Button */}
                 <button
                     onClick={() => setShowModels(!showModels)}
-                    className={`p-3 rounded-lg border-2 transition-colors duration-200 ${
+                    // Added ring for 'on' state, opacity for 'off' state
+                    className={`p-3 rounded-lg border-2 transition-all duration-200 ${
                         showModels
-                            ? 'bg-blue-100 dark:bg-blue-900 border-blue-500 text-blue-700 dark:text-blue-300' // Model colors
-                            : 'bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-400'
+                            ? 'bg-blue-100 dark:bg-blue-900 border-blue-500 text-blue-700 dark:text-blue-300 ring-2 ring-offset-1 ring-blue-500' // Enhanced 'on' state
+                            : 'bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-400 opacity-70 hover:opacity-100' // Subdued 'off' state
                     }`}
                     title={showModels ? 'Hide Model Download Section' : 'Show Model Download Section'}
                 >
@@ -103,10 +105,11 @@ const Settings = () => {
                 {/* Access Control Toggle Button */}
                 <button
                     onClick={() => setShowAccess(!showAccess)}
-                    className={`p-3 rounded-lg border-2 transition-colors duration-200 ${
+                    // Added ring for 'on' state, opacity for 'off' state
+                    className={`p-3 rounded-lg border-2 transition-all duration-200 ${
                         showAccess
-                            ? 'bg-red-100 dark:bg-red-900 border-red-500 text-red-700 dark:text-red-300' // Access colors
-                            : 'bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-400'
+                            ? 'bg-red-100 dark:bg-red-900 border-red-500 text-red-700 dark:text-red-300 ring-2 ring-offset-1 ring-red-500' // Enhanced 'on' state
+                            : 'bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-400 opacity-70 hover:opacity-100' // Subdued 'off' state
                     }`}
                     title={showAccess ? 'Hide Access Control Section' : 'Show Access Control Section'}
                 >

@@ -314,7 +314,7 @@ const StableDiffusionForm = () => {
             </div>
             
             {showSdLogs && (
-                <div className="w-full mt-4" style={{ maxWidth: '800px', margin: '0 auto' }}>
+                <div className="w-full mt-6 mb-12">
                     <div
                         className="border p-4 rounded-xl whitespace-pre overflow-y-scroll"
                         style={{ 

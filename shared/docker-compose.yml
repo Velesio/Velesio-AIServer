@@ -9,6 +9,9 @@ services:
     container_name: velesio-aiserver
     ports:
       - "6969:6969"
+      - "7860:7860"
+      - "1337:1337"
+      - "3000:3000"
     volumes:
       - ./models/stable-diffusion:/models/stable-diffusion
       - ./models/llm:/models/llm
