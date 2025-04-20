@@ -59,6 +59,20 @@ const Settings = () => {
               }
     }
 
+    // Helper function for title style
+    const getTitleStyle = () => ({
+        color: 'var(--text-color)',
+        textShadow: theme === 'cyberpunk' ? '0 0 5px var(--accent-color)' : 'none'
+    });
+
+    // Style for title containers matching content box width/centering
+    const sectionTitleContainerStyle = {
+        maxWidth: '800px', // Match content box max-width
+        margin: '0 auto', // Center the title container
+        textAlign: 'center' as const, // Center the text within this container
+        marginBottom: '1rem', // Space below title
+    };
+
     return (
         <div className="settings-container" style={{
             maxWidth: 'calc(100% - 100px)',
@@ -66,11 +80,7 @@ const Settings = () => {
             marginLeft: '90px', // account for navbar
             padding: '2rem 1rem',
         }}>
-            <h2 className="text-3xl font-bold text-center mb-10"
-                style={{
-                    color: 'var(--text-color)',
-                    textShadow: theme === 'cyberpunk' ? '0 0 5px var(--accent-color)' : 'none'
-                }}>
+            <h2 className="text-3xl font-bold text-center mb-10" style={getTitleStyle()}>
                 Settings
             </h2>
 
@@ -121,9 +131,13 @@ const Settings = () => {
                 {/* Theme Section - Conditional Render */}
                 {showTheme && (
                     <section style={{ marginBottom: '2.5rem' }}>
-                        <h3 className={`text-xl font-semibold mb-4 text-center ${theme === 'cyberpunk' ? 'glow-text' : ''}`}>
-                            Theme
-                        </h3>
+                        {/* Title centered above the content box */}
+                        <div style={sectionTitleContainerStyle}>
+                            <h3 className="text-xl font-semibold" style={getTitleStyle()}>
+                                Theme
+                            </h3>
+                        </div>
+                        {/* ThemeSelector applies its own max-width and centering */}
                         <ThemeSelector />
                     </section>
                 )}
@@ -131,9 +145,11 @@ const Settings = () => {
                 {/* Model Downloads Section - Conditional Render */}
                 {showModels && (
                     <section style={{ marginBottom: '2.5rem' }}>
-                        <h3 className={`text-xl font-semibold mb-4 text-center ${theme === 'cyberpunk' ? 'glow-text' : ''}`}>
-                            Model Downloads
-                        </h3>
+                        <div style={sectionTitleContainerStyle}>
+                            <h3 className="text-xl font-semibold" style={getTitleStyle()}>
+                                Model Downloads
+                            </h3>
+                        </div>
                         <div style={getSectionStyle()}>
                             <ModelDownloadContainer />
                         </div>
@@ -143,9 +159,11 @@ const Settings = () => {
                 {/* IP Access Control Section - Conditional Render */}
                 {showAccess && (
                     <section style={{ marginBottom: '2.5rem' }}>
-                        <h3 className={`text-xl font-semibold mb-4 text-center ${theme === 'cyberpunk' ? 'glow-text' : ''}`}>
-                            Access Control
-                        </h3>
+                        <div style={sectionTitleContainerStyle}>
+                            <h3 className="text-xl font-semibold" style={getTitleStyle()}>
+                                Access Control
+                            </h3>
+                        </div>
                         <IPAccessControlPanel />
                     </section>
                 )}

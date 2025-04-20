@@ -194,8 +194,6 @@ const LLMForm = () => {
             marginLeft: '90px', // Keep left margin for navbar spacing
             ...getContainerStyle()
         }}>
-            <h2 className="text-2xl font-bold text-center">LLM Server Configuration</h2>
-
             {/* Model row */}
             <div style={{ width: '550px', margin: '1.5rem auto', marginBottom: '2.5rem' }}>
                 <div style={{ display: "flex", justifyContent: "space-between" }}>

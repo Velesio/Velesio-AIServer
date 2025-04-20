@@ -41,9 +41,24 @@ const HomePage = () => {
               }
     }
 
+    // Helper function for title style
+    const getTitleStyle = () => ({
+        color: 'var(--text-color)',
+        textShadow: theme === 'cyberpunk' ? '0 0 5px var(--accent-color)' : 'none'
+    });
+
+    // Style for the title containers to match component box positioning
+    const titleContainerStyle = {
+        width: '100%',
+        maxWidth: 'calc(100% - 100px)', // Match component box max-width
+        marginLeft: '90px', // Match component box margin-left
+        textAlign: 'center' as const, // Center the text within this container
+        marginBottom: '1rem', // Add some space below the title
+    };
+
     return (
         <div className="container mx-auto p-6 space-y-8">
-            <h1 className="text-3xl font-bold text-center mt-10">Dashboard</h1>
+            <h1 className="text-3xl font-bold text-center mt-10" style={getTitleStyle()}>Dashboard</h1>
 
             {/* Moved button container above ServerStats */}
             <div style={getButtonContainerStyle()}>
@@ -91,12 +106,36 @@ const HomePage = () => {
                 </button>
             </div>
 
-            {/* Conditionally render ServerStats */}
-            {showServerStats && <ServerStats />}
+            {/* Conditionally render ServerStats (No Title) */}
+            {showServerStats && (
+                <div className="w-full">
+                    <ServerStats />
+                </div>
+            )}
 
-            {/* Conditionally render forms */}
-            {showLLMForm && <LLMForm />}
-            {showStableDiffusionForm && <StableDiffusionForm />}
+            {/* Conditionally render LLMForm with Centered Title */}
+            {showLLMForm && (
+                 <div className="w-full">
+                    <div style={titleContainerStyle}>
+                        <h3 className="text-xl font-semibold" style={getTitleStyle()}>
+                            LLM Server
+                        </h3>
+                    </div>
+                    <LLMForm />
+                 </div>
+            )}
+
+            {/* Conditionally render StableDiffusionForm with Centered Title */}
+            {showStableDiffusionForm && (
+                 <div className="w-full">
+                     <div style={titleContainerStyle}>
+                        <h3 className="text-xl font-semibold" style={getTitleStyle()}>
+                            Stable Diffusion
+                        </h3>
+                    </div>
+                    <StableDiffusionForm />
+                 </div>
+            )}
         </div>
     )
 }

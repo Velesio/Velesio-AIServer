@@ -159,9 +159,7 @@ const StableDiffusionForm = () => {
                 marginLeft: '90px', // account for navbar
                 ...getContainerStyle()
             }}
-        >
-            <h2 className="text-2xl font-bold text-center mb-6">Stable Diffusion Web UI</h2>
-            
+        >            
             <div className="flex justify-center items-center mt-10 mb-10 flex-col gap-6" style={{width: '100%', margin: '0 auto', textAlign: 'center'}}>
                 <div className="mb-4 flex items-center justify-between w-full max-w-md">
                     <div className="flex items-center">
