@@ -7,11 +7,12 @@ import ServerStats from './components/ServerStats'
 import LLMForm from './components/LLMForm'
 import StableDiffusionForm from './components/StableDiffusionForm'
 import Settings from './components/Settings'
-import { FaBrain, FaImage } from 'react-icons/fa'
+import { FaBrain, FaImage, FaServer } from 'react-icons/fa' // Added FaServer
 
 const HomePage = () => {
     const [showLLMForm, setShowLLMForm] = useState(true)
     const [showStableDiffusionForm, setShowStableDiffusionForm] = useState(true)
+    const [showServerStats, setShowServerStats] = useState(true) // Added state for ServerStats
     const { theme } = useTheme() // Get the current theme
 
     const getButtonContainerStyle = () => {
@@ -43,32 +44,42 @@ const HomePage = () => {
     return (
         <div className="container mx-auto p-6 space-y-8">
             <h1 className="text-3xl font-bold text-center mt-10">Dashboard</h1>
-            <ServerStats />
 
-            {/* Removed outer centering div, styling applied directly to the button container */}
+            {/* Moved button container above ServerStats */}
             <div style={getButtonContainerStyle()}>
-                {/* Buttons are direct children now */}
+                {/* Server Stats Toggle Button */}
+                <button
+                    onClick={() => setShowServerStats(!showServerStats)}
+                    className={`p-3 rounded-lg border-2 transition-all duration-200 ${
+                        showServerStats
+                            ? 'bg-green-100 dark:bg-green-900 border-green-500 text-green-700 dark:text-green-300 ring-2 ring-offset-1 ring-green-500'
+                            : 'bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-400 opacity-70 hover:opacity-100'
+                    }`}
+                    title={showServerStats ? 'Hide Server Stats' : 'Show Server Stats'}
+                >
+                    <FaServer size={24} />
+                </button>
+                {/* LLM Toggle Button */}
                 <button
                     onClick={() => setShowLLMForm(!showLLMForm)}
-                    // Added ring for 'on' state, opacity for 'off' state
                     className={`p-3 rounded-lg border-2 transition-all duration-200 ${
                         showLLMForm
-                            ? 'bg-blue-100 dark:bg-blue-900 border-blue-500 text-blue-700 dark:text-blue-300 ring-2 ring-offset-1 ring-blue-500' // Enhanced 'on' state
-                            : 'bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-400 opacity-70 hover:opacity-100' // Subdued 'off' state
+                            ? 'bg-blue-100 dark:bg-blue-900 border-blue-500 text-blue-700 dark:text-blue-300 ring-2 ring-offset-1 ring-blue-500'
+                            : 'bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-400 opacity-70 hover:opacity-100'
                     }`}
                     title={showLLMForm ? 'Hide LLM Form' : 'Show LLM Form'}
                 >
                     <FaBrain size={24} />
                 </button>
+                {/* Stable Diffusion Toggle Button */}
                 <button
                     onClick={() =>
                         setShowStableDiffusionForm(!showStableDiffusionForm)
                     }
-                    // Added ring for 'on' state, opacity for 'off' state
                     className={`p-3 rounded-lg border-2 transition-all duration-200 ${
                         showStableDiffusionForm
-                            ? 'bg-purple-100 dark:bg-purple-900 border-purple-500 text-purple-700 dark:text-purple-300 ring-2 ring-offset-1 ring-purple-500' // Enhanced 'on' state
-                            : 'bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-400 opacity-70 hover:opacity-100' // Subdued 'off' state
+                            ? 'bg-purple-100 dark:bg-purple-900 border-purple-500 text-purple-700 dark:text-purple-300 ring-2 ring-offset-1 ring-purple-500'
+                            : 'bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-400 opacity-70 hover:opacity-100'
                     }`}
                     title={
                         showStableDiffusionForm
@@ -79,6 +90,9 @@ const HomePage = () => {
                     <FaImage size={24} />
                 </button>
             </div>
+
+            {/* Conditionally render ServerStats */}
+            {showServerStats && <ServerStats />}
 
             {/* Conditionally render forms */}
             {showLLMForm && <LLMForm />}
