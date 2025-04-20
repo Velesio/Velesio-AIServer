@@ -1,28 +1,56 @@
-import { useState } from 'react' // Added import
+import { useState } from 'react'
 import { Routes, Route } from 'react-router-dom'
-import { ThemeProvider } from './context/ThemeContext'
+import { ThemeProvider } from './context/ThemeContext' // Keep ThemeProvider import
+import { useTheme } from './context/useTheme' // Corrected import path for useTheme
 import Navbar from './components/Navbar'
 import ServerStats from './components/ServerStats'
 import LLMForm from './components/LLMForm'
 import StableDiffusionForm from './components/StableDiffusionForm'
 import Settings from './components/Settings'
-import { FaBrain, FaImage } from 'react-icons/fa' // Added icon imports
+import { FaBrain, FaImage } from 'react-icons/fa'
 
 const HomePage = () => {
-    // Added state for form visibility
     const [showLLMForm, setShowLLMForm] = useState(true)
-    const [showStableDiffusionForm, setShowStableDiffusionForm] =
-        useState(true)
+    const [showStableDiffusionForm, setShowStableDiffusionForm] = useState(true)
+    const { theme } = useTheme() // Get the current theme
+
+    const getButtonContainerStyle = () => {
+        const common = {
+            padding: '1rem', 
+            borderRadius: '1rem', 
+            display: 'flex',
+            justifyContent: 'center', 
+            alignItems: 'center',
+            gap: '2rem', 
+            width: 'fit-content',
+            margin: '0 auto',
+        }
+        return theme === 'cyberpunk'
+            ? {
+                  ...common,
+                  backgroundColor: 'var(--primary-bg)',
+                  boxShadow: 'var(--neon-glow)',
+                  border: '1px solid var(--accent-color)',
+              }
+            : {
+                  ...common,
+                  backgroundColor: 'var(--primary-bg)',
+                  boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1)',
+                  border: '1px solid #e5e7eb',
+              }
+    }
 
     return (
-        <div className="container mx-auto p-6 space-y-8"> {/* Adjusted spacing */}
+        <div className="container mx-auto p-6 space-y-8">
             <h1 className="text-3xl font-bold text-center mt-10">Dashboard</h1>
             <ServerStats />
 
-            {/* Added Icon Toggle Buttons */}
-            <div className="flex justify-center space-x-8 py-4">
+            {/* Removed outer centering div, styling applied directly to the button container */}
+            <div style={getButtonContainerStyle()}>
+                {/* Buttons are direct children now */}
                 <button
                     onClick={() => setShowLLMForm(!showLLMForm)}
+                    // Removed flex/space-x from parent, styles are on button directly or via container gap
                     className={`p-3 rounded-lg border-2 transition-colors duration-200 ${
                         showLLMForm
                             ? 'bg-blue-100 dark:bg-blue-900 border-blue-500 text-blue-700 dark:text-blue-300'
