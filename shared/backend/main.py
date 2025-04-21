@@ -40,7 +40,7 @@ server_process = None
 stable_diffusion_process = None  
 log_file = "/app/server_logs.txt"
 sd_log_file = "/app/sd_logs.txt"  
-nginx_allowlist_file = "/etc/nginx/allowed_ips.conf" 
+nginx_allowlist_file = "/etc/nginx/allowed_ips_frontend.conf" 
 
 # -----------------------
 # Server Endpoints
