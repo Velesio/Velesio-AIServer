@@ -1,18 +1,18 @@
-import { useTheme, ThemeType } from '../context/useTheme'; // Assuming ThemeType is exported from useTheme or ThemeContext
+import { useTheme, ThemeType } from '../context/useTheme';
 
 const ThemeSelector = () => {
     const { theme, setTheme } = useTheme();
 
     const themes: ThemeType[] = ['cyberpunk', 'corporate'];
 
-    // Adjusted container style for symmetry
     const getContainerStyle = () => {
         const common = {
-            width: '100%',
-            maxWidth: '800px', // Match standard content box width
-            margin: '0 auto', // Center the container
+            maxWidth: '800px', 
+            margin: '0 auto',
             padding: '1.5rem',
             borderRadius: 'var(--border-radius)',
+            boxSizing: 'border-box' as const,
+            width: '100%',
         };
         return theme === 'cyberpunk'
             ? {
