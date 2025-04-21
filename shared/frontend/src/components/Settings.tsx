@@ -107,19 +107,6 @@ const Settings = () => {
             </div>
 
             <div className="settings-sections">
-                {/* Theme Section - Conditional Render */}
-                {showTheme && (
-                    <section style={{ marginBottom: '2.5rem' }}>
-                        {/* Title centered above the content box */}
-                        <div style={sectionTitleContainerStyle}>
-                            <h3 className="text-xl font-semibold" style={getTitleStyle()}>
-                                Theme
-                            </h3>
-                        </div>
-                        {/* ThemeSelector applies its own container style */}
-                        <ThemeSelector />
-                    </section>
-                )}
 
                 {/* Model Downloads Section - Conditional Render */}
                 {showModels && (
@@ -146,6 +133,21 @@ const Settings = () => {
                         <IPAccessControlPanel />
                     </section>
                 )}
+
+                {/* Theme Section - Conditional Render */}
+                {showTheme && (
+                    <section style={{ marginBottom: '2.5rem' }}>
+                        {/* Title centered above the content box */}
+                        <div style={sectionTitleContainerStyle}>
+                            <h3 className="text-xl font-semibold" style={getTitleStyle()}>
+                                Theme
+                            </h3>
+                        </div>
+                        {/* ThemeSelector applies its own container style */}
+                        <ThemeSelector />
+                    </section>
+                )}
+
             </div>
         </div>
     );
