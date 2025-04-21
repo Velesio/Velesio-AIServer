@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useTheme } from '../context/useTheme';
 
 const Spinner = () => (
@@ -6,8 +6,11 @@ const Spinner = () => (
          style={{ borderColor: 'white transparent white transparent' }}></div>
 );
 
+type ServiceType = 'frontend' | 'llm' | 'sd';
+
 const IPAccessControlPanel = () => {
     const { theme } = useTheme();
+    const [selectedService, setSelectedService] = useState<ServiceType>('frontend');
     const [allowedIPs, setAllowedIPs] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
@@ -23,8 +26,8 @@ const IPAccessControlPanel = () => {
             border: '1px solid var(--accent-color)',
             borderRadius: 'var(--border-radius)',
             padding: '1.5rem',
-            maxWidth: '800px', // Match standard content box width
-            margin: '0 auto', // Center the container
+            maxWidth: '800px',
+            margin: '0 auto',
           }
         : {
             backgroundColor: 'var(--primary-bg)',
@@ -32,8 +35,8 @@ const IPAccessControlPanel = () => {
             border: '1px solid #e5e7eb',
             borderRadius: 'var(--border-radius)',
             padding: '1.5rem',
-            maxWidth: '800px', // Match standard content box width
-            margin: '0 auto', // Center the container
+            maxWidth: '800px',
+            margin: '0 auto',
           };
 
     const getTextAreaStyle = () => ({
@@ -75,27 +78,30 @@ const IPAccessControlPanel = () => {
         };
     };
 
-    // Fetch current allowed IPs on mount
-    useEffect(() => {
-        const fetchAllowedIPs = async () => {
-            setIsLoading(true);
-            setStatusMessage(null);
-            try {
-                const response = await fetch(`${getApiBaseUrl()}/get-allowed-ips/`);
-                if (response.ok) {
-                    const data = await response.text();
-                    setAllowedIPs(data);
-                } else {
-                    setStatusMessage({ message: 'Failed to fetch current IP allowlist.', success: false });
-                }
-            } catch (error) {
-                setStatusMessage({ message: 'Network error fetching IP allowlist.', success: false });
-            } finally {
-                setIsLoading(false);
+    const fetchAllowedIPs = useCallback(async (service: ServiceType) => {
+        setIsLoading(true);
+        setStatusMessage(null);
+        try {
+            const response = await fetch(`${getApiBaseUrl()}/get-allowed-ips/?service=${service}`);
+            if (response.ok) {
+                const data = await response.text();
+                setAllowedIPs(data);
+            } else {
+                const errorText = await response.text();
+                setStatusMessage({ message: `Failed to fetch ${service} IP allowlist: ${errorText}`, success: false });
+                setAllowedIPs('');
             }
-        };
-        fetchAllowedIPs();
+        } catch (error) {
+            setStatusMessage({ message: `Network error fetching ${service} IP allowlist.`, success: false });
+            setAllowedIPs('');
+        } finally {
+            setIsLoading(false);
+        }
     }, []);
+
+    useEffect(() => {
+        fetchAllowedIPs(selectedService);
+    }, [selectedService, fetchAllowedIPs]);
 
     const handleSaveChanges = async () => {
         setIsSaving(true);
@@ -104,16 +110,17 @@ const IPAccessControlPanel = () => {
             const response = await fetch(`${getApiBaseUrl()}/update-allowed-ips/`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ content: allowedIPs }),
+                body: JSON.stringify({ service: selectedService, content: allowedIPs }),
             });
             if (response.ok) {
-                setStatusMessage({ message: 'Allowlist updated successfully. Restart Nginx to apply changes.', success: true });
+                const result = await response.json();
+                setStatusMessage({ message: result.status || `Allowlist for ${selectedService} updated. Restart Nginx to apply.`, success: true });
             } else {
                 const errorData = await response.json();
-                setStatusMessage({ message: `Failed to update allowlist: ${errorData.detail}`, success: false });
+                setStatusMessage({ message: `Failed to update ${selectedService} allowlist: ${errorData.detail}`, success: false });
             }
         } catch (error) {
-            setStatusMessage({ message: 'Network error saving allowlist.', success: false });
+            setStatusMessage({ message: `Network error saving ${selectedService} allowlist.`, success: false });
         } finally {
             setIsSaving(false);
         }
@@ -139,6 +146,29 @@ const IPAccessControlPanel = () => {
         }
     };
 
+    const getTabStyle = (isActive: boolean) => ({
+        padding: '0.5rem 1rem',
+        cursor: 'pointer',
+        borderBottom: isActive ? `2px solid var(--accent-color)` : '2px solid transparent',
+        color: isActive ? 'var(--accent-color)' : 'var(--text-secondary)',
+        fontWeight: isActive ? 600 : 400,
+        transition: 'all 0.2s ease',
+        backgroundColor: 'transparent',
+        borderTop: 'none',
+        borderLeft: 'none',
+        borderRight: 'none',
+        fontSize: '0.95rem',
+    });
+
+    const getServiceDisplayName = (service: ServiceType): string => {
+        switch (service) {
+            case 'frontend': return 'Frontend UI (Port 3000)';
+            case 'llm': return 'LLM API (Port 1337)';
+            case 'sd': return 'Stable Diffusion API (Port 7860)';
+            default: return 'Unknown Service';
+        }
+    };
+
     return (
         <div
             className="space-y-6 rounded-lg shadow-lg"
@@ -146,18 +176,36 @@ const IPAccessControlPanel = () => {
                 ...getContainerStyle()
             }}
         >
+            <div style={{ display: 'flex', justifyContent: 'center', borderBottom: '1px solid var(--border-color)', marginBottom: '1.5rem' }}>
+                {(['frontend', 'llm', 'sd'] as ServiceType[]).map((service) => (
+                    <button
+                        key={service}
+                        style={getTabStyle(selectedService === service)}
+                        onClick={() => setSelectedService(service)}
+                        disabled={isLoading || isSaving}
+                    >
+                        {service.toUpperCase()}
+                    </button>
+                ))}
+            </div>
+
+            <h3 className="text-lg font-semibold text-center mb-2" style={{ color: 'var(--text-color)' }}>
+                Manage Allowlist for: {getServiceDisplayName(selectedService)}
+            </h3>
+
             <p className="text-sm text-center mb-4" style={{ color: 'var(--text-secondary)' }}>
-                Edit the allowlist below. Enter one IP address or CIDR range per line. Example: `192.168.1.100` or `10.0.0.0/8`. Use `0.0.0.0/0` to allow all IPs.
+                Edit the allowlist below for the selected service. Enter one IP address or CIDR range per line. Example: `192.168.1.100` or `10.0.0.0/8`. Use `0.0.0.0/0` to allow all IPs. Changes require an Nginx restart to take effect.
             </p>
 
             {isLoading ? (
-                <div className="text-center p-4">Loading current configuration...</div>
+                <div className="text-center p-4" style={{ color: 'var(--text-secondary)' }}>Loading {selectedService} configuration... <Spinner /></div>
             ) : (
                 <textarea
                     style={getTextAreaStyle()}
                     value={allowedIPs}
                     onChange={(e) => setAllowedIPs(e.target.value)}
-                    placeholder="Enter allowed IPs here..."
+                    placeholder={`Enter allowed IPs/CIDRs for ${selectedService.toUpperCase()} here...`}
+                    disabled={isLoading || isSaving}
                 />
             )}
 
@@ -184,12 +232,12 @@ const IPAccessControlPanel = () => {
                     disabled={isSaving || isLoading}
                 >
                     {isSaving && <Spinner />}
-                    {isSaving ? 'Saving...' : 'Save Changes'}
+                    {isSaving ? 'Saving...' : `Save ${selectedService.toUpperCase()} List`}
                 </button>
                 <button
                     onClick={handleRestartNginx}
                     style={getButtonStyle('danger')}
-                    disabled={isRestarting}
+                    disabled={isRestarting || isSaving}
                 >
                     {isRestarting && <Spinner />}
                     {isRestarting ? 'Restarting...' : 'Restart Nginx'}

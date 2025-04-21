@@ -8,7 +8,8 @@ import psutil
 import os
 import requests
 import logging
-import shlex  
+import shlex
+from pydantic import BaseModel
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -37,10 +38,21 @@ async def log_requests(request: Request, call_next):
         raise
 
 server_process = None
-stable_diffusion_process = None  
+stable_diffusion_process = None
 log_file = "/app/server_logs.txt"
-sd_log_file = "/app/sd_logs.txt"  
-nginx_allowlist_file = "/etc/nginx/allowed_ips_frontend.conf" 
+sd_log_file = "/app/sd_logs.txt"
+
+# Define allowlist file paths
+ALLOWLIST_FILES = {
+    "frontend": "/etc/nginx/allowed_ips_frontend.conf",
+    "llm": "/etc/nginx/allowed_ips_llm.conf",
+    "sd": "/etc/nginx/allowed_ips_sd.conf",
+}
+
+# Define Pydantic model for update request
+class UpdateAllowlistRequest(BaseModel):
+    service: str
+    content: str
 
 # -----------------------
 # Server Endpoints
@@ -362,80 +374,85 @@ async def check_sd_webui():
 # Nginx IP Allowlist Management
 # -----------------------
 @app.get("/get-allowed-ips/", response_class=PlainTextResponse)
-async def get_allowed_ips():
-    """Reads and returns the content of the Nginx IP allowlist file, formatted for the UI."""
+async def get_allowed_ips(service: str = "frontend"):
+    """Reads and returns the content of the specified Nginx IP allowlist file."""
+    if service not in ALLOWLIST_FILES:
+        raise HTTPException(status_code=400, detail=f"Invalid service specified. Must be one of {list(ALLOWLIST_FILES.keys())}")
+
+    nginx_allowlist_file = ALLOWLIST_FILES[service]
+
     try:
         # Check if file exists before reading
         if not os.path.exists(nginx_allowlist_file):
             logger.warning(f"Allowlist file not found: {nginx_allowlist_file}")
             # Return a default or empty state if the file doesn't exist
-            return "# Allowlist file not found. Enter IPs/CIDRs below.\n# Example: 192.168.1.1\n# Example: 0.0.0.0/0 (Allow all)"
+            return f"# Allowlist file for '{service}' not found. Enter IPs/CIDRs below.\n# Example: 192.168.1.1\n# Example: 0.0.0.0/0 (Allow all)"
         with open(nginx_allowlist_file, "r") as f:
             lines = f.readlines()
             # Process lines to remove the " 1;" suffix for UI display
             processed_lines = []
             for line in lines:
                 stripped_line = line.strip()
-                if stripped_line.endswith(" 1;"):
+                if stripped_line.endswith(" 1;") or stripped_line.endswith(" 0;"):
                     processed_lines.append(stripped_line[:-3].strip())
-                elif stripped_line and not stripped_line.startswith("#"): # Keep non-empty lines that don't end with " 1;" (e.g., comments)
+                elif stripped_line and not stripped_line.startswith("#"):
                     processed_lines.append(stripped_line)
-                elif stripped_line.startswith("#"): # Keep comments as is
+                elif stripped_line.startswith("#"):
                     processed_lines.append(stripped_line)
 
             return "\n".join(processed_lines)
     except Exception as e:
-        logger.error(f"Error reading allowlist file: {e}")
-        raise HTTPException(status_code=500, detail=f"Failed to read allowlist file: {e}")
+        logger.error(f"Error reading allowlist file ({nginx_allowlist_file}): {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to read allowlist file for {service}: {e}")
 
 @app.post("/update-allowed-ips/")
-async def update_allowed_ips(request: Request):
-    """Updates the Nginx IP allowlist file, adding ' 1;' to each entry."""
+async def update_allowed_ips(request_data: UpdateAllowlistRequest):
+    """Updates the specified Nginx IP allowlist file, adding ' 1;' to each entry."""
+    service = request_data.service
+    content = request_data.content
+
+    if service not in ALLOWLIST_FILES:
+        raise HTTPException(status_code=400, detail=f"Invalid service specified. Must be one of {list(ALLOWLIST_FILES.keys())}")
+
+    nginx_allowlist_file = ALLOWLIST_FILES[service]
+
+    if content is None:
+        raise HTTPException(status_code=400, detail="Missing 'content' in request body.")
+
     try:
-        data = await request.json()
-        content = data.get("content")
-        if content is None:
-            raise HTTPException(status_code=400, detail="Missing 'content' in request body.")
-
-        # Basic validation
-        if not isinstance(content, str):
-            raise HTTPException(status_code=400, detail="'content' must be a string.")
-
         # Process lines to add " 1;" suffix before writing
         lines = content.splitlines()
         processed_lines = []
         for line in lines:
             stripped_line = line.strip()
-            if stripped_line and not stripped_line.startswith("#"): # Only add to non-empty, non-comment lines
-                processed_lines.append(f"{stripped_line} 1;")
-            elif stripped_line: # Keep comment lines
+            if stripped_line and not stripped_line.startswith("#"):
+                if not (stripped_line.endswith(" 1;") or stripped_line.endswith(" 0;")):
+                    processed_lines.append(f"{stripped_line} 1;")
+                else:
+                    processed_lines.append(stripped_line)
+            elif stripped_line:
                 processed_lines.append(stripped_line)
 
         with open(nginx_allowlist_file, "w") as f:
-            f.write("\n".join(processed_lines) + "\n") # Add trailing newline
+            f.write("\n".join(processed_lines) + "\n")
         logger.info(f"Successfully updated {nginx_allowlist_file}")
-        return {"status": "Allowlist updated successfully. Restart Nginx to apply changes."}
-    except HTTPException:
-        raise  # Re-raise validation errors
+        return {"status": f"Allowlist for {service} updated successfully. Restart Nginx to apply changes."}
     except Exception as e:
-        logger.error(f"Error writing allowlist file: {e}")
-        raise HTTPException(status_code=500, detail=f"Failed to write allowlist file: {e}")
+        logger.error(f"Error writing allowlist file ({nginx_allowlist_file}): {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to write allowlist file for {service}: {e}")
 
 @app.post("/restart-nginx/")
 async def restart_nginx():
     """Restarts the Nginx server to apply configuration changes."""
     try:
-        # Use 'nginx -s reload' for graceful restart/reload
         command = ["nginx", "-s", "reload"]
         logger.info(f"Executing Nginx reload command: {' '.join(command)}")
-        # Using check=False to handle non-zero exit codes manually
         result = subprocess.run(command, capture_output=True, text=True, check=False)
 
         if result.returncode == 0:
             logger.info("Nginx reloaded successfully.")
             return {"status": "Nginx reloaded successfully."}
         else:
-            # Log the error output from nginx command
             error_message = f"Nginx reload failed. Return code: {result.returncode}. Error: {result.stderr or result.stdout}"
             logger.error(error_message)
             raise HTTPException(status_code=500, detail=error_message)
