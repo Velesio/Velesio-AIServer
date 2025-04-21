@@ -12,7 +12,7 @@ const LLMForm = () => {
     const [model, setModel] = useState('model');
     const [availableModels, setAvailableModels] = useState<string[]>([]);
     const [host, setHost] = useState('0.0.0.0');
-    const [port, setPort] = useState(1337);
+    const [port, setPort] = useState(1338);
     const [ngl, setNgl] = useState(30);
     const [template, setTemplate] = useState('chatml');
     const [customParams, setCustomParams] = useState('');

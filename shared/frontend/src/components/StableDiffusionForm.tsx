@@ -96,7 +96,7 @@ const StableDiffusionForm = () => {
             if (response.ok) {
                 setSdStatus('Running');
                 setSdOperationStatus({
-                    message: 'Stable Diffusion started successfully! WebUI will be available in a moment.',
+                    message: 'Stable Diffusion started successfully!',
                     success: true
                 });
             } else {
@@ -153,7 +153,7 @@ const StableDiffusionForm = () => {
         <div
             className="p-6 space-y-6 rounded-2xl shadow-lg"
             style={{
-                width: '100%', // Fill the parent container
+                width: '100%', 
                 ...getContainerStyle()
             }}
         >            

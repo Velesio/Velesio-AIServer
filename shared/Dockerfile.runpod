@@ -131,6 +131,9 @@ COPY --from=base /app/stable-diffusion-webui /app/stable-diffusion-webui
 # Copy Nginx configuration
 COPY shared/nginx/nginx.conf /etc/nginx/nginx.conf
 COPY shared/nginx/allowed_ips.conf /etc/nginx/allowed_ips.conf
+COPY shared/nginx/allowed_ips_frontend.conf /etc/nginx/allowed_ips_frontend.conf
+COPY shared/nginx/allowed_ips_llm.conf /etc/nginx/allowed_ips_llm.conf
+COPY shared/nginx/allowed_ips_sd.conf /etc/nginx/allowed_ips_sd.conf
 
 # Ensure models directory exists
 RUN mkdir -p /models
@@ -144,20 +147,34 @@ RUN printf '#!/bin/bash\n\n\
 mkdir -p /run/sshd\n\
 mkdir -p /models/stable-diffusion\n\
 mkdir -p /models/llm\n\n\
-# Configure Nginx IP whitelisting\n\
-if [ -z "$ALLOWLIST" ] || [ "$ALLOWLIST" = "all" ] || [ "$ALLOWLIST" = "0.0.0.0" ] || [ "$ALLOWLIST" = "0.0.0.0/0" ]; then\n\
-  echo "# Allow all IPs (ALLOWLIST=$ALLOWLIST)" > /etc/nginx/allowed_ips.conf\n\
-  echo "0.0.0.0/0 1;" >> /etc/nginx/allowed_ips.conf\n\
-  echo "IP whitelist configuration: ALL IPS ALLOWED"\n\
-else\n\
-  echo "# Generated whitelist from ALLOWLIST env var" > /etc/nginx/allowed_ips.conf\n\
-  IFS="," read -ra IPS <<< "$ALLOWLIST"\n\
-  for ip in "${IPS[@]}"; do\n\
-    echo "$ip 1;" >> /etc/nginx/allowed_ips.conf\n\
-  done\n\
-  echo "IP whitelist configuration:"\n\
-  cat /etc/nginx/allowed_ips.conf\n\
-fi\n\n\
+# --- Configure Nginx IP Whitelisting --- \n\
+configure_allowlist() {\n\
+  local env_var_name="$1"\n\
+  local config_file="$2"\n\
+  local service_name="$3"\n\
+  local env_var_value="${!env_var_name}"\n\
+  echo "Configuring allowlist for $service_name..."\n\
+  if [ -z "$env_var_value" ] || [ "$env_var_value" = "all" ] || [ "$env_var_value" = "0.0.0.0" ] || [ "$env_var_value" = "0.0.0.0/0" ]; then\n\
+    echo "# Allow all IPs ($env_var_name=$env_var_value)" > "$config_file"\n\
+    echo "0.0.0.0/0 1;" >> "$config_file"\n\
+    echo "$service_name IP whitelist configuration: ALL IPS ALLOWED"\n\
+  else\n\
+    echo "# Generated $service_name whitelist from $env_var_name env var" > "$config_file"\n\
+    IFS="," read -ra IPS <<< "$env_var_value"\n\
+    for ip in "${IPS[@]}"; do\n\
+      # Trim whitespace from IP/CIDR\n\
+      trimmed_ip=$(echo "$ip" | xargs)\n\
+      if [ -n "$trimmed_ip" ]; then\n\
+         echo "$trimmed_ip 1;" >> "$config_file"\n\
+      fi\n\
+    done\n\
+    echo "$service_name IP whitelist configuration:"\n\
+    cat "$config_file"\n\
+  fi\n\
+}\n\n\
+configure_allowlist "ALLOWLIST_FRONTEND" "/etc/nginx/allowed_ips_frontend.conf" "Frontend UI (Port 3000)"\n\
+configure_allowlist "ALLOWLIST_LLM" "/etc/nginx/allowed_ips_llm.conf" "LLM (Port 1337)"\n\
+configure_allowlist "ALLOWLIST_SD" "/etc/nginx/allowed_ips_sd.conf" "Stable Diffusion (Port 7860)"\n\n\
 # Check for Stable Diffusion models\n\
 echo "Checking for Stable Diffusion models in /models/stable-diffusion..."\n\
 if [ -d "/models/stable-diffusion" ]; then\n\
@@ -188,8 +205,8 @@ uvicorn main:app --host 0.0.0.0 --port 8000 &\n\
 \n\
 # Frontend\n\
 cd /app/frontend\n\
-echo "Starting frontend on port 3000..."\n\
-npm run preview -- --host 0.0.0.0 --port 3000 &\n\n\
+echo "Starting frontend on internal port 3001..."\n\
+npm run preview -- --host 0.0.0.0 --port 3001 &\n\n\
 # SSH and Nginx\n\
 echo "Starting SSH and Nginx..."\n\
 /usr/sbin/sshd -D &\n\

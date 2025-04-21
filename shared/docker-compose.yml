@@ -8,7 +8,7 @@ services:
     image: teocholakov/velesio-aiserver
     container_name: velesio-aiserver
     ports:
-      - "6969:6969"
+      # - "6969:6969" # for nginx reverse proxy
       - "7860:7860"
       - "1337:1337"
       - "3000:3000"
@@ -17,8 +17,10 @@ services:
       - ./models/llm:/models/llm
     environment:
       - NVIDIA_VISIBLE_DEVICES=all
-      # - ALLOWLIST=172.18.0.1 
-      - ALLOWLIST=0.0.0.0/0
+      # 172.18.0.1 
+      - ALLOWLIST_FRONTEND=0.0.0.0/0
+      - ALLOWLIST_LLM=0.0.0.0/0
+      - ALLOWLIST_SD=0.0.0.0/0
     deploy:
       resources:
         reservations:

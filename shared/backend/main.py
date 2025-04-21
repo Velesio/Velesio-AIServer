@@ -2,13 +2,13 @@ import threading
 import time
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import PlainTextResponse  # Added
+from fastapi.responses import PlainTextResponse 
 import subprocess
 import psutil
 import os
 import requests
 import logging
-import shlex  # Added
+import shlex  
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -37,10 +37,10 @@ async def log_requests(request: Request, call_next):
         raise
 
 server_process = None
-stable_diffusion_process = None  # Process for Stable Diffusion
+stable_diffusion_process = None  
 log_file = "/app/server_logs.txt"
-sd_log_file = "/app/sd_logs.txt"  # Logs for Stable Diffusion
-nginx_allowlist_file = "/etc/nginx/allowed_ips.conf"  # Added
+sd_log_file = "/app/sd_logs.txt"  
+nginx_allowlist_file = "/etc/nginx/allowed_ips.conf" 
 
 # -----------------------
 # Server Endpoints
@@ -55,7 +55,6 @@ async def start_server(request: Request):
     if server_process and server_process.poll() is None:
         raise HTTPException(status_code=400, detail="Server is already running.")
 
-    # Clear logs before starting the server
     with open(log_file, "w") as log:
         log.write("")  
 
@@ -70,7 +69,7 @@ async def start_server(request: Request):
         binary_path,
         "-m", model_path,
         "--host", params.get("host", "0.0.0.0"),
-        "--port", str(params.get("port", 1337)),
+        "--port", str(params.get("port", 1338)), # Changed internal port to 1338
         "-ngl", str(params.get("ngl", 30)),
         "--template", params.get("template", "chatml")
     ]
@@ -272,7 +271,7 @@ async def start_stable_diffusion():
     command = [
         launcher_path,
         "--listen",
-        "--port", "7860",
+        "--port", "7861",  # Changed internal port to 7861
         "--allow-code",
         "--no-download-sd-model",
         "--api",
@@ -353,7 +352,8 @@ async def get_sd_logs():
 async def check_sd_webui():
     """Check if Stable Diffusion Web UI is responsive."""
     try:
-        response = requests.get("http://localhost:7860/", timeout=5)
+        # Check the internal port 7861
+        response = requests.get("http://localhost:7861/", timeout=5)
         return {"available": response.status_code == 200}
     except requests.RequestException:
         return {"available": False}
