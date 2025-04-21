@@ -49,15 +49,14 @@ const Settings = () => {
 
     // Style for title containers matching content box width/centering
     const sectionTitleContainerStyle = {
-        maxWidth: '800px', // Match content box max-width
-        margin: '0 auto', // Center the title container
         textAlign: 'center' as const, // Center the text within this container
         marginBottom: '1rem', // Space below title
     };
 
     return (
         <div className="settings-container" style={{
-            // Removed maxWidth, margin, marginLeft - handled by parent/global styles
+            maxWidth: '800px', // Added: Standard width
+            margin: '0 auto', // Added: Center the whole settings container
             padding: '2rem 1rem', // Keep padding consistent
         }}>
             <h2 className="text-3xl font-bold text-center mb-10" style={getTitleStyle()}>
@@ -130,7 +129,7 @@ const Settings = () => {
                                 Model Downloads
                             </h3>
                         </div>
-                        {/* ModelDownloadContainer is a flex wrapper, styling applied inside */}
+                        {/* ModelDownloadContainer applies its own container style */}
                         <ModelDownloadContainer />
                     </section>
                 )}

@@ -153,7 +153,6 @@ const StableDiffusionForm = () => {
         <div
             className="p-6 space-y-6 rounded-2xl shadow-lg"
             style={{
-                width: '100%', 
                 ...getContainerStyle()
             }}
         >            

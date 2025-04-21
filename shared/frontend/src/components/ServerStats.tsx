@@ -119,18 +119,17 @@ function ServerStats() {
 
     return (
         <div className="server-stats-container" style={{
-            width: '100%',
             ...getContainerStyle()
         }}>
             <div className="stats-container" style={{
                 display: 'flex',
-                justifyContent: 'space-between',
-                gap: '30px',
+                justifyContent: 'space-around',
+                gap: '20px',
                 flexWrap: 'wrap',
                 width: '100%',
-                maxWidth: '600px', 
-                padding: '0 20px', 
-                margin: '0 auto', 
+                maxWidth: '450px',
+                padding: '0 10px',
+                margin: '0 auto',
             }}>
                 <StatMeter value={stats.cpu} label="CPU" />
                 <StatMeter value={stats.ram} label="RAM" />
