@@ -1,9 +1,15 @@
+import { useState } from 'react'; // Import useState
 import { Link, useLocation } from 'react-router-dom';
 import { useTheme } from '../context/useTheme';
 
 const Navbar = () => {
     const { theme } = useTheme();
     const location = useLocation();
+    const [isCollapsed, setIsCollapsed] = useState(false); // Add state for collapse
+
+    const toggleNavbar = () => {
+        setIsCollapsed(!isCollapsed);
+    };
 
     const getNavbarStyle = () => {
         return {
@@ -11,15 +17,17 @@ const Navbar = () => {
             left: 0,
             top: 0,
             height: '100vh',
-            width: '80px',
+            width: isCollapsed ? '30px' : '80px', // Dynamic width
             backgroundColor: theme === 'cyberpunk' ? '#1a1a2e' : '#f9fafb',
             borderRight: theme === 'cyberpunk' ? '1px solid rgba(157, 78, 221, 0.3)' : '1px solid #e5e7eb',
             display: 'flex',
             flexDirection: 'column' as const,
             alignItems: 'center',
-            padding: '1rem 0',
+            padding: isCollapsed ? '1rem 0' : '1rem 0', // Adjust padding if needed
             zIndex: 50,
             boxShadow: theme === 'cyberpunk' ? 'var(--neon-glow)' : '0 4px 15px rgba(0, 0, 0, 0.05)',
+            transition: 'width 0.3s ease-in-out', // Add transition for width
+            overflow: 'hidden', // Hide overflowing content when collapsed
         };
     };
 
@@ -65,9 +73,29 @@ const Navbar = () => {
         </svg>
     );
 
+    const ArrowIcon = ({ collapsed }: { collapsed: boolean }) => (
+        <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            style={{ transform: collapsed ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.3s ease-in-out' }}
+        >
+            <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+    );
+
     return (
         <nav style={getNavbarStyle()}>
+            {/* Conditionally render or style content based on isCollapsed */}
             <div style={{
+                opacity: isCollapsed ? 0 : 1,
+                transition: 'opacity 0.2s ease-in-out',
                 width: '100%',
                 display: 'flex',
                 justifyContent: 'center',
@@ -82,13 +110,14 @@ const Navbar = () => {
                     style={{
                         ...getButtonStyle(''),
                         backgroundColor: theme === 'cyberpunk' ? 'rgba(157, 78, 221, 0.2)' : 'rgba(79, 70, 229, 0.1)',
+                        display: isCollapsed ? 'none' : 'flex', // Hide when collapsed
                     }}
                 >
                     <GitHubIcon />
                 </a>
             </div>
 
-            <div style={{ height: '1rem' }}></div>
+            <div style={{ height: '1rem', display: isCollapsed ? 'none' : 'block' }}></div>
 
             <div style={{
                 display: 'flex',
@@ -97,35 +126,55 @@ const Navbar = () => {
                 justifyContent: 'center',
                 flex: 1,
                 width: '100%',
-                gap: '1.5rem'
+                gap: '1.5rem',
+                opacity: isCollapsed ? 0 : 1, // Fade out content
+                transition: 'opacity 0.2s ease-in-out',
+                pointerEvents: isCollapsed ? 'none' : 'auto', // Disable interaction when collapsed
             }}>
                 <Link
                     to="/"
-                    style={getButtonStyle('/')}
+                    style={{ ...getButtonStyle('/'), display: isCollapsed ? 'none' : 'flex' }} // Hide when collapsed
                     title="Home"
                 >
                     <HomeIcon />
                 </Link>
                 <Link
                     to="/settings"
-                    style={getButtonStyle('/settings')}
+                    style={{ ...getButtonStyle('/settings'), display: isCollapsed ? 'none' : 'flex' }} // Hide when collapsed
                     title="Settings"
                 >
                     <SettingsIcon />
                 </Link>
             </div>
 
+            {/* Toggle Button Area */}
             <div style={{
+                width: '100%',
                 display: 'flex',
-                flexDirection: 'column' as const,
+                justifyContent: 'center',
                 alignItems: 'center',
-                gap: '1rem',
-                flexBasis: '15%',
-                marginTop: 'auto'
+                padding: '0.5rem 0 1rem 0', // Adjust padding as needed
+                marginTop: 'auto', // Pushes the button to the bottom
             }}>
+                <button
+                    onClick={toggleNavbar}
+                    title={isCollapsed ? "Expand Navbar" : "Collapse Navbar"}
+                    style={{
+                        background: 'none',
+                        border: 'none',
+                        padding: '5px',
+                        cursor: 'pointer',
+                        color: theme === 'cyberpunk' ? '#fff' : '#333',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        borderRadius: '50%', // Make it circular if desired
+                        // Add hover effects if needed
+                    }}
+                >
+                    <ArrowIcon collapsed={isCollapsed} />
+                </button>
             </div>
-
-            <div style={{ flexBasis: '5%' }}></div>
         </nav>
     );
 };

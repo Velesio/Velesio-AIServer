@@ -1,8 +1,7 @@
 #!/bin/bash
 
-cd "$(dirname "$0")/shared"
+cd velesio
 
-mkdir -p models
-
-docker compose -f docker-compose.yml down
-docker compose -f docker-compose.yml up --build -d
+docker compose down
+docker build -t teocholakov/velesio-aiserver .
+docker compose up -d

@@ -4,7 +4,7 @@
 
 Whether you're building immersive NPCs, intelligent agents, or AI-driven tools, Veles gives you a seamless plug-and-play interface to tap into both local and cloud-hosted AI systems — all from within Unity.
 
-With this repo you can locally host your own llamacpp and Stable Diffusion server which can seemlessly connect to Unity, using the [Velesio Unity AIntegration](https://github.com/Velesio/Velesio-UnityAIntegration)
+With this repo you can locally host your own llamacpp and Stable Diffusion server which can seemlessly connect to Unity, using the LLM For Unity asset by UndreamAI and the Stable Diffusion Integration, linked bellow.
 
 [Runpod template](https://www.runpod.io/console/explore/07cky3lznr) to host self-host this in the cloud.
 
@@ -13,6 +13,12 @@ Self-hosting quickstart:
 git clone https://github.com/Velesio/Velesio-AIServer.git
 cd Velesio-AIServer/velesio
 docker compose up -d
+
+Port 3000 - Vite frontend
+Port 1337 - Undreamai server
+Port 7860 - Stable Diffusion Automatic 1111 webserver
+
+Each of the ports is reverse proxied in nginx, access can be managed through nginx in the ALLOWLIST env vars. This was neccesary because Runpod currently does not offer firewall functionality.
 
 [Docker](https://hub.docker.com/repository/docker/teocholakov/velesio-aiserver)
 
