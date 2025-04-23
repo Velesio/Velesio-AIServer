@@ -11,6 +11,8 @@ import logging
 import shlex
 from pydantic import BaseModel
 import signal # Import the signal module
+import urllib.parse # Add this import
+import os.path # Add this import
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -130,36 +132,90 @@ async def stop_server():
 @app.post("/download-model/")
 async def download_model(data: dict):
     model_url = data.get("url")
-    filename = data.get("filename", "model")  # Use custom filename if provided
     model_type = data.get("type", "llm")  # Either "llm" or "sd"
 
     if not model_url:
         raise HTTPException(status_code=400, detail="Model URL is required.")
+
+    try:
+        # Parse the URL to extract the filename from the path
+        parsed_url = urllib.parse.urlparse(model_url)
+        # Get the last part of the path
+        filename_from_url = os.path.basename(parsed_url.path)
+        # Basic sanitization: remove potential query parameters if they are part of the basename
+        filename_from_url = filename_from_url.split('?')[0]
+
+        # Handle cases where filename might be empty or just '/'
+        if not filename_from_url or filename_from_url == '/':
+             # Fallback if URL path is weird or empty
+             filename_from_url = "downloaded_model"
+             logger.warning(f"Could not extract a valid filename from URL path: {parsed_url.path}. Using fallback: {filename_from_url}")
+
+    except Exception as e:
+        logger.error(f"Error parsing URL or extracting filename: {e}")
+        # Use a fallback filename in case of parsing error
+        filename_from_url = "downloaded_model_error"
+        logger.warning(f"Using fallback filename due to error: {filename_from_url}")
+
 
     # Determine the correct directory and extension based on model type
     if model_type.lower() == "sd":
         # For Stable Diffusion models
         model_dir = "/models/stable-diffusion"
         extension = ".safetensors"
+        # Ensure the filename has the correct extension for SD
+        filename_base = os.path.splitext(filename_from_url)[0]
+        filename_with_extension = f"{filename_base}{extension}"
+
     else:
-        # For LLM models
+        # For LLM models (default)
         model_dir = "/models/llm"
         extension = ".gguf"
+        # Ensure the filename has the correct extension for LLM
+        filename_base = os.path.splitext(filename_from_url)[0]
+        filename_with_extension = f"{filename_base}{extension}"
+
 
     # Make sure the directory exists
     os.makedirs(model_dir, exist_ok=True)
 
-    # Save model with dynamic name
-    model_path = f"{model_dir}/{filename}{extension}"
-    response = requests.get(model_url)
+    # Save model with the extracted name and correct extension
+    model_path = os.path.join(model_dir, filename_with_extension)
 
-    if response.status_code != 200:
-        raise HTTPException(status_code=400, detail="Failed to download model.")
+    logger.info(f"Attempting to download model from {model_url} to {model_path}")
 
-    with open(model_path, 'wb') as file:
-        file.write(response.content)
-    
-    return {"status": f"Model downloaded successfully as {filename}{extension}"}
+    try:
+        response = requests.get(model_url, stream=True, allow_redirects=True) # Use stream=True for large files
+        response.raise_for_status() # Raise HTTPError for bad responses (4xx or 5xx)
+
+        with open(model_path, 'wb') as file:
+            for chunk in response.iter_content(chunk_size=8192): # Download in chunks
+                file.write(chunk)
+
+        logger.info(f"Model downloaded successfully to {model_path}")
+        return {
+            "status": f"Model downloaded successfully as {filename_with_extension}",
+            "downloaded_filename": filename_with_extension # Return the actual filename used
+        }
+
+    except requests.exceptions.RequestException as e:
+         logger.error(f"Failed to download model from {model_url}: {e}")
+         # Clean up potentially incomplete file
+         if os.path.exists(model_path):
+             try:
+                 os.remove(model_path)
+             except OSError as rm_err:
+                 logger.error(f"Error removing incomplete file {model_path}: {rm_err}")
+         raise HTTPException(status_code=400, detail=f"Failed to download model: {e}")
+    except Exception as e:
+         logger.error(f"An error occurred during model download or saving: {e}")
+         # Clean up potentially incomplete file
+         if os.path.exists(model_path):
+             try:
+                 os.remove(model_path)
+             except OSError as rm_err:
+                 logger.error(f"Error removing incomplete file {model_path}: {rm_err}")
+         raise HTTPException(status_code=500, detail=f"An error occurred: {e}")
 
 # -----------------------
 # Server Stats Endpoint

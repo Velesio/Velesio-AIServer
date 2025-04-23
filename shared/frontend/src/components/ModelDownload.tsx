@@ -122,12 +122,13 @@ export function LLMModelDownload() {
         setIsDownloading(true);
         setDownloadStatus(null);
 
-        const filename = selectedModel ? selectedModel.filename : 'model';
+        // Filename sent here is ignored by backend, but keep for consistency
+        const filename = selectedModel ? selectedModel.filename : 'custom_model';
         const downloadUrl = selectedModel ? selectedModel.url : url;
 
         const downloadData = {
             url: downloadUrl,
-            filename: filename,
+            filename: filename, // Backend will ignore this and extract from URL
             type: 'llm'
         };
 
@@ -139,13 +140,16 @@ export function LLMModelDownload() {
             });
 
             if (response.ok) {
+                const result = await response.json(); // Parse the JSON response from backend
                 setDownloadStatus({
-                    message: `Model downloaded successfully as "${filename}.gguf"!`,
+                    // Use the actual filename returned by the backend
+                    message: `Model downloaded successfully as "${result.downloaded_filename}"!`,
                     success: true
                 });
             } else {
+                const errorData = await response.json().catch(() => ({ detail: 'Failed to download model. Please check server logs.' }));
                 setDownloadStatus({
-                    message: 'Failed to download model. Please try again.',
+                    message: errorData.detail || 'Failed to download model. Please try again.',
                     success: false
                 });
             }
@@ -297,12 +301,13 @@ export function SDModelDownload() {
         setIsDownloading(true);
         setDownloadStatus(null);
 
-        const filename = selectedModel ? selectedModel.filename : 'model';
+        // Filename sent here is ignored by backend, but keep for consistency
+        const filename = selectedModel ? selectedModel.filename : 'custom_model';
         const downloadUrl = selectedModel ? selectedModel.url : url;
 
         const downloadData = {
             url: downloadUrl,
-            filename: filename,
+            filename: filename, // Backend will ignore this and extract from URL
             type: 'sd'
         };
 
@@ -314,13 +319,16 @@ export function SDModelDownload() {
             });
 
             if (response.ok) {
+                const result = await response.json(); // Parse the JSON response from backend
                 setDownloadStatus({
-                    message: `Model downloaded successfully as "${filename}.safetensors"!`,
+                     // Use the actual filename returned by the backend
+                    message: `Model downloaded successfully as "${result.downloaded_filename}"!`,
                     success: true
                 });
             } else {
+                const errorData = await response.json().catch(() => ({ detail: 'Failed to download model. Please check server logs.' }));
                 setDownloadStatus({
-                    message: 'Failed to download model. Please try again.',
+                    message: errorData.detail || 'Failed to download model. Please try again.',
                     success: false
                 });
             }
