@@ -1,8 +1,14 @@
 # 📦 Velesio AI Server
 
-**Velesio AI Server** is a web application aiming to simplify deploying llamacpp/undreamai and automatic1111, be it onprem or in the cloud. This has only been tested on NVIDIA GPUs with Cuda 12.2 and higher and is developed with that environment in mind.
+**Velesio AI Server** is a web application aiming to provide a simple framework to host open source AI models, be it on-prem or in the cloud, which can be used by both Unity and Web Applications.
 
-[Runpod template](https://www.runpod.io/console/explore/07cky3lznr) plug and play cloud deployment.
+To access this in unity you can use the linked repos bellow, a unified unity integration for all of this app's services is currently under development and will soon be published to the Asset Store.
+
+This has only been tested on NVIDIA GPUs with Cuda 12.2 and higher and is developed with that environment in mind.
+
+[Runpod template](https://www.runpod.io/console/explore/07cky3lznr) for plug and play cloud deployment
+
+New to Runpod? Here's my [referral link](https://runpod.io?ref=muhg2w55)!
 
 Self-hosting quickstart:
 
@@ -39,12 +45,11 @@ Each of the ports is reverse proxied in nginx, access can be managed through ngi
 
 Stay tuned for:
 
-- ✅ Unity Integration Asset 
+- ✅ Unity Integration Asset
 - ✅ Documentation
 - ✅ API Service
 - ✅ Ollama support
 - ✅ Flux support
-- ✅ Proprietary models support
 
 Follow the repo, drop a ⭐, and join the journey!
 
