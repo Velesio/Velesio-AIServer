@@ -6,13 +6,17 @@
 
 Self-hosting quickstart:
 
+```bash
 git clone https://github.com/Velesio/Velesio-AIServer.git
 cd Velesio-AIServer/velesio
 docker compose up -d
+```
 
-Port 3000 - Vite frontend
-Port 1337 - Undreamai server
-Port 7860 - Stable Diffusion Automatic 1111 webserver
+```
+Port 3000 - Vite frontend  
+Port 1337 - Undreamai server  
+Port 7860 - Stable Diffusion Automatic 1111 webserver  
+```
 
 Each of the ports is reverse proxied in nginx, access can be managed through nginx in the ALLOWLIST env vars. This was neccesary because Runpod currently does not offer firewall functionality.
 
