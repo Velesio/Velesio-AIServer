@@ -12,7 +12,7 @@ This has only been tested on NVIDIA GPUs with Cuda 12.2 and higher and is develo
 
 ### 🌐 Cloud Deployment with Runpod
 
-Deploy effortlessly using our [Runpod template](https://www.runpod.io/console/explore/07cky3lznr). It's a plug-and-play solution for hosting in the cloud.
+Deploy effortlessly using the [Runpod template](https://www.runpod.io/console/explore/07cky3lznr). It's a plug-and-play solution for hosting in the cloud.
 
 New to Runpod? Use my [referral link](https://runpod.io?ref=muhg2w55) to get started!
 
@@ -25,14 +25,10 @@ Get up and running locally with just a few steps:
 1. **Install Docker Compose**  
   Follow the [official guide](https://docs.docker.com/compose/install/linux/) to set up Docker Compose.
 
-2. **Clone the Repository**  
+2. **Clone & Compose***  
   ```bash
   git clone https://github.com/Velesio/Velesio-AIServer.git
   cd Velesio-AIServer/velesio
-  ```
-
-3. **Start the Services**  
-  ```bash
   docker compose up -d
   ```
 
