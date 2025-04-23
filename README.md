@@ -25,7 +25,7 @@ Get up and running locally with just a few steps:
 1. **Install Docker Compose**  
   Follow the [official guide](https://docs.docker.com/compose/install/linux/) to set up Docker Compose.
 
-2. **Clone & Compose***  
+2. **Clone & Compose**  
   ```bash
   git clone https://github.com/Velesio/Velesio-AIServer.git
   cd Velesio-AIServer/velesio
