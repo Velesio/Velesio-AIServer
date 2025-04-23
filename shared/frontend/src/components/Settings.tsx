@@ -41,25 +41,23 @@ const Settings = () => {
               }
     }
 
-    // Helper function for title style
     const getTitleStyle = () => ({
         color: 'var(--text-color)',
         textShadow: theme === 'cyberpunk' ? '0 0 5px var(--accent-color)' : 'none'
     });
 
-    // Style for title containers matching content box width/centering
     const sectionTitleContainerStyle = {
-        textAlign: 'center' as const, // Center the text within this container
-        marginBottom: '1rem', // Space below title
+        textAlign: 'center' as const, 
+        marginBottom: '1rem',
     };
 
     return (
         <div className="settings-container" style={{
-            maxWidth: '800px', // Added: Standard width
-            margin: '0 auto', // Added: Center the whole settings container
-            padding: '2rem 1rem', // Keep padding consistent
+            maxWidth: '800px', 
+            margin: '0 auto', 
+            padding: '2rem 1rem', 
         }}>
-            <h2 className="text-3xl font-bold text-center mb-10" style={getTitleStyle()}>
+            <h2 className="text-3xl font-bold text-center mt-10" style={getTitleStyle()}>
                 Settings
             </h2>
 

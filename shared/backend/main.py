@@ -10,6 +10,7 @@ import requests
 import logging
 import shlex
 from pydantic import BaseModel
+import signal # Import the signal module
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -323,30 +324,71 @@ async def start_stable_diffusion():
 @app.post("/stop-stable-diffusion/")
 async def stop_stable_diffusion():
     global stable_diffusion_process
-    
+
     if not stable_diffusion_process or stable_diffusion_process.poll() is not None:
         raise HTTPException(status_code=400, detail="Stable Diffusion is not currently running.")
-    
+
     try:
-        # Try graceful termination
-        stable_diffusion_process.terminate()
-        
+        pid = stable_diffusion_process.pid
+        pgid = os.getpgid(pid) # Get the process group ID
+        logger.info(f"Attempting to stop Stable Diffusion process group with PGID: {pgid}")
+
+        # Try graceful termination of the process group
+        os.killpg(pgid, signal.SIGTERM)
+        logger.info(f"Sent SIGTERM to process group {pgid}")
+
         # Give it some time to shut down gracefully
+        stopped = False
         for _ in range(10):  # Wait up to 10 seconds
             if stable_diffusion_process.poll() is not None:
+                logger.info(f"Process group {pgid} terminated gracefully.")
+                stopped = True
                 break
             time.sleep(1)
-        
-        # If still running, force kill
-        if stable_diffusion_process.poll() is None:
-            stable_diffusion_process.kill()
-            stable_diffusion_process.wait()
-        
+
+        # If still running, force kill the process group
+        if not stopped:
+            logger.warning(f"Process group {pgid} did not terminate gracefully. Sending SIGKILL.")
+            try:
+                os.killpg(pgid, signal.SIGKILL)
+                stable_diffusion_process.wait(timeout=5) # Wait a bit after SIGKILL
+                logger.info(f"Sent SIGKILL to process group {pgid}")
+            except ProcessLookupError:
+                 logger.info(f"Process group {pgid} already terminated after SIGKILL attempt.")
+            except Exception as kill_err:
+                 logger.error(f"Error sending SIGKILL to process group {pgid}: {kill_err}")
+
+
         stable_diffusion_process = None
-        
+        logger.info("Stable Diffusion process reference cleared.")
+
+        # Clear logs after stopping
+        try:
+            with open(sd_log_file, "w") as log:
+                log.write("")
+            logger.info(f"Cleared Stable Diffusion log file: {sd_log_file}")
+        except Exception as log_err:
+            logger.error(f"Error clearing Stable Diffusion log file: {log_err}")
+
+
         return {"status": "Stable Diffusion stopped successfully"}
-    
+
+    except ProcessLookupError:
+        # This can happen if the process terminated unexpectedly between the check and killpg
+        logger.warning(f"Process group {pgid} not found. Already terminated?")
+        stable_diffusion_process = None # Ensure reference is cleared
+        return {"status": "Stable Diffusion process was already stopped."}
     except Exception as e:
+        logger.error(f"Failed to stop Stable Diffusion: {e}")
+        # Attempt to clean up the process reference if an error occurred
+        if stable_diffusion_process and stable_diffusion_process.poll() is None:
+             logger.warning("Error occurred, but process might still be running. Attempting final kill.")
+             try:
+                 pgid = os.getpgid(stable_diffusion_process.pid)
+                 os.killpg(pgid, signal.SIGKILL)
+             except Exception as final_kill_err:
+                 logger.error(f"Final kill attempt failed: {final_kill_err}")
+        stable_diffusion_process = None # Clear reference even on error
         raise HTTPException(status_code=500, detail=f"Failed to stop Stable Diffusion: {str(e)}")
 
 @app.get("/sd-logs/")
@@ -355,7 +397,11 @@ async def get_sd_logs():
         with open(sd_log_file, "r") as log_file_data:
             return log_file_data.read()
     except FileNotFoundError:
-        raise HTTPException(status_code=404, detail="Stable Diffusion log file not found")
+        # Return empty string instead of raising 404 if log file doesn't exist yet
+        return ""
+    except Exception as e:
+        logger.error(f"Error reading SD logs: {e}")
+        raise HTTPException(status_code=500, detail="Failed to read Stable Diffusion logs")
 
 # -----------------------
 # Stable Diffusion Status Check
