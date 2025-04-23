@@ -22,7 +22,7 @@ RUN pip3 install torch torchvision torchaudio numpy pillow
 # ------------------
 # Install backend dependencies
 # ------------------
-COPY shared/backend/requirements.txt /app/backend/requirements.txt
+COPY backend/requirements.txt /app/backend/requirements.txt
 WORKDIR /app/backend
 RUN pip3 install -r requirements.txt
 
@@ -30,7 +30,7 @@ RUN pip3 install -r requirements.txt
 # Install frontend dependencies
 # ------------------
 WORKDIR /app/frontend
-COPY shared/frontend/package.json shared/frontend/package-lock.json ./
+COPY frontend/package.json frontend/package-lock.json ./
 RUN npm install
 
 # ------------------
@@ -40,7 +40,7 @@ WORKDIR /app
 RUN mkdir -p /app/server
 
 ARG VERSION=v1.1.10
-COPY shared/binaries/* /app/
+COPY binaries/* /app/
 
 RUN unzip undreamai-${VERSION}-llamacpp.zip -d /app/server/ && \
     unzip undreamai-${VERSION}-server.zip -d /app/server/ && \
@@ -122,17 +122,17 @@ FROM base AS final
 WORKDIR /app
 
 # Copy the latest application source code
-COPY shared/backend /app/backend
-COPY shared/frontend /app/frontend
+COPY backend /app/backend
+COPY frontend /app/frontend
 
 # Copy Stable Diffusion WebUI from the base stage
 COPY --from=base /app/stable-diffusion-webui /app/stable-diffusion-webui
 
 # Copy Nginx configuration
-COPY shared/nginx/nginx.conf /etc/nginx/nginx.conf
-COPY shared/nginx/allowed_ips_frontend.conf /etc/nginx/allowed_ips_frontend.conf
-COPY shared/nginx/allowed_ips_llm.conf /etc/nginx/allowed_ips_llm.conf
-COPY shared/nginx/allowed_ips_sd.conf /etc/nginx/allowed_ips_sd.conf
+COPY nginx/nginx.conf /etc/nginx/nginx.conf
+COPY nginx/allowed_ips_frontend.conf /etc/nginx/allowed_ips_frontend.conf
+COPY nginx/allowed_ips_llm.conf /etc/nginx/allowed_ips_llm.conf
+COPY nginx/allowed_ips_sd.conf /etc/nginx/allowed_ips_sd.conf
 
 # Ensure models directory exists
 RUN mkdir -p /models

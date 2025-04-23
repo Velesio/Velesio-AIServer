@@ -2,9 +2,6 @@ version: '3.9'
 
 services:
   velesio-aiserver:
-    build:
-      context: ..
-      dockerfile: shared/Dockerfile.runpod
     image: teocholakov/velesio-aiserver
     container_name: velesio-aiserver
     ports:

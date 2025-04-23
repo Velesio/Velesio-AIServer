@@ -8,9 +8,13 @@ With this repo you can locally host your own llamacpp and Stable Diffusion serve
 
 [Runpod template](https://www.runpod.io/console/explore/07cky3lznr) to host self-host this in the cloud.
 
-[Docker](https://hub.docker.com/repository/docker/teocholakov/velesio-aiserver)
+Self-hosting quickstart:
 
-To build this locally and self-host simply docker compose up --build
+git clone https://github.com/Velesio/Velesio-AIServer.git
+cd Velesio-AIServer/velesio
+docker compose up -d
+
+[Docker](https://hub.docker.com/repository/docker/teocholakov/velesio-aiserver)
 
 [Discord](https://discord.gg/pMB6w3mJyF) for support and ideas
 
