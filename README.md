@@ -1,12 +1,8 @@
 # 📦 Velesio AI Server
 
-**Velesio** is a next-generation AI integration framework for Unity developers, built to simplify and supercharge the way games interact with powerful language and diffusion models.
+**Velesio AI Server** is a web application aiming to simplify deploying llamacpp/undreamai and automatic1111, be it onprem or in the cloud.
 
-Whether you're building immersive NPCs, intelligent agents, or AI-driven tools, Veles gives you a seamless plug-and-play interface to tap into both local and cloud-hosted AI systems — all from within Unity.
-
-With this repo you can locally host your own llamacpp and Stable Diffusion server which can seemlessly connect to Unity, using the LLM For Unity asset by UndreamAI and the Stable Diffusion Integration, linked bellow.
-
-[Runpod template](https://www.runpod.io/console/explore/07cky3lznr) to host self-host this in the cloud.
+[Runpod template](https://www.runpod.io/console/explore/07cky3lznr) plug and play cloud deployment.
 
 Self-hosting quickstart:
 
@@ -26,22 +22,22 @@ Each of the ports is reverse proxied in nginx, access can be managed through ngi
 
 ---
 
-## ✨ Key Features (Coming Soon)
+## ✨ Key Features
 
 - ⚡ **Plug and play AI hosting** for Unity — no heavy setup required  
 - 🧠 Built for **self-hosting and the cloud**
 - 🛠️ Built to be **open, extensible, and developer-friendly**  
 
 ---
-## 🚧 Project Status
+## 🚧 Roadmap
 
-Veles is in early development. Stay tuned for:
+Stay tuned for:
 
-- ✅ Unity Integration combining the projects this is based on
+- ✅ Unity Integration Asset 
 - ✅ Documentation
 - ✅ API Service
-- ✅ Flux support
 - ✅ Ollama support
+- ✅ Flux support
 - ✅ Proprietary models support
 
 Follow the repo, drop a ⭐, and join the journey!
