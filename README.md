@@ -6,6 +6,10 @@ To access this in unity you can use the linked repos bellow, a unified unity int
 
 This has only been tested on NVIDIA GPUs with Cuda 12.2 and higher and is developed with that environment in mind.
 
+---
+
+## 🚀 Deploy
+
 [Runpod template](https://www.runpod.io/console/explore/07cky3lznr) for plug and play cloud deployment
 
 New to Runpod? Here's my [referral link](https://runpod.io?ref=muhg2w55)!
