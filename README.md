@@ -1,10 +1,12 @@
 # 📦 Velesio AI Server
 
-**Velesio AI Server** is a web application aiming to simplify deploying llamacpp/undreamai and automatic1111, be it onprem or in the cloud.
+**Velesio AI Server** is a web application aiming to simplify deploying llamacpp/undreamai and automatic1111, be it onprem or in the cloud. This has only been tested on NVIDIA GPUs with Cuda 12.2 and higher and is developed with that environment in mind.
 
 [Runpod template](https://www.runpod.io/console/explore/07cky3lznr) plug and play cloud deployment.
 
 Self-hosting quickstart:
+
+Install [docker compose](https://docs.docker.com/compose/install/linux/)
 
 ```bash
 git clone https://github.com/Velesio/Velesio-AIServer.git
