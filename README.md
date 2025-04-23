@@ -8,33 +8,52 @@ This has only been tested on NVIDIA GPUs with Cuda 12.2 and higher and is develo
 
 ---
 
-## 🚀 Deploy
+## 🚀 Deployment Made Easy
 
-[Runpod template](https://www.runpod.io/console/explore/07cky3lznr) for plug and play cloud deployment
+### 🌐 Cloud Deployment with Runpod
 
-New to Runpod? Here's my [referral link](https://runpod.io?ref=muhg2w55)!
+Deploy effortlessly using our [Runpod template](https://www.runpod.io/console/explore/07cky3lznr). It's a plug-and-play solution for hosting in the cloud.
 
-Self-hosting quickstart:
+New to Runpod? Use my [referral link](https://runpod.io?ref=muhg2w55) to get started!
 
-Install [docker compose](https://docs.docker.com/compose/install/linux/)
+---
 
-```bash
-git clone https://github.com/Velesio/Velesio-AIServer.git
-cd Velesio-AIServer/velesio
-docker compose up -d
-```
+### 🏠 Self-Hosting Quickstart
 
-```
-Port 3000 - Vite frontend  
-Port 1337 - Undreamai server  
-Port 7860 - Stable Diffusion Automatic 1111 webserver  
-```
+Get up and running locally with just a few steps:
 
-Each of the ports is reverse proxied in nginx, access can be managed through nginx in the ALLOWLIST env vars. This was neccesary because Runpod currently does not offer firewall functionality.
+1. **Install Docker Compose**  
+  Follow the [official guide](https://docs.docker.com/compose/install/linux/) to set up Docker Compose.
 
-[Docker](https://hub.docker.com/repository/docker/teocholakov/velesio-aiserver)
+2. **Clone the Repository**  
+  ```bash
+  git clone https://github.com/Velesio/Velesio-AIServer.git
+  cd Velesio-AIServer/velesio
+  ```
 
-[Discord](https://discord.gg/pMB6w3mJyF) for support and ideas
+3. **Start the Services**  
+  ```bash
+  docker compose up -d
+  ```
+
+  **Exposed Ports:**
+  - `3000` - Vite frontend  
+  - `1337` - Undream AI server  
+  - `7860` - Stable Diffusion Automatic 1111 webserver  
+
+  These ports are reverse-proxied through Nginx. Access control can be managed via the `ALLOWLIST` environment variables, as Runpod currently lacks built-in firewall functionality.
+
+---
+
+### 📦 Docker Image
+
+Prefer using Docker directly? Check out our [Docker Hub repository](https://hub.docker.com/repository/docker/teocholakov/velesio-aiserver).
+
+---
+
+### 💬 Need Help?
+
+Join our [Discord community](https://discord.gg/pMB6w3mJyF) for support, discussions, and sharing ideas.
 
 ---
 
