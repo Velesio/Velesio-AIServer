@@ -373,8 +373,11 @@ const LLMForm = () => {
                     />
                 </div>
 
+                {/* Spacer div with moderate height to create around 1cm of empty space */}
+                <div className="h-20" style={{ minHeight: '1cm' }}></div>
+
                 {/* Start Button - Centered using margin auto and text-align */}
-                 <div className="mt-6 mb-4" style={{ textAlign: 'center', width: '100%' }}> {/* Ensure container takes width and centers content */}
+                 <div className="mb-4" style={{ textAlign: 'center', width: '100%' }}>
                      <button
                         className="px-6 py-2 rounded-full text-md font-medium inline-flex items-center justify-center"
                         onClick={handleStartInstance}
