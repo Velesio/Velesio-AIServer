@@ -373,8 +373,8 @@ const LLMForm = () => {
                     />
                 </div>
 
-                {/* Start Button */}
-                 <div className="mt-6 mb-4 text-center"> {/* Added text-center */}
+                {/* Start Button - Centered using margin auto and text-align */}
+                 <div className="mt-6 mb-4" style={{ textAlign: 'center', width: '100%' }}> {/* Ensure container takes width and centers content */}
                      <button
                         className="px-6 py-2 rounded-full text-md font-medium inline-flex items-center justify-center"
                         onClick={handleStartInstance}
@@ -385,7 +385,8 @@ const LLMForm = () => {
                             boxShadow: theme === 'cyberpunk' ? 'var(--neon-glow)' : 'none',
                             opacity: (isStarting || freePorts.length === 0 || !model) ? 0.6 : 1,
                             transition: 'all 0.2s ease',
-                            width: '200px', // Wider button
+                            width: '200px',
+                            margin: '0 auto'
                         }}
                     >
                         {isStarting ? (
@@ -404,12 +405,12 @@ const LLMForm = () => {
 
 
             {/* Section for Running Instances */}
-            <div className="mt-8 w-full max-w-2xl mx-auto"> {/* Added mx-auto to center the container */}
-                <h3 className="text-xl font-medium mb-4 text-center" style={{ color: 'var(--text-color)' }}> {/* Added text-center */}
+            <div className="mt-8 w-full max-w-2xl mx-auto" style={{ textAlign: 'center' }}> {/* Apply text-align to the container */}
+                <h3 className="text-xl font-medium mb-4" style={{ color: 'var(--text-color)' }}> {/* Removed text-center class and inline style */}
                     Running Instances ({Object.keys(runningInstances).length})
                 </h3>
                 {Object.keys(runningInstances).length === 0 ? (
-                    <p className="text-center" style={{ color: 'var(--text-color-secondary)' }}>No LLM instances are currently running.</p>
+                    <p style={{ color: 'var(--text-color-secondary)' }}>No LLM instances are currently running.</p>
                 ) : (
                     <div className="space-y-4">
                         {Object.entries(runningInstances).map(([portStr, instance]) => {
@@ -420,61 +421,76 @@ const LLMForm = () => {
 
                             return (
                                 <div key={port} className="p-4 border rounded-lg" style={{ borderColor: theme === 'cyberpunk' ? 'var(--accent-color)' : '#e5e7eb', backgroundColor: 'var(--secondary-bg)' }}>
-                                    <div className="flex flex-wrap justify-between items-center gap-4">
-                                        <div>
-                                            <span className="font-semibold" style={{ color: 'var(--text-color)' }}>Port: {port}</span>
-                                            <p className="text-sm" style={{ color: 'var(--text-color-secondary)' }}>Model: {instance.config.model}</p>
-                                            <p className="text-sm" style={{ color: 'var(--text-color-secondary)' }}>Template: {instance.config.template}, NGL: {instance.config.ngl}</p>
-                                            {instance.config.custom_params && <p className="text-sm" style={{ color: 'var(--text-color-secondary)' }}>Params: {instance.config.custom_params}</p>}
-                                        </div>
-                                        <div className="flex gap-2 flex-wrap">
-                                            {/* Stop Button */}
-                                            <button
-                                                className="px-3 py-1.5 rounded-full text-xs font-medium inline-flex items-center justify-center"
-                                                onClick={() => handleStopInstance(port)}
-                                                disabled={isStopping}
-                                                style={{
-                                                    backgroundColor: 'var(--button-danger)',
-                                                    color: '#ffffff',
-                                                    opacity: isStopping ? 0.7 : 1,
-                                                    minWidth: '80px', // Ensure minimum width
-                                                }}
-                                            >
-                                                {isStopping ? (
-                                                    <><span className="mr-1">Stopping</span><Spinner /></>
-                                                ) : (
-                                                    <>
-                                                        <svg className="mr-1" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                            <rect x="6" y="6" width="12" height="12" rx="2" ry="2"></rect>
-                                                        </svg>
-                                                        Stop
-                                                    </>
-                                                )}
-                                            </button>
-                                            {/* Logs Button */}
-                                            <button
-                                                className="px-3 py-1.5 rounded-full text-xs font-medium inline-flex items-center justify-center"
-                                                onClick={() => handleToggleLogs(port)}
-                                                disabled={isStopping || isLoadingLogs} // Disable if stopping or logs are loading
-                                                style={{
-                                                    backgroundColor: isViewingLogs ? (theme === 'cyberpunk' ? '#4a4a8a' : '#e5e7eb') : (theme === 'cyberpunk' ? '#2d2d4d' : '#f3f4f6'),
-                                                    color: 'var(--text-color)',
-                                                    border: theme === 'corporate' ? '1px solid #000' : 'none',
-                                                    minWidth: '80px', // Ensure minimum width
-                                                }}
-                                            >
-                                                {isLoadingLogs ? (
-                                                     <><span className="mr-1">Loading</span><Spinner /></>
-                                                ) : (
-                                                    <>
-                                                        <svg className="mr-1" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline>
-                                                        </svg>
+                                    {/* Instance Details - Centered using flexbox */}
+                                    <div className="mb-4" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}> {/* Use flexbox for centering */}
+                                        <span className="font-semibold" style={{ color: 'var(--text-color)' }}>Port: {port}</span>
+                                        <p className="text-sm" style={{ color: 'var(--text-color-secondary)' }}>Model: {instance.config.model}</p>
+                                        <p className="text-sm" style={{ color: 'var(--text-color-secondary)' }}>Template: {instance.config.template}, NGL: {instance.config.ngl}</p>
+                                        {instance.config.custom_params && <p className="text-sm" style={{ color: 'var(--text-color-secondary)' }}>Params: {instance.config.custom_params}</p>}
+                                    </div>
+                                    {/* Action Buttons */}
+                                    <div className="text-center">
+                                        {/* Stop Button */}
+                                        <button
+                                            className="px-3 py-1.5 rounded-full text-xs font-medium inline-flex items-center justify-center mx-1"
+                                            onClick={() => handleStopInstance(port)}
+                                            disabled={isStopping}
+                                            style={{
+                                                backgroundColor: 'var(--button-danger)',
+                                                color: '#ffffff',
+                                                opacity: isStopping ? 0.7 : 1,
+                                                width: '90px',
+                                                display: 'inline-block'
+                                            }}
+                                        >
+                                            {isStopping ? (
+                                                <>
+                                                    <span className="mr-1">Stopping</span>
+                                                    <Spinner />
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <svg className="mr-1" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                        <rect x="6" y="6" width="12" height="12" rx="2" ry="2"></rect>
+                                                    </svg>
+                                                    <span style={{ verticalAlign: 'middle' }}>Stop</span>
+                                                </>
+                                            )}
+                                        </button>
+                                        
+                                        {/* Logs Button */}
+                                        <button
+                                            className="px-3 py-1.5 rounded-full text-xs font-medium inline-flex items-center justify-center mx-1"
+                                            onClick={() => handleToggleLogs(port)}
+                                            disabled={isStopping || isLoadingLogs}
+                                            style={{
+                                                backgroundColor: isViewingLogs ? (theme === 'cyberpunk' ? '#4a4a8a' : '#e5e7eb') : (theme === 'cyberpunk' ? '#2d2d4d' : '#f3f4f6'),
+                                                color: 'var(--text-color)',
+                                                border: theme === 'corporate' ? '1px solid #000' : 'none',
+                                                width: '90px',
+                                                display: 'inline-block'
+                                            }}
+                                        >
+                                            {isLoadingLogs ? (
+                                                <>
+                                                    <span className="mr-1">Loading</span>
+                                                    <Spinner />
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <svg className="mr-1" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                                        <polyline points="14 2 14 8 20 8"></polyline>
+                                                        <line x1="16" y1="13" x2="8" y2="13"></line>
+                                                        <line x1="16" y1="17" x2="8" y2="17"></line>
+                                                        <polyline points="10 9 9 9 8 9"></polyline>
+                                                    </svg>
+                                                    <span style={{ verticalAlign: 'middle' }}>
                                                         {isViewingLogs ? 'Hide' : 'Logs'}
-                                                    </>
-                                                )}
-                                            </button>
-                                        </div>
+                                                    </span>
+                                                </>
+                                            )}
+                                        </button>
                                     </div>
 
                                     {/* Log display for this instance */}
@@ -506,39 +522,41 @@ const LLMForm = () => {
             </div>
 
 
-            {/* Operation status message (centralized) */}
+            {/* Operation status message */}
             {operationStatus && (
-                <div className="px-4 py-3 rounded-xl text-sm mt-6 w-full max-w-2xl mx-auto" style={{
-                    margin: '1.5rem auto 0 auto',
-                    textAlign: 'center',
-                    backgroundColor: operationStatus.success ?
-                        (theme === 'cyberpunk' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(16, 185, 129, 0.1)') :
-                        (theme === 'cyberpunk' ? 'rgba(239, 68, 68, 0.15)' : 'rgba(239, 68, 68, 0.1)'),
-                    color: operationStatus.success ?
-                        (theme === 'cyberpunk' ? '#10b981' : '#047857') :
-                        (theme === 'cyberpunk' ? '#ef4444' : '#b91c1c'),
-                    border: theme === 'cyberpunk' ?
-                        `1px solid ${operationStatus.success ? 'rgba(16, 185, 129, 0.3)' : 'rgba(239, 68, 68, 0.3)'}` :
-                        'none',
-                }}
+                <div 
+                    className="px-4 py-3 rounded-xl text-sm mt-6 w-full max-w-2xl mx-auto" 
+                    style={{
+                        margin: '1.5rem auto 0 auto',
+                        textAlign: 'center',
+                        backgroundColor: operationStatus.success 
+                            ? (theme === 'cyberpunk' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(16, 185, 129, 0.1)') 
+                            : (theme === 'cyberpunk' ? 'rgba(239, 68, 68, 0.15)' : 'rgba(239, 68, 68, 0.1)'),
+                        color: operationStatus.success 
+                            ? (theme === 'cyberpunk' ? '#10b981' : '#047857') 
+                            : (theme === 'cyberpunk' ? '#ef4444' : '#b91c1c'),
+                        border: theme === 'cyberpunk'
+                            ? `1px solid ${operationStatus.success ? 'rgba(16, 185, 129, 0.3)' : 'rgba(239, 68, 68, 0.3)'}`
+                            : 'none'
+                    }}
                 >
-                     <div className="flex items-center justify-center">
-                            <div className="mr-3 flex-shrink-0">
-                                {operationStatus.success ? (
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                                        <polyline points="22 4 12 14.01 9 11.01"></polyline>
-                                    </svg>
-                                ) : (
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                        <circle cx="12" cy="12" r="10"></circle>
-                                        <line x1="12" y1="8" x2="12" y2="12"></line>
-                                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
-                                    </svg>
-                                )}
-                            </div>
-                            <span>{operationStatus.message}</span>
+                    <div className="flex items-center justify-center">
+                        <div className="mr-3 flex-shrink-0">
+                            {operationStatus.success ? (
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                                </svg>
+                            ) : (
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                                </svg>
+                            )}
                         </div>
+                        <span>{operationStatus.message}</span>
+                    </div>
                 </div>
             )}
 
