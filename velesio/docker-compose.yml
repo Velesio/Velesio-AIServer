@@ -7,7 +7,11 @@ services:
     ports:
       # - "6969:6969" # for nginx reverse proxy
       - "7860:7860"
-      - "1337:1337"
+      - "1337:1337" # -> 1338 internal
+      - "1339:1339" # -> 1340 internal
+      - "1341:1341" # -> 1342 internal
+      - "1343:1343" # -> 1344 internal
+      - "1345:1345" # -> 1346 internal
       - "3000:3000"
     volumes:
       - ./models/stable-diffusion:/models/stable-diffusion

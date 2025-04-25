@@ -10,9 +10,10 @@ import requests
 import logging
 import shlex
 from pydantic import BaseModel
-import signal # Import the signal module
-import urllib.parse # Add this import
-import os.path # Add this import
+import signal
+import urllib.parse
+import os.path
+from typing import Dict, Optional, List
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -40,9 +41,21 @@ async def log_requests(request: Request, call_next):
         logger.error(f"Error processing request: {e}")
         raise
 
-server_process = None
+# --- Port Mapping ---
+# Define the available external ports and their mapping to internal ports
+# Nginx listens on external ports and proxies to internal ports
+PORT_MAPPING: Dict[int, int] = {
+    1337: 1338,
+    1339: 1340,
+    1341: 1342,
+    1343: 1344,
+    1345: 1346,
+}
+AVAILABLE_EXTERNAL_PORTS: List[int] = list(PORT_MAPPING.keys())
+
+# Store running LLM instances: {internal_port: {'process': process_object, 'config': config_dict, 'log_file': path, 'external_port': ext_port}}
+llm_instances: Dict[int, Dict] = {}
 stable_diffusion_process = None
-log_file = "/app/server_logs.txt"
 sd_log_file = "/app/sd_logs.txt"
 
 # Define allowlist file paths
@@ -52,183 +65,223 @@ ALLOWLIST_FILES = {
     "sd": "/etc/nginx/allowed_ips_sd.conf",
 }
 
-# Define Pydantic model for update request
+# Define Pydantic models
+class LLMInstanceConfig(BaseModel):
+    model: str
+    external_port: int  # User specifies the desired EXTERNAL port from the available pool
+    host: str = "0.0.0.0"  # Host for the internal undreamai_server
+    ngl: int = 30
+    template: str = "chatml"
+    custom_params: str = ""
+
 class UpdateAllowlistRequest(BaseModel):
     service: str
     content: str
 
+# Helper function to get log file path for an instance (uses internal port)
+def get_llm_log_file(internal_port: int) -> str:
+    return f"/app/server_logs_{internal_port}.txt"
+
+# Helper to find internal port from external port
+def get_internal_port(external_port: int) -> Optional[int]:
+    return PORT_MAPPING.get(external_port)
+
+# Helper to find external port from internal port
+def get_external_port(internal_port: int) -> Optional[int]:
+    for ext_port, int_port in PORT_MAPPING.items():
+        if int_port == internal_port:
+            return ext_port
+    return None
+
 # -----------------------
-# Server Endpoints
+# LLM Server Endpoints
 # -----------------------
-@app.post("/start-server/")
-async def start_server(request: Request):
-    global server_process
+@app.post("/start-llm-instance/")
+async def start_llm_instance(config: LLMInstanceConfig):
+    global llm_instances
+    external_port = config.external_port
 
-    params = await request.json()
-    custom_params = params.get("custom_params", "").strip()
+    # Validate external port
+    if external_port not in AVAILABLE_EXTERNAL_PORTS:
+        raise HTTPException(status_code=400, detail=f"Invalid external port specified: {external_port}. Available: {AVAILABLE_EXTERNAL_PORTS}")
 
-    if server_process and server_process.poll() is None:
-        raise HTTPException(status_code=400, detail="Server is already running.")
+    internal_port = get_internal_port(external_port)
+    if internal_port is None:  # Should not happen if validation above passes
+        raise HTTPException(status_code=500, detail="Internal error: Port mapping failed.")
 
+    # Check if internal port is already in use
+    if internal_port in llm_instances and llm_instances[internal_port]['process'].poll() is None:
+        raise HTTPException(status_code=400, detail=f"Port {external_port} (internal: {internal_port}) is already in use.")
+
+    log_file = get_llm_log_file(internal_port)
     with open(log_file, "w") as log:
-        log.write("")  
+        log.write("")
 
     binary_path = "/app/server/linux-cuda-cu12.2.0/undreamai_server"
-
     if not os.path.exists(binary_path):
         raise HTTPException(status_code=500, detail="undreamai_server binary not found")
 
-    model_path = f"/models/llm/{params.get('model', 'model')}"
+    model_path = f"/models/llm/{config.model}"
+    if not os.path.exists(model_path):
+        found_model = False
+        for ext in ['.gguf', '.bin']:
+            potential_path = f"{model_path}{ext}"
+            if os.path.exists(potential_path):
+                model_path = potential_path
+                found_model = True
+                break
+        if not found_model:
+            models_dir = "/models/llm"
+            if os.path.isdir(models_dir):
+                for fname in os.listdir(models_dir):
+                    if fname.startswith(config.model):
+                        model_path = os.path.join(models_dir, fname)
+                        found_model = True
+                        logger.info(f"Found model matching prefix: {model_path}")
+                        break
+            if not found_model:
+                raise HTTPException(status_code=404, detail=f"Model file not found: {config.model} or path {model_path}")
 
     command = [
         binary_path,
         "-m", model_path,
-        "--host", params.get("host", "0.0.0.0"),
-        "--port", str(params.get("port", 1338)), # Changed internal port to 1338
-        "-ngl", str(params.get("ngl", 30)),
-        "--template", params.get("template", "chatml")
+        "--host", config.host,  # undreamai listens on internal host
+        "--port", str(internal_port),  # undreamai listens on internal port
+        "-ngl", str(config.ngl),
+        "--template", config.template
     ]
 
-    # Append custom params if provided
-    if custom_params:
-        command.extend(custom_params.split())
+    custom_params_list = shlex.split(config.custom_params)
+    if custom_params_list:
+        command.extend(custom_params_list)
 
-    print(f"➡️ Starting command: {' '.join(command)}")
-
-    with open(log_file, "w") as log:
-        server_process = subprocess.Popen(
-            command,
-            stdout=log,
-            stderr=log,
-            cwd="/app",
-            preexec_fn=os.setpgrp
-        )
-
-    return {"status": "Server started successfully", "log_file": log_file}
-
-@app.post("/stop-server/")
-async def stop_server():
-    global server_process
-
-    if not server_process or server_process.poll() is not None:
-        raise HTTPException(status_code=400, detail="Server is not currently running.")
+    logger.info(f"➡️ Starting LLM instance on external port {external_port} (internal: {internal_port}): {' '.join(command)}")
 
     try:
-        server_process.terminate()
-        server_process.wait()  # Wait for the process to exit
-        server_process = None
+        with open(log_file, "a") as log:
+            process = subprocess.Popen(
+                command,
+                stdout=log,
+                stderr=log,
+                cwd="/app",
+                preexec_fn=os.setpgrp
+            )
 
-        # Clear logs when the server is stopped
-        with open(log_file, "w") as log:
-            log.write("")
-
-        return {"status": "Server stopped successfully"}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to stop server: {e}")
-
-# -----------------------
-# Model Download Endpoint
-# -----------------------
-@app.post("/download-model/")
-async def download_model(data: dict):
-    model_url = data.get("url")
-    model_type = data.get("type", "llm")  # Either "llm" or "sd"
-
-    if not model_url:
-        raise HTTPException(status_code=400, detail="Model URL is required.")
-
-    try:
-        # Parse the URL to extract the filename from the path
-        parsed_url = urllib.parse.urlparse(model_url)
-        # Get the last part of the path
-        filename_from_url = os.path.basename(parsed_url.path)
-        # Basic sanitization: remove potential query parameters if they are part of the basename
-        filename_from_url = filename_from_url.split('?')[0]
-
-        # Handle cases where filename might be empty or just '/'
-        if not filename_from_url or filename_from_url == '/':
-             # Fallback if URL path is weird or empty
-             filename_from_url = "downloaded_model"
-             logger.warning(f"Could not extract a valid filename from URL path: {parsed_url.path}. Using fallback: {filename_from_url}")
-
-    except Exception as e:
-        logger.error(f"Error parsing URL or extracting filename: {e}")
-        # Use a fallback filename in case of parsing error
-        filename_from_url = "downloaded_model_error"
-        logger.warning(f"Using fallback filename due to error: {filename_from_url}")
-
-
-    # Determine the correct directory and extension based on model type
-    if model_type.lower() == "sd":
-        # For Stable Diffusion models
-        model_dir = "/models/stable-diffusion"
-        extension = ".safetensors"
-        # Ensure the filename has the correct extension for SD
-        filename_base = os.path.splitext(filename_from_url)[0]
-        filename_with_extension = f"{filename_base}{extension}"
-
-    else:
-        # For LLM models (default)
-        model_dir = "/models/llm"
-        extension = ".gguf"
-        # Ensure the filename has the correct extension for LLM
-        filename_base = os.path.splitext(filename_from_url)[0]
-        filename_with_extension = f"{filename_base}{extension}"
-
-
-    # Make sure the directory exists
-    os.makedirs(model_dir, exist_ok=True)
-
-    # Save model with the extracted name and correct extension
-    model_path = os.path.join(model_dir, filename_with_extension)
-
-    logger.info(f"Attempting to download model from {model_url} to {model_path}")
-
-    try:
-        response = requests.get(model_url, stream=True, allow_redirects=True) # Use stream=True for large files
-        response.raise_for_status() # Raise HTTPError for bad responses (4xx or 5xx)
-
-        with open(model_path, 'wb') as file:
-            for chunk in response.iter_content(chunk_size=8192): # Download in chunks
-                file.write(chunk)
-
-        logger.info(f"Model downloaded successfully to {model_path}")
-        return {
-            "status": f"Model downloaded successfully as {filename_with_extension}",
-            "downloaded_filename": filename_with_extension # Return the actual filename used
+        # Store process and config, using internal_port as key
+        llm_instances[internal_port] = {
+            'process': process,
+            'config': config.dict(),  # Store original config including external_port
+            'log_file': log_file,
+            'external_port': external_port  # Store external port for reference
         }
-
-    except requests.exceptions.RequestException as e:
-         logger.error(f"Failed to download model from {model_url}: {e}")
-         # Clean up potentially incomplete file
-         if os.path.exists(model_path):
-             try:
-                 os.remove(model_path)
-             except OSError as rm_err:
-                 logger.error(f"Error removing incomplete file {model_path}: {rm_err}")
-         raise HTTPException(status_code=400, detail=f"Failed to download model: {e}")
+        logger.info(f"LLM instance started successfully on internal port {internal_port} (external: {external_port}) with PID {process.pid}")
+        return {"status": f"LLM instance started successfully on external port {external_port}", "log_file": log_file, "internal_port": internal_port}
     except Exception as e:
-         logger.error(f"An error occurred during model download or saving: {e}")
-         # Clean up potentially incomplete file
-         if os.path.exists(model_path):
-             try:
-                 os.remove(model_path)
-             except OSError as rm_err:
-                 logger.error(f"Error removing incomplete file {model_path}: {rm_err}")
-         raise HTTPException(status_code=500, detail=f"An error occurred: {e}")
+        logger.error(f"Failed to start LLM instance for external port {external_port}: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to start LLM instance: {e}")
+
+@app.post("/stop-llm-instance/")
+async def stop_llm_instance(data: dict):
+    global llm_instances
+    external_port = data.get("external_port")  # Expect external port from frontend
+
+    if external_port is None:
+        raise HTTPException(status_code=400, detail="Missing 'external_port' in request.")
+
+    internal_port = get_internal_port(external_port)
+    if internal_port is None or internal_port not in llm_instances:
+        raise HTTPException(status_code=404, detail=f"Instance on external port {external_port} not found.")
+
+    if llm_instances[internal_port]['process'].poll() is not None:
+        logger.warning(f"Stop request for already terminated instance on external port {external_port} (internal: {internal_port}). Cleaning up.")
+        del llm_instances[internal_port]
+        return {"status": f"LLM instance on external port {external_port} was already stopped."}
+
+    instance_info = llm_instances[internal_port]
+    process = instance_info['process']
+    log_file = instance_info['log_file']
+
+    logger.info(f"Attempting to stop LLM instance on external port {external_port} (internal: {internal_port}, PID: {process.pid})")
+
+    try:
+        pgid = os.getpgid(process.pid)
+        logger.info(f"Sending SIGTERM to process group {pgid} for instance on internal port {internal_port}")
+        os.killpg(pgid, signal.SIGTERM)
+
+        try:
+            process.wait(timeout=5)
+            logger.info(f"LLM instance on internal port {internal_port} (PGID: {pgid}) terminated gracefully.")
+        except subprocess.TimeoutExpired:
+            logger.warning(f"LLM instance on internal port {internal_port} (PGID: {pgid}) did not terminate gracefully after 5s. Sending SIGKILL.")
+            os.killpg(pgid, signal.SIGKILL)
+            process.wait(timeout=5)
+            logger.info(f"Sent SIGKILL to process group {pgid}")
+
+        # Clean up using internal_port key
+        del llm_instances[internal_port]
+        logger.info(f"Removed instance entry for internal port {internal_port} (external: {external_port})")
+
+        try:
+            with open(log_file, "w") as log:
+                log.write("")
+            logger.info(f"Cleared log file: {log_file}")
+        except Exception as log_err:
+            logger.error(f"Error clearing log file {log_file}: {log_err}")
+
+        return {"status": f"LLM instance on external port {external_port} stopped successfully"}
+
+    except ProcessLookupError:
+        logger.warning(f"Process group for instance on internal port {internal_port} not found. Already terminated?")
+        if internal_port in llm_instances:
+            del llm_instances[internal_port]
+        return {"status": f"LLM instance on external port {external_port} was already stopped."}
+    except Exception as e:
+        logger.error(f"Failed to stop LLM instance on external port {external_port}: {e}")
+        if internal_port in llm_instances:
+            if llm_instances[internal_port]['process'].poll() is not None:
+                del llm_instances[internal_port]
+        raise HTTPException(status_code=500, detail=f"Failed to stop LLM instance {external_port}: {e}")
+
+@app.get("/list-llm-instances/")
+async def list_llm_instances():
+    global llm_instances
+    running_instances_info = {}
+    ports_to_remove = []
+
+    for internal_port, info in llm_instances.items():
+        process = info['process']
+        external_port = info.get('external_port', get_external_port(internal_port))  # Get external port
+
+        if process.poll() is None:
+            if external_port is not None:
+                running_instances_info[external_port] = {  # Keyed by external port for frontend
+                    "config": info['config'],
+                    "log_file": info['log_file'],
+                    "status": "running",
+                    "pid": process.pid,
+                    "internal_port": internal_port  # Include internal port for reference
+                }
+            else:
+                logger.error(f"Could not find external port mapping for running internal port {internal_port}")
+        else:
+            logger.warning(f"Found terminated instance for internal port {internal_port}. Cleaning up.")
+            ports_to_remove.append(internal_port)
+
+    for internal_port in ports_to_remove:
+        if internal_port in llm_instances:
+            del llm_instances[internal_port]
+
+    return running_instances_info
 
 # -----------------------
 # Server Stats Endpoint
 # -----------------------
 @app.get("/stats/")
 async def get_stats():
-    global server_process, stable_diffusion_process
-    
-    # Get GPU usage using nvidia-smi
+    global llm_instances, stable_diffusion_process
+
     try:
         gpu_usage = 0
-        
-        # First check if nvidia-smi is available
         nvidia_smi_exists = subprocess.run(
             ["which", "nvidia-smi"], 
             stdout=subprocess.PIPE, 
@@ -236,40 +289,77 @@ async def get_stats():
         ).returncode == 0
         
         if nvidia_smi_exists:
-            # Get GPU utilization - this works with multiple GPUs
             nvidia_smi_output = subprocess.check_output(
                 ["nvidia-smi", "--query-gpu=utilization.gpu", "--format=csv,noheader,nounits"],
                 text=True, 
                 stderr=subprocess.PIPE
             ).strip()
             
-            # Parse the output - if multiple GPUs, take the max utilization
             if nvidia_smi_output:
                 gpu_values = [float(x.strip()) for x in nvidia_smi_output.split('\n') if x.strip()]
                 if gpu_values:
-                    gpu_usage = int(max(gpu_values))  # Use the highest GPU usage if multiple GPUs
+                    gpu_usage = int(max(gpu_values))
     except (subprocess.SubprocessError, ValueError, FileNotFoundError, PermissionError) as e:
         print(f"Error getting GPU stats: {e}")
         gpu_usage = 0
-    
+
+    llm_instance_statuses = {}
+    ports_to_remove = []
+    for internal_port, info in llm_instances.items():
+        external_port = info.get('external_port', get_external_port(internal_port))
+        if external_port is None:
+            logger.error(f"Stats: Could not find external port for internal port {internal_port}")
+            continue
+
+        if info['process'].poll() is None:
+            llm_instance_statuses[external_port] = "running"
+        else:
+            llm_instance_statuses[external_port] = "stopped"
+            ports_to_remove.append(internal_port)
+
+    for internal_port in ports_to_remove:
+        if internal_port in llm_instances:
+            logger.info(f"Cleaning up stopped instance from stats check: internal port {internal_port}")
+            del llm_instances[internal_port]
+
     return {
         "cpu": psutil.cpu_percent(),
         "ram": psutil.virtual_memory().percent,
         "gpu": gpu_usage,
-        "server_running": server_process and server_process.poll() is None,
+        "llm_instances": llm_instance_statuses,
         "sd_running": stable_diffusion_process and stable_diffusion_process.poll() is None
     }
 
 # -----------------------
 # Log Viewing Endpoint
 # -----------------------
-@app.get("/logs/")
-async def get_logs():
+@app.get("/llm-logs/")
+async def get_llm_logs(external_port: int):
+    internal_port = get_internal_port(external_port)
+
+    if internal_port is None:
+        raise HTTPException(status_code=400, detail=f"Invalid or unmapped external port: {external_port}")
+
+    log_file = get_llm_log_file(internal_port)
+
+    instance_exists = internal_port in llm_instances
+    log_file_exists = os.path.exists(log_file)
+
+    if not instance_exists and not log_file_exists:
+        raise HTTPException(status_code=404, detail=f"No running instance or log file found for external port {external_port} (internal: {internal_port})")
+
     try:
         with open(log_file, "r") as log_file_data:
-            return log_file_data.read()
+            return PlainTextResponse(log_file_data.read())
     except FileNotFoundError:
-        raise HTTPException(status_code=404, detail="Log file not found")
+        if instance_exists:
+            logger.warning(f"Log file {log_file} not found for existing instance (internal port {internal_port})")
+            return PlainTextResponse("")
+        else:
+            raise HTTPException(status_code=404, detail=f"Log file not found: {log_file}")
+    except Exception as e:
+        logger.error(f"Error reading log file {log_file}: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to read logs for instance on external port {external_port}")
 
 # -----------------------
 # List Models
@@ -279,7 +369,7 @@ async def list_models():
     models_dir = "/models/llm"
     if not os.path.isdir(models_dir):
         raise HTTPException(status_code=404, detail="LLM models directory not found")
-    models = os.listdir(models_dir)  # List all files without filtering
+    models = os.listdir(models_dir)
     return {"models": models}
 
 @app.get("/list-sd-models/")
@@ -287,7 +377,7 @@ async def list_sd_models():
     models_dir = "/models/stable-diffusion"
     if not os.path.isdir(models_dir):
         raise HTTPException(status_code=404, detail="Stable Diffusion models directory not found")
-    models = os.listdir(models_dir)  # List all files without filtering
+    models = os.listdir(models_dir)
     return {"models": models}
 
 # -----------------------
@@ -306,15 +396,12 @@ async def start_stable_diffusion():
     if stable_diffusion_process and stable_diffusion_process.poll() is None:
         raise HTTPException(status_code=400, detail="Stable Diffusion is already running.")
     
-    # Clear logs before starting
     with open(sd_log_file, "w") as log:
         log.write("")
     
-    # Path to our custom Stable Diffusion launcher script
     launcher_path = "/app/stable-diffusion-webui/sd_launcher.sh"
     
     if not os.path.exists(launcher_path):
-        # Try to create the launcher if it doesn't exist
         try:
             with open(launcher_path, "w") as f:
                 f.write('#!/bin/bash\n')
@@ -335,17 +422,15 @@ async def start_stable_diffusion():
     if not os.path.exists(launcher_path):
         raise HTTPException(status_code=500, detail="Stable Diffusion launcher not found")
     
-    # Command to start Stable Diffusion with common parameters
-    # Using --listen to make it accessible from outside the container
     command = [
         launcher_path,
         "--listen",
-        "--port", "7861",  # Changed internal port to 7861
+        "--port", "7861",
         "--allow-code",
         "--no-download-sd-model",
         "--api",
         "--xformers",
-        "--cors-allow-origins", "*"  # Allow CORS for Unity access
+        "--cors-allow-origins", "*"
     ]
     
     print(f"➡️ Starting Stable Diffusion: {' '.join(command)}")
@@ -360,11 +445,9 @@ async def start_stable_diffusion():
                 preexec_fn=os.setpgrp
             )
         
-        # Wait a moment to ensure the process started
         time.sleep(2)
         
         if stable_diffusion_process.poll() is not None:
-            # If process exited already, there was an error
             raise HTTPException(status_code=500, detail="Failed to start Stable Diffusion. Check logs for details.")
         
         return {"status": "Stable Diffusion started successfully", "log_file": sd_log_file}
@@ -386,39 +469,34 @@ async def stop_stable_diffusion():
 
     try:
         pid = stable_diffusion_process.pid
-        pgid = os.getpgid(pid) # Get the process group ID
+        pgid = os.getpgid(pid)
         logger.info(f"Attempting to stop Stable Diffusion process group with PGID: {pgid}")
 
-        # Try graceful termination of the process group
         os.killpg(pgid, signal.SIGTERM)
         logger.info(f"Sent SIGTERM to process group {pgid}")
 
-        # Give it some time to shut down gracefully
         stopped = False
-        for _ in range(10):  # Wait up to 10 seconds
+        for _ in range(10):
             if stable_diffusion_process.poll() is not None:
                 logger.info(f"Process group {pgid} terminated gracefully.")
                 stopped = True
                 break
             time.sleep(1)
 
-        # If still running, force kill the process group
         if not stopped:
             logger.warning(f"Process group {pgid} did not terminate gracefully. Sending SIGKILL.")
             try:
                 os.killpg(pgid, signal.SIGKILL)
-                stable_diffusion_process.wait(timeout=5) # Wait a bit after SIGKILL
+                stable_diffusion_process.wait(timeout=5)
                 logger.info(f"Sent SIGKILL to process group {pgid}")
             except ProcessLookupError:
-                 logger.info(f"Process group {pgid} already terminated after SIGKILL attempt.")
+                logger.info(f"Process group {pgid} already terminated after SIGKILL attempt.")
             except Exception as kill_err:
-                 logger.error(f"Error sending SIGKILL to process group {pgid}: {kill_err}")
-
+                logger.error(f"Error sending SIGKILL to process group {pgid}: {kill_err}")
 
         stable_diffusion_process = None
         logger.info("Stable Diffusion process reference cleared.")
 
-        # Clear logs after stopping
         try:
             with open(sd_log_file, "w") as log:
                 log.write("")
@@ -426,25 +504,22 @@ async def stop_stable_diffusion():
         except Exception as log_err:
             logger.error(f"Error clearing Stable Diffusion log file: {log_err}")
 
-
         return {"status": "Stable Diffusion stopped successfully"}
 
     except ProcessLookupError:
-        # This can happen if the process terminated unexpectedly between the check and killpg
         logger.warning(f"Process group {pgid} not found. Already terminated?")
-        stable_diffusion_process = None # Ensure reference is cleared
+        stable_diffusion_process = None
         return {"status": "Stable Diffusion process was already stopped."}
     except Exception as e:
         logger.error(f"Failed to stop Stable Diffusion: {e}")
-        # Attempt to clean up the process reference if an error occurred
         if stable_diffusion_process and stable_diffusion_process.poll() is None:
-             logger.warning("Error occurred, but process might still be running. Attempting final kill.")
-             try:
-                 pgid = os.getpgid(stable_diffusion_process.pid)
-                 os.killpg(pgid, signal.SIGKILL)
-             except Exception as final_kill_err:
-                 logger.error(f"Final kill attempt failed: {final_kill_err}")
-        stable_diffusion_process = None # Clear reference even on error
+            logger.warning("Error occurred, but process might still be running. Attempting final kill.")
+            try:
+                pgid = os.getpgid(stable_diffusion_process.pid)
+                os.killpg(pgid, signal.SIGKILL)
+            except Exception as final_kill_err:
+                logger.error(f"Final kill attempt failed: {final_kill_err}")
+        stable_diffusion_process = None
         raise HTTPException(status_code=500, detail=f"Failed to stop Stable Diffusion: {str(e)}")
 
 @app.get("/sd-logs/")
@@ -453,20 +528,14 @@ async def get_sd_logs():
         with open(sd_log_file, "r") as log_file_data:
             return log_file_data.read()
     except FileNotFoundError:
-        # Return empty string instead of raising 404 if log file doesn't exist yet
         return ""
     except Exception as e:
         logger.error(f"Error reading SD logs: {e}")
         raise HTTPException(status_code=500, detail="Failed to read Stable Diffusion logs")
 
-# -----------------------
-# Stable Diffusion Status Check
-# -----------------------
 @app.get("/check-sd-webui/")
 async def check_sd_webui():
-    """Check if Stable Diffusion Web UI is responsive."""
     try:
-        # Check the internal port 7861
         response = requests.get("http://localhost:7861/", timeout=5)
         return {"available": response.status_code == 200}
     except requests.RequestException:
@@ -477,21 +546,17 @@ async def check_sd_webui():
 # -----------------------
 @app.get("/get-allowed-ips/", response_class=PlainTextResponse)
 async def get_allowed_ips(service: str = "frontend"):
-    """Reads and returns the content of the specified Nginx IP allowlist file."""
     if service not in ALLOWLIST_FILES:
         raise HTTPException(status_code=400, detail=f"Invalid service specified. Must be one of {list(ALLOWLIST_FILES.keys())}")
 
     nginx_allowlist_file = ALLOWLIST_FILES[service]
 
     try:
-        # Check if file exists before reading
         if not os.path.exists(nginx_allowlist_file):
             logger.warning(f"Allowlist file not found: {nginx_allowlist_file}")
-            # Return a default or empty state if the file doesn't exist
             return f"# Allowlist file for '{service}' not found. Enter IPs/CIDRs below.\n# Example: 192.168.1.1\n# Example: 0.0.0.0/0 (Allow all)"
         with open(nginx_allowlist_file, "r") as f:
             lines = f.readlines()
-            # Process lines to remove the " 1;" suffix for UI display
             processed_lines = []
             for line in lines:
                 stripped_line = line.strip()
@@ -509,7 +574,6 @@ async def get_allowed_ips(service: str = "frontend"):
 
 @app.post("/update-allowed-ips/")
 async def update_allowed_ips(request_data: UpdateAllowlistRequest):
-    """Updates the specified Nginx IP allowlist file, adding ' 1;' to each entry."""
     service = request_data.service
     content = request_data.content
 
@@ -522,7 +586,6 @@ async def update_allowed_ips(request_data: UpdateAllowlistRequest):
         raise HTTPException(status_code=400, detail="Missing 'content' in request body.")
 
     try:
-        # Process lines to add " 1;" suffix before writing
         lines = content.splitlines()
         processed_lines = []
         for line in lines:
@@ -545,7 +608,6 @@ async def update_allowed_ips(request_data: UpdateAllowlistRequest):
 
 @app.post("/restart-nginx/")
 async def restart_nginx():
-    """Restarts the Nginx server to apply configuration changes."""
     try:
         command = ["nginx", "-s", "reload"]
         logger.info(f"Executing Nginx reload command: {' '.join(command)}")
