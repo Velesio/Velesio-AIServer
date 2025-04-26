@@ -163,7 +163,7 @@ const IPAccessControlPanel = () => {
     const getServiceDisplayName = (service: ServiceType): string => {
         switch (service) {
             case 'frontend': return 'Frontend UI (Port 3000)';
-            case 'llm': return 'LLM API (Port 1337)';
+            case 'llm': return 'LLM API (Ports 1337, 1339, 1341, 1343, 1345)';
             case 'sd': return 'Stable Diffusion API (Port 7860)';
             default: return 'Unknown Service';
         }
