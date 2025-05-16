@@ -43,13 +43,7 @@ Get up and running locally with just a few steps:
 
 ### 📦 Docker Image
 
-Prefer using Docker directly? Check out our [Docker Hub repository](https://hub.docker.com/repository/docker/teocholakov/velesio-aiserver).
-
----
-
-### 💬 Need Help?
-
-Join our [Discord community](https://discord.gg/pMB6w3mJyF) for support, discussions, and sharing ideas.
+ [Docker Hub repository](https://hub.docker.com/repository/docker/teocholakov/velesio-aiserver).
 
 ---
 
